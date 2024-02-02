@@ -1,0 +1,3 @@
+[submodule "turing"]
+	path = turing
+	url = https://gitlab.com/drago-96/turing.git
