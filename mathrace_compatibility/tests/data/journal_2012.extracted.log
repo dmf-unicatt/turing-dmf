@@ -1,0 +1,588 @@
+--- 001 inizializzazione simulatore
+--- 003 28 24 240 10 1 squadre: 28 quesiti: 24
+--- 004 1 20 quesito 1 punteggio iniziale 20
+--- 004 2 20 quesito 2 punteggio iniziale 20
+--- 004 3 20 quesito 3 punteggio iniziale 20
+--- 004 4 30 quesito 4 punteggio iniziale 30
+--- 004 5 30 quesito 5 punteggio iniziale 30
+--- 004 6 30 quesito 6 punteggio iniziale 30
+--- 004 7 30 quesito 7 punteggio iniziale 30
+--- 004 8 30 quesito 8 punteggio iniziale 30
+--- 004 9 30 quesito 9 punteggio iniziale 30
+--- 004 10 30 quesito 10 punteggio iniziale 30
+--- 004 11 40 quesito 11 punteggio iniziale 40
+--- 004 12 40 quesito 12 punteggio iniziale 40
+--- 004 13 40 quesito 13 punteggio iniziale 40
+--- 004 14 40 quesito 14 punteggio iniziale 40
+--- 004 15 40 quesito 15 punteggio iniziale 40
+--- 004 16 50 quesito 16 punteggio iniziale 50
+--- 004 17 50 quesito 17 punteggio iniziale 50
+--- 004 18 60 quesito 18 punteggio iniziale 60
+--- 004 19 60 quesito 19 punteggio iniziale 60
+--- 004 20 60 quesito 20 punteggio iniziale 60
+--- 004 21 70 quesito 21 punteggio iniziale 70
+--- 004 22 70 quesito 22 punteggio iniziale 70
+--- 004 23 70 quesito 23 punteggio iniziale 70
+--- 004 24 70 quesito 24 punteggio iniziale 70
+0 002 inizio gara
+30 022 aggiorna punteggio esercizi
+90 022 aggiorna punteggio esercizi
+150 022 aggiorna punteggio esercizi
+194 010 22 18 squadra 22 sceglie 18 come jolly
+210 022 aggiorna punteggio esercizi
+211 011 13 11 0 squadra 13, quesito 11: sbagliato
+233 010 14 15 squadra 14 sceglie 15 come jolly
+270 022 aggiorna punteggio esercizi
+312 010 16 22 squadra 16 sceglie 22 come jolly
+330 022 aggiorna punteggio esercizi
+357 010 12 16 squadra 12 sceglie 16 come jolly
+376 011 8 5 1 squadra 8, quesito 5: giusto
+384 010 26 18 squadra 26 sceglie 18 come jolly
+390 022 aggiorna punteggio esercizi
+414 010 17 19 squadra 17 sceglie 19 come jolly
+450 022 aggiorna punteggio esercizi
+453 010 13 19 squadra 13 sceglie 19 come jolly
+453 011 8 3 1 squadra 8, quesito 3: giusto
+467 011 24 3 1 squadra 24, quesito 3: giusto
+502 010 8 18 squadra 8 sceglie 18 come jolly
+510 022 aggiorna punteggio esercizi
+523 010 23 3 squadra 23 sceglie 3 come jolly
+541 010 25 23 squadra 25 sceglie 23 come jolly
+544 011 13 10 0 squadra 13, quesito 10: sbagliato
+552 010 27 21 squadra 27 sceglie 21 come jolly
+554 010 24 21 squadra 24 sceglie 21 come jolly
+563 010 2 16 squadra 2 sceglie 16 come jolly
+563 010 6 11 squadra 6 sceglie 11 come jolly
+570 022 aggiorna punteggio esercizi
+571 010 4 18 squadra 4 sceglie 18 come jolly
+575 010 15 1 squadra 15 sceglie 1 come jolly
+579 010 1 7 squadra 1 sceglie 7 come jolly
+585 010 9 11 squadra 9 sceglie 11 come jolly
+586 011 24 5 1 squadra 24, quesito 5: giusto
+588 010 11 9 squadra 11 sceglie 9 come jolly
+592 010 21 7 squadra 21 sceglie 7 come jolly
+599 010 20 16 squadra 20 sceglie 16 come jolly
+603 011 17 5 1 squadra 17, quesito 5: giusto
+606 010 5 11 squadra 5 sceglie 11 come jolly
+610 010 3 5 squadra 3 sceglie 5 come jolly
+612 010 28 3 squadra 28 sceglie 3 come jolly
+618 011 11 9 0 squadra 11, quesito 9: sbagliato
+630 022 aggiorna punteggio esercizi
+641 011 27 2 0 squadra 27, quesito 2: sbagliato
+642 010 10 14 squadra 10 sceglie 14 come jolly
+647 010 19 16 squadra 19 sceglie 16 come jolly
+653 011 27 5 0 squadra 27, quesito 5: sbagliato
+690 011 13 10 1 squadra 13, quesito 10: giusto
+690 022 aggiorna punteggio esercizi
+713 011 17 3 0 squadra 17, quesito 3: sbagliato
+720 011 11 9 1 squadra 11, quesito 9: giusto
+731 011 16 5 0 squadra 16, quesito 5: sbagliato
+743 011 27 10 0 squadra 27, quesito 10: sbagliato
+747 011 25 7 1 squadra 25, quesito 7: giusto
+750 022 aggiorna punteggio esercizi
+776 011 2 7 0 squadra 2, quesito 7: sbagliato
+801 010 7 22 squadra 7 sceglie 22 come jolly
+810 022 aggiorna punteggio esercizi
+815 021 timeout jolly
+820 011 11 3 0 squadra 11, quesito 3: sbagliato
+823 011 27 5 1 squadra 27, quesito 5: giusto
+870 022 aggiorna punteggio esercizi
+903 011 15 5 0 squadra 15, quesito 5: sbagliato
+915 011 23 3 0 squadra 23, quesito 3: sbagliato
+930 022 aggiorna punteggio esercizi
+990 022 aggiorna punteggio esercizi
+1038 011 10 6 0 squadra 10, quesito 6: sbagliato
+1044 011 1 6 0 squadra 1, quesito 6: sbagliato
+1045 011 23 3 0 squadra 23, quesito 3: sbagliato
+1046 011 27 10 1 squadra 27, quesito 10: giusto
+1050 022 aggiorna punteggio esercizi
+1056 011 8 8 1 squadra 8, quesito 8: giusto
+1070 011 26 8 1 squadra 26, quesito 8: giusto
+1085 011 2 5 0 squadra 2, quesito 5: sbagliato
+1110 022 aggiorna punteggio esercizi
+1132 011 3 5 0 squadra 3, quesito 5: sbagliato
+1138 011 24 7 1 squadra 24, quesito 7: giusto
+1139 011 7 5 0 squadra 7, quesito 5: sbagliato
+1157 011 5 3 1 squadra 5, quesito 3: giusto
+1170 022 aggiorna punteggio esercizi
+1178 011 1 7 1 squadra 1, quesito 7: giusto
+1187 011 2 8 1 squadra 2, quesito 8: giusto
+1230 022 aggiorna punteggio esercizi
+1236 011 24 2 1 squadra 24, quesito 2: giusto
+1264 011 10 6 0 squadra 10, quesito 6: sbagliato
+1282 011 2 5 1 squadra 2, quesito 5: giusto
+1290 022 aggiorna punteggio esercizi
+1296 011 6 3 1 squadra 6, quesito 3: giusto
+1306 011 16 5 0 squadra 16, quesito 5: sbagliato
+1319 011 20 16 0 squadra 20, quesito 16: sbagliato
+1320 011 25 2 0 squadra 25, quesito 2: sbagliato
+1332 011 24 13 1 squadra 24, quesito 13: giusto
+1333 011 27 2 1 squadra 27, quesito 2: giusto
+1333 011 23 1 1 squadra 23, quesito 1: giusto
+1334 011 27 3 1 squadra 27, quesito 3: giusto
+1343 011 23 7 0 squadra 23, quesito 7: sbagliato
+1350 022 aggiorna punteggio esercizi
+1410 022 aggiorna punteggio esercizi
+1421 011 12 5 1 squadra 12, quesito 5: giusto
+1433 011 13 1 1 squadra 13, quesito 1: giusto
+1469 011 9 5 1 squadra 9, quesito 5: giusto
+1470 022 aggiorna punteggio esercizi
+1481 011 8 2 0 squadra 8, quesito 2: sbagliato
+1492 011 26 3 1 squadra 26, quesito 3: giusto
+1530 022 aggiorna punteggio esercizi
+1575 011 1 10 1 squadra 1, quesito 10: giusto
+1577 011 25 3 1 squadra 25, quesito 3: giusto
+1590 022 aggiorna punteggio esercizi
+1592 011 26 1 1 squadra 26, quesito 1: giusto
+1594 011 12 16 0 squadra 12, quesito 16: sbagliato
+1613 011 5 2 0 squadra 5, quesito 2: sbagliato
+1636 011 11 3 0 squadra 11, quesito 3: sbagliato
+1643 011 8 2 1 squadra 8, quesito 2: giusto
+1650 011 10 8 1 squadra 10, quesito 8: giusto
+1650 022 aggiorna punteggio esercizi
+1658 011 13 9 1 squadra 13, quesito 9: giusto
+1673 011 14 2 0 squadra 14, quesito 2: sbagliato
+1710 022 aggiorna punteggio esercizi
+1715 011 13 18 0 squadra 13, quesito 18: sbagliato
+1766 011 24 14 0 squadra 24, quesito 14: sbagliato
+1767 011 25 2 1 squadra 25, quesito 2: giusto
+1770 022 aggiorna punteggio esercizi
+1774 011 22 3 0 squadra 22, quesito 3: sbagliato
+1785 011 11 7 1 squadra 11, quesito 7: giusto
+1795 011 10 9 0 squadra 10, quesito 9: sbagliato
+1802 011 17 7 1 squadra 17, quesito 7: giusto
+1813 011 14 3 1 squadra 14, quesito 3: giusto
+1828 011 13 7 1 squadra 13, quesito 7: giusto
+1830 022 aggiorna punteggio esercizi
+1878 011 8 1 1 squadra 8, quesito 1: giusto
+1890 022 aggiorna punteggio esercizi
+1910 011 23 8 1 squadra 23, quesito 8: giusto
+1921 011 16 3 0 squadra 16, quesito 3: sbagliato
+1944 011 21 7 1 squadra 21, quesito 7: giusto
+1944 011 25 8 1 squadra 25, quesito 8: giusto
+1950 022 aggiorna punteggio esercizi
+1992 011 2 7 1 squadra 2, quesito 7: giusto
+2000 011 13 18 0 squadra 13, quesito 18: sbagliato
+2010 022 aggiorna punteggio esercizi
+2018 011 8 9 1 squadra 8, quesito 9: giusto
+2043 011 22 6 0 squadra 22, quesito 6: sbagliato
+2060 011 22 3 1 squadra 22, quesito 3: giusto
+2070 022 aggiorna punteggio esercizi
+2096 011 13 5 0 squadra 13, quesito 5: sbagliato
+2128 011 11 5 0 squadra 11, quesito 5: sbagliato
+2130 022 aggiorna punteggio esercizi
+2166 011 14 11 0 squadra 14, quesito 11: sbagliato
+2181 011 21 6 0 squadra 21, quesito 6: sbagliato
+2190 022 aggiorna punteggio esercizi
+2199 011 8 10 1 squadra 8, quesito 10: giusto
+2203 011 15 7 1 squadra 15, quesito 7: giusto
+2214 011 1 4 0 squadra 1, quesito 4: sbagliato
+2237 011 1 5 1 squadra 1, quesito 5: giusto
+2250 011 20 16 0 squadra 20, quesito 16: sbagliato
+2250 022 aggiorna punteggio esercizi
+2289 011 17 8 1 squadra 17, quesito 8: giusto
+2310 022 aggiorna punteggio esercizi
+2326 011 26 7 0 squadra 26, quesito 7: sbagliato
+2342 011 23 3 1 squadra 23, quesito 3: giusto
+2360 011 5 2 1 squadra 5, quesito 2: giusto
+2370 022 aggiorna punteggio esercizi
+2396 011 5 9 0 squadra 5, quesito 9: sbagliato
+2411 011 4 3 0 squadra 4, quesito 3: sbagliato
+2422 011 3 6 0 squadra 3, quesito 6: sbagliato
+2430 022 aggiorna punteggio esercizi
+2432 011 15 8 1 squadra 15, quesito 8: giusto
+2461 011 12 12 0 squadra 12, quesito 12: sbagliato
+2490 022 aggiorna punteggio esercizi
+2500 011 16 6 0 squadra 16, quesito 6: sbagliato
+2537 011 12 8 1 squadra 12, quesito 8: giusto
+2543 011 5 5 0 squadra 5, quesito 5: sbagliato
+2543 011 13 5 1 squadra 13, quesito 5: giusto
+2550 022 aggiorna punteggio esercizi
+2555 011 19 3 1 squadra 19, quesito 3: giusto
+2564 011 1 4 0 squadra 1, quesito 4: sbagliato
+2573 011 22 8 1 squadra 22, quesito 8: giusto
+2577 011 28 3 1 squadra 28, quesito 3: giusto
+2578 011 27 9 1 squadra 27, quesito 9: giusto
+2586 011 4 8 1 squadra 4, quesito 8: giusto
+2594 011 24 8 1 squadra 24, quesito 8: giusto
+2607 011 24 18 1 squadra 24, quesito 18: giusto
+2610 022 aggiorna punteggio esercizi
+2619 011 12 7 0 squadra 12, quesito 7: sbagliato
+2660 011 3 6 0 squadra 3, quesito 6: sbagliato
+2661 011 4 9 1 squadra 4, quesito 9: giusto
+2670 022 aggiorna punteggio esercizi
+2674 011 2 3 1 squadra 2, quesito 3: giusto
+2683 011 20 19 0 squadra 20, quesito 19: sbagliato
+2692 011 13 2 1 squadra 13, quesito 2: giusto
+2718 011 13 18 1 squadra 13, quesito 18: giusto
+2730 022 aggiorna punteggio esercizi
+2735 011 12 7 1 squadra 12, quesito 7: giusto
+2740 011 16 10 0 squadra 16, quesito 10: sbagliato
+2756 011 10 6 0 squadra 10, quesito 6: sbagliato
+2790 022 aggiorna punteggio esercizi
+2794 011 9 10 0 squadra 9, quesito 10: sbagliato
+2806 011 14 7 1 squadra 14, quesito 7: giusto
+2850 022 aggiorna punteggio esercizi
+2864 011 7 10 0 squadra 7, quesito 10: sbagliato
+2884 011 22 10 0 squadra 22, quesito 10: sbagliato
+2903 011 8 7 1 squadra 8, quesito 7: giusto
+2910 022 aggiorna punteggio esercizi
+2913 011 16 1 1 squadra 16, quesito 1: giusto
+2921 011 20 22 0 squadra 20, quesito 22: sbagliato
+2932 011 8 11 1 squadra 8, quesito 11: giusto
+2941 011 23 22 0 squadra 23, quesito 22: sbagliato
+2970 022 aggiorna punteggio esercizi
+2995 011 8 6 1 squadra 8, quesito 6: giusto
+2999 011 24 4 0 squadra 24, quesito 4: sbagliato
+3008 011 22 10 1 squadra 22, quesito 10: giusto
+3015 011 8 18 0 squadra 8, quesito 18: sbagliato
+3017 011 20 22 0 squadra 20, quesito 22: sbagliato
+3025 011 23 7 0 squadra 23, quesito 7: sbagliato
+3030 022 aggiorna punteggio esercizi
+3041 011 5 11 1 squadra 5, quesito 11: giusto
+3090 022 aggiorna punteggio esercizi
+3098 011 8 4 0 squadra 8, quesito 4: sbagliato
+3117 011 8 18 0 squadra 8, quesito 18: sbagliato
+3123 011 15 5 1 squadra 15, quesito 5: giusto
+3147 011 2 16 0 squadra 2, quesito 16: sbagliato
+3150 022 aggiorna punteggio esercizi
+3154 011 27 13 1 squadra 27, quesito 13: giusto
+3159 011 22 12 0 squadra 22, quesito 12: sbagliato
+3176 011 21 5 0 squadra 21, quesito 5: sbagliato
+3182 011 16 7 0 squadra 16, quesito 7: sbagliato
+3190 011 13 3 1 squadra 13, quesito 3: giusto
+3210 022 aggiorna punteggio esercizi
+3237 011 19 5 1 squadra 19, quesito 5: giusto
+3265 011 20 9 0 squadra 20, quesito 9: sbagliato
+3270 022 aggiorna punteggio esercizi
+3288 011 11 10 0 squadra 11, quesito 10: sbagliato
+3293 011 9 13 0 squadra 9, quesito 13: sbagliato
+3301 011 27 16 0 squadra 27, quesito 16: sbagliato
+3312 011 7 10 0 squadra 7, quesito 10: sbagliato
+3330 022 aggiorna punteggio esercizi
+3341 011 26 7 0 squadra 26, quesito 7: sbagliato
+3343 011 5 10 0 squadra 5, quesito 10: sbagliato
+3346 011 24 14 1 squadra 24, quesito 14: giusto
+3365 011 15 6 0 squadra 15, quesito 6: sbagliato
+3382 011 9 1 0 squadra 9, quesito 1: sbagliato
+3383 011 24 4 0 squadra 24, quesito 4: sbagliato
+3390 022 aggiorna punteggio esercizi
+3401 011 23 6 0 squadra 23, quesito 6: sbagliato
+3407 011 25 10 0 squadra 25, quesito 10: sbagliato
+3415 011 5 6 0 squadra 5, quesito 6: sbagliato
+3416 011 11 8 1 squadra 11, quesito 8: giusto
+3420 011 11 10 0 squadra 11, quesito 10: sbagliato
+3432 011 9 10 1 squadra 9, quesito 10: giusto
+3450 022 aggiorna punteggio esercizi
+3454 011 27 14 1 squadra 27, quesito 14: giusto
+3464 011 10 6 0 squadra 10, quesito 6: sbagliato
+3501 011 1 4 0 squadra 1, quesito 4: sbagliato
+3510 022 aggiorna punteggio esercizi
+3513 011 3 10 1 squadra 3, quesito 10: giusto
+3524 011 2 16 0 squadra 2, quesito 16: sbagliato
+3524 011 8 18 1 squadra 8, quesito 18: giusto
+3541 011 14 6 0 squadra 14, quesito 6: sbagliato
+3556 011 6 10 0 squadra 6, quesito 10: sbagliato
+3563 011 21 5 1 squadra 21, quesito 5: giusto
+3570 022 aggiorna punteggio esercizi
+3587 011 1 22 0 squadra 1, quesito 22: sbagliato
+3606 011 21 8 1 squadra 21, quesito 8: giusto
+3614 011 9 3 1 squadra 9, quesito 3: giusto
+3630 022 aggiorna punteggio esercizi
+3642 011 25 6 0 squadra 25, quesito 6: sbagliato
+3648 011 12 10 1 squadra 12, quesito 10: giusto
+3666 011 9 1 1 squadra 9, quesito 1: giusto
+3690 022 aggiorna punteggio esercizi
+3705 011 19 7 1 squadra 19, quesito 7: giusto
+3746 011 12 3 1 squadra 12, quesito 3: giusto
+3750 022 aggiorna punteggio esercizi
+3794 011 8 15 1 squadra 8, quesito 15: giusto
+3802 011 14 8 1 squadra 14, quesito 8: giusto
+3810 011 16 3 1 squadra 16, quesito 3: giusto
+3810 022 aggiorna punteggio esercizi
+3815 011 6 10 0 squadra 6, quesito 10: sbagliato
+3824 011 5 12 0 squadra 5, quesito 12: sbagliato
+3827 011 5 22 0 squadra 5, quesito 22: sbagliato
+3831 011 13 15 1 squadra 13, quesito 15: giusto
+3836 011 5 9 0 squadra 5, quesito 9: sbagliato
+3856 011 1 8 1 squadra 1, quesito 8: giusto
+3863 011 27 15 1 squadra 27, quesito 15: giusto
+3870 022 aggiorna punteggio esercizi
+3880 011 14 22 0 squadra 14, quesito 22: sbagliato
+3884 011 8 14 1 squadra 8, quesito 14: giusto
+3914 011 11 3 0 squadra 11, quesito 3: sbagliato
+3930 022 aggiorna punteggio esercizi
+3967 011 5 12 1 squadra 5, quesito 12: giusto
+3973 011 7 8 0 squadra 7, quesito 8: sbagliato
+3990 022 aggiorna punteggio esercizi
+3998 011 13 12 1 squadra 13, quesito 12: giusto
+4001 011 9 9 1 squadra 9, quesito 9: giusto
+4012 011 16 8 1 squadra 16, quesito 8: giusto
+4021 011 4 10 1 squadra 4, quesito 10: giusto
+4023 011 3 7 0 squadra 3, quesito 7: sbagliato
+4029 011 17 6 0 squadra 17, quesito 6: sbagliato
+4030 011 9 8 1 squadra 9, quesito 8: giusto
+4036 011 11 11 0 squadra 11, quesito 11: sbagliato
+4040 011 27 8 1 squadra 27, quesito 8: giusto
+4042 011 11 3 1 squadra 11, quesito 3: giusto
+4046 011 10 14 0 squadra 10, quesito 14: sbagliato
+4050 022 aggiorna punteggio esercizi
+4061 011 22 5 1 squadra 22, quesito 5: giusto
+4096 011 1 22 0 squadra 1, quesito 22: sbagliato
+4098 011 23 5 1 squadra 23, quesito 5: giusto
+4110 022 aggiorna punteggio esercizi
+4118 011 27 12 1 squadra 27, quesito 12: giusto
+4134 011 24 1 1 squadra 24, quesito 1: giusto
+4136 011 26 7 1 squadra 26, quesito 7: giusto
+4155 011 27 7 1 squadra 27, quesito 7: giusto
+4158 011 5 9 0 squadra 5, quesito 9: sbagliato
+4170 022 aggiorna punteggio esercizi
+4198 011 25 1 0 squadra 25, quesito 1: sbagliato
+4230 022 aggiorna punteggio esercizi
+4247 011 13 8 1 squadra 13, quesito 8: giusto
+4248 011 7 10 0 squadra 7, quesito 10: sbagliato
+4268 011 24 22 1 squadra 24, quesito 22: giusto
+4280 011 15 16 0 squadra 15, quesito 16: sbagliato
+4280 011 27 1 1 squadra 27, quesito 1: giusto
+4290 022 aggiorna punteggio esercizi
+4301 011 11 10 1 squadra 11, quesito 10: giusto
+4350 022 aggiorna punteggio esercizi
+4393 011 14 5 1 squadra 14, quesito 5: giusto
+4410 022 aggiorna punteggio esercizi
+4411 011 24 17 0 squadra 24, quesito 17: sbagliato
+4427 011 25 1 1 squadra 25, quesito 1: giusto
+4427 011 16 2 0 squadra 16, quesito 2: sbagliato
+4451 011 17 6 0 squadra 17, quesito 6: sbagliato
+4470 022 aggiorna punteggio esercizi
+4494 011 16 2 0 squadra 16, quesito 2: sbagliato
+4530 022 aggiorna punteggio esercizi
+4553 011 17 1 1 squadra 17, quesito 1: giusto
+4555 011 14 22 0 squadra 14, quesito 22: sbagliato
+4569 011 21 6 0 squadra 21, quesito 6: sbagliato
+4577 011 14 10 0 squadra 14, quesito 10: sbagliato
+4590 022 aggiorna punteggio esercizi
+4593 011 1 3 1 squadra 1, quesito 3: giusto
+4650 022 aggiorna punteggio esercizi
+4652 011 16 9 0 squadra 16, quesito 9: sbagliato
+4662 011 11 5 0 squadra 11, quesito 5: sbagliato
+4710 022 aggiorna punteggio esercizi
+4715 011 20 8 1 squadra 20, quesito 8: giusto
+4731 011 5 8 1 squadra 5, quesito 8: giusto
+4739 011 24 6 1 squadra 24, quesito 6: giusto
+4762 011 16 9 0 squadra 16, quesito 9: sbagliato
+4770 022 aggiorna punteggio esercizi
+4776 011 22 19 0 squadra 22, quesito 19: sbagliato
+4785 011 5 5 0 squadra 5, quesito 5: sbagliato
+4798 011 10 4 0 squadra 10, quesito 4: sbagliato
+4815 011 8 22 0 squadra 8, quesito 22: sbagliato
+4830 022 aggiorna punteggio esercizi
+4838 011 6 8 1 squadra 6, quesito 8: giusto
+4840 011 26 18 0 squadra 26, quesito 18: sbagliato
+4844 011 12 16 0 squadra 12, quesito 16: sbagliato
+4853 011 16 9 0 squadra 16, quesito 9: sbagliato
+4868 011 26 5 1 squadra 26, quesito 5: giusto
+4877 011 16 2 1 squadra 16, quesito 2: giusto
+4880 011 24 15 1 squadra 24, quesito 15: giusto
+4890 022 aggiorna punteggio esercizi
+4902 011 23 6 1 squadra 23, quesito 6: giusto
+4906 011 25 9 1 squadra 25, quesito 9: giusto
+4919 011 27 18 1 squadra 27, quesito 18: giusto
+4938 011 19 16 0 squadra 19, quesito 16: sbagliato
+4950 022 aggiorna punteggio esercizi
+4962 011 8 16 0 squadra 8, quesito 16: sbagliato
+4983 011 16 22 0 squadra 16, quesito 22: sbagliato
+5010 022 aggiorna punteggio esercizi
+5032 011 9 6 0 squadra 9, quesito 6: sbagliato
+5033 011 14 10 0 squadra 14, quesito 10: sbagliato
+5070 022 aggiorna punteggio esercizi
+5077 011 21 22 0 squadra 21, quesito 22: sbagliato
+5122 011 24 11 1 squadra 24, quesito 11: giusto
+5130 022 aggiorna punteggio esercizi
+5159 011 26 2 1 squadra 26, quesito 2: giusto
+5165 011 17 10 1 squadra 17, quesito 10: giusto
+5171 011 3 8 1 squadra 3, quesito 8: giusto
+5183 011 7 22 0 squadra 7, quesito 22: sbagliato
+5190 022 aggiorna punteggio esercizi
+5193 011 22 22 0 squadra 22, quesito 22: sbagliato
+5237 011 27 16 0 squadra 27, quesito 16: sbagliato
+5246 011 5 10 0 squadra 5, quesito 10: sbagliato
+5250 022 aggiorna punteggio esercizi
+5267 011 1 11 0 squadra 1, quesito 11: sbagliato
+5302 011 13 22 1 squadra 13, quesito 22: giusto
+5305 011 27 6 1 squadra 27, quesito 6: giusto
+5310 022 aggiorna punteggio esercizi
+5347 011 27 21 0 squadra 27, quesito 21: sbagliato
+5347 011 16 22 0 squadra 16, quesito 22: sbagliato
+5369 011 8 20 0 squadra 8, quesito 20: sbagliato
+5370 022 aggiorna punteggio esercizi
+5383 011 24 10 1 squadra 24, quesito 10: giusto
+5424 011 14 9 0 squadra 14, quesito 9: sbagliato
+5430 022 aggiorna punteggio esercizi
+5432 011 10 4 0 squadra 10, quesito 4: sbagliato
+5438 011 26 15 0 squadra 26, quesito 15: sbagliato
+5474 011 3 6 0 squadra 3, quesito 6: sbagliato
+5490 022 aggiorna punteggio esercizi
+5501 011 14 15 0 squadra 14, quesito 15: sbagliato
+5520 011 24 4 0 squadra 24, quesito 4: sbagliato
+5539 011 4 16 0 squadra 4, quesito 16: sbagliato
+5547 011 22 9 1 squadra 22, quesito 9: giusto
+5550 022 aggiorna punteggio esercizi
+5551 011 8 22 0 squadra 8, quesito 22: sbagliato
+5580 011 26 18 0 squadra 26, quesito 18: sbagliato
+5580 011 16 16 0 squadra 16, quesito 16: sbagliato
+5600 011 24 24 1 squadra 24, quesito 24: giusto
+5604 011 24 21 0 squadra 24, quesito 21: sbagliato
+5610 022 aggiorna punteggio esercizi
+5627 011 5 9 1 squadra 5, quesito 9: giusto
+5661 011 13 4 0 squadra 13, quesito 4: sbagliato
+5666 011 1 9 1 squadra 1, quesito 9: giusto
+5668 011 23 7 1 squadra 23, quesito 7: giusto
+5670 022 aggiorna punteggio esercizi
+5730 022 aggiorna punteggio esercizi
+5733 011 14 9 1 squadra 14, quesito 9: giusto
+5736 011 13 13 1 squadra 13, quesito 13: giusto
+5748 011 8 16 0 squadra 8, quesito 16: sbagliato
+5750 011 1 11 0 squadra 1, quesito 11: sbagliato
+5766 011 27 24 0 squadra 27, quesito 24: sbagliato
+5785 011 7 8 1 squadra 7, quesito 8: giusto
+5790 022 aggiorna punteggio esercizi
+5796 011 24 12 0 squadra 24, quesito 12: sbagliato
+5801 011 5 22 0 squadra 5, quesito 22: sbagliato
+5815 011 16 16 0 squadra 16, quesito 16: sbagliato
+5850 022 aggiorna punteggio esercizi
+5850 011 12 2 0 squadra 12, quesito 2: sbagliato
+5857 011 26 9 1 squadra 26, quesito 9: giusto
+5858 011 14 21 0 squadra 14, quesito 21: sbagliato
+5910 022 aggiorna punteggio esercizi
+5916 011 4 14 0 squadra 4, quesito 14: sbagliato
+5953 011 28 5 0 squadra 28, quesito 5: sbagliato
+5965 011 22 22 1 squadra 22, quesito 22: giusto
+5970 022 aggiorna punteggio esercizi
+5977 011 9 7 1 squadra 9, quesito 7: giusto
+5982 011 17 9 1 squadra 17, quesito 9: giusto
+5990 011 16 7 1 squadra 16, quesito 7: giusto
+5991 011 8 16 0 squadra 8, quesito 16: sbagliato
+6002 011 27 21 1 squadra 27, quesito 21: giusto
+6030 022 aggiorna punteggio esercizi
+6053 011 5 22 0 squadra 5, quesito 22: sbagliato
+6054 011 2 19 0 squadra 2, quesito 19: sbagliato
+6068 011 24 12 1 squadra 24, quesito 12: giusto
+6073 011 12 4 0 squadra 12, quesito 4: sbagliato
+6078 011 13 4 0 squadra 13, quesito 4: sbagliato
+6084 011 14 2 0 squadra 14, quesito 2: sbagliato
+6084 011 9 22 0 squadra 9, quesito 22: sbagliato
+6090 022 aggiorna punteggio esercizi
+6090 011 9 18 0 squadra 9, quesito 18: sbagliato
+6092 011 13 19 1 squadra 13, quesito 19: giusto
+6138 011 9 18 0 squadra 9, quesito 18: sbagliato
+6147 011 26 15 1 squadra 26, quesito 15: giusto
+6150 022 aggiorna punteggio esercizi
+6179 011 6 22 0 squadra 6, quesito 22: sbagliato
+6189 011 25 5 1 squadra 25, quesito 5: giusto
+6196 011 25 5 0 squadra 25, quesito 5: sbagliato
+6207 011 13 6 1 squadra 13, quesito 6: giusto
+6210 022 aggiorna punteggio esercizi
+6219 011 6 2 1 squadra 6, quesito 2: giusto
+6221 011 14 22 0 squadra 14, quesito 22: sbagliato
+6270 022 aggiorna punteggio esercizi
+6303 011 24 9 1 squadra 24, quesito 9: giusto
+6305 011 25 4 0 squadra 25, quesito 4: sbagliato
+6330 022 aggiorna punteggio esercizi
+6335 011 4 18 0 squadra 4, quesito 18: sbagliato
+6344 011 20 15 0 squadra 20, quesito 15: sbagliato
+6355 011 8 13 0 squadra 8, quesito 13: sbagliato
+6356 011 17 14 1 squadra 17, quesito 14: giusto
+6390 022 aggiorna punteggio esercizi
+6411 011 22 19 0 squadra 22, quesito 19: sbagliato
+6450 022 aggiorna punteggio esercizi
+6468 011 13 4 1 squadra 13, quesito 4: giusto
+6510 022 aggiorna punteggio esercizi
+6522 011 12 22 0 squadra 12, quesito 22: sbagliato
+6532 011 20 3 1 squadra 20, quesito 3: giusto
+6539 011 26 18 1 squadra 26, quesito 18: giusto
+6570 022 aggiorna punteggio esercizi
+6573 011 19 8 1 squadra 19, quesito 8: giusto
+6575 011 24 4 0 squadra 24, quesito 4: sbagliato
+6576 011 23 10 0 squadra 23, quesito 10: sbagliato
+6581 011 27 22 0 squadra 27, quesito 22: sbagliato
+6594 011 11 15 1 squadra 11, quesito 15: giusto
+6597 011 28 7 1 squadra 28, quesito 7: giusto
+6599 011 11 5 0 squadra 11, quesito 5: sbagliato
+6602 011 27 24 0 squadra 27, quesito 24: sbagliato
+6608 011 21 3 1 squadra 21, quesito 3: giusto
+6613 011 6 22 0 squadra 6, quesito 22: sbagliato
+6616 011 5 18 0 squadra 5, quesito 18: sbagliato
+6630 022 aggiorna punteggio esercizi
+6652 011 16 10 1 squadra 16, quesito 10: giusto
+6660 011 10 16 0 squadra 10, quesito 16: sbagliato
+6690 022 aggiorna punteggio esercizi
+6692 011 15 9 0 squadra 15, quesito 9: sbagliato
+6696 011 2 16 0 squadra 2, quesito 16: sbagliato
+6714 011 27 4 0 squadra 27, quesito 4: sbagliato
+6714 011 14 16 0 squadra 14, quesito 16: sbagliato
+6731 011 4 18 1 squadra 4, quesito 18: giusto
+6750 011 24 16 0 squadra 24, quesito 16: sbagliato
+6750 022 aggiorna punteggio esercizi
+6770 011 9 18 0 squadra 9, quesito 18: sbagliato
+6776 011 23 19 0 squadra 23, quesito 19: sbagliato
+6776 011 5 22 0 squadra 5, quesito 22: sbagliato
+6778 011 9 2 0 squadra 9, quesito 2: sbagliato
+6801 011 12 4 0 squadra 12, quesito 4: sbagliato
+6810 022 aggiorna punteggio esercizi
+6820 011 1 2 0 squadra 1, quesito 2: sbagliato
+6826 011 13 14 0 squadra 13, quesito 14: sbagliato
+6870 022 aggiorna punteggio esercizi
+6906 011 13 14 1 squadra 13, quesito 14: giusto
+6930 022 aggiorna punteggio esercizi
+6946 011 1 2 0 squadra 1, quesito 2: sbagliato
+6954 011 14 11 0 squadra 14, quesito 11: sbagliato
+6967 011 20 7 1 squadra 20, quesito 7: giusto
+6968 011 28 8 1 squadra 28, quesito 8: giusto
+6980 011 27 17 0 squadra 27, quesito 17: sbagliato
+6987 011 12 22 0 squadra 12, quesito 22: sbagliato
+6990 022 aggiorna punteggio esercizi
+6991 011 8 16 1 squadra 8, quesito 16: giusto
+7002 011 27 11 0 squadra 27, quesito 11: sbagliato
+7007 011 9 18 1 squadra 9, quesito 18: giusto
+7021 011 10 7 1 squadra 10, quesito 7: giusto
+7022 011 24 15 0 squadra 24, quesito 15: sbagliato
+7026 011 1 4 0 squadra 1, quesito 4: sbagliato
+7050 022 aggiorna punteggio esercizi
+7052 011 5 4 0 squadra 5, quesito 4: sbagliato
+7052 011 12 1 0 squadra 12, quesito 1: sbagliato
+7053 011 9 14 0 squadra 9, quesito 14: sbagliato
+7059 011 25 10 1 squadra 25, quesito 10: giusto
+7062 011 23 10 0 squadra 23, quesito 10: sbagliato
+7065 011 17 6 0 squadra 17, quesito 6: sbagliato
+7068 011 24 24 0 squadra 24, quesito 24: sbagliato
+7068 011 24 21 0 squadra 24, quesito 21: sbagliato
+7097 011 23 10 0 squadra 23, quesito 10: sbagliato
+7105 011 9 11 0 squadra 9, quesito 11: sbagliato
+7107 011 11 4 0 squadra 11, quesito 4: sbagliato
+7110 022 aggiorna punteggio esercizi
+7119 011 24 16 0 squadra 24, quesito 16: sbagliato
+7124 011 20 16 0 squadra 20, quesito 16: sbagliato
+7126 011 19 21 0 squadra 19, quesito 21: sbagliato
+7132 011 24 4 0 squadra 24, quesito 4: sbagliato
+7138 011 1 18 0 squadra 1, quesito 18: sbagliato
+7143 011 1 15 1 squadra 1, quesito 15: giusto
+7145 011 17 19 0 squadra 17, quesito 19: sbagliato
+7145 011 11 4 0 squadra 11, quesito 4: sbagliato
+7151 011 15 1 1 squadra 15, quesito 1: giusto
+7156 011 25 16 0 squadra 25, quesito 16: sbagliato
+7165 011 26 10 1 squadra 26, quesito 10: giusto
+7168 011 7 22 0 squadra 7, quesito 22: sbagliato
+7170 022 aggiorna punteggio esercizi
+7179 011 12 16 1 squadra 12, quesito 16: giusto
+7187 011 11 5 0 squadra 11, quesito 5: sbagliato
+7190 011 15 22 0 squadra 15, quesito 22: sbagliato
+7199 011 17 3 0 squadra 17, quesito 3: sbagliato
+7206 011 4 22 0 squadra 4, quesito 22: sbagliato
+7208 011 1 18 0 squadra 1, quesito 18: sbagliato
+7214 011 5 22 0 squadra 5, quesito 22: sbagliato
+7214 011 14 14 0 squadra 14, quesito 14: sbagliato
+7222 011 23 19 0 squadra 23, quesito 19: sbagliato
+7227 011 2 9 1 squadra 2, quesito 9: giusto
+7230 022 aggiorna punteggio esercizi
+7238 029 termine gara
+--- 999 fine simulatore
