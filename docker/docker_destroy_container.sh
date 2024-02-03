@@ -14,7 +14,7 @@ if [ "$( docker container inspect -f '{{.State.Running}}' ${CONTAINER_ID} )" == 
     echo "Please stop it first with docker_stop.sh"
     exit 1
 else
-    docker network rm turing_docker_network
+    docker network rm turing-docker-network
     docker rm ${CONTAINER_ID}
     rm ${CONTAINER_ID_FILE}
 fi

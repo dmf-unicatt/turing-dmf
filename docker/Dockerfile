@@ -29,10 +29,6 @@ EMAIL_HOST_PASSWORD=
 REGISTRATION_OPEN=
 EOF
 
-RUN cd turing && \
-    python3 manage.py makemigrations && \
-    python3 manage.py makemigrations engine && \
-    python3 manage.py migrate && \
-    DJANGO_SUPERUSER_EMAIL=admin@admin.it DJANGO_SUPERUSER_USERNAME=admin DJANGO_SUPERUSER_PASSWORD=admin python3 manage.py createsuperuser --no-input
+RUN ln -s /mnt/database/db.sqlite3 turing/
 
 CMD cd turing && python3 manage.py runserver 0.0.0.0:8080
