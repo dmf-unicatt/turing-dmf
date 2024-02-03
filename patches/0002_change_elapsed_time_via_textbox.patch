@@ -1,0 +1,87 @@
+diff --git a/engine/templates/classifiche/class_template.html b/engine/templates/classifiche/class_template.html
+index ce7678f..8f70f2f 100644
+--- a/engine/templates/classifiche/class_template.html
++++ b/engine/templates/classifiche/class_template.html
+@@ -21,8 +21,22 @@ $(document).ready(function() {
+     var client = new ClassificaClient(url, '{% block class_type %}{% endblock %}');
+     client.init();
+     {% if object.finished %}
++    function integer_to_elapsed_time(seconds) {
++        return new Date(seconds * 1000).toISOString().slice(11, 19);
++    }
++    function elapsed_time_to_integer(elapsed) {
++        return elapsed.split(':').reduce((acc,time) => (60 * acc) + +time);
++    }
+     $("#myRange").on('input', function() {
+         client.progress = this.value/1000;
++        var durata = elapsed_time_to_integer("{{object.durata}}");
++        elapsedTimeText.value = integer_to_elapsed_time(Math.floor(this.value / 1000 * durata));
++    });
++    $("#elapsedTimeText").on('blur', function() {
++        var durata = elapsed_time_to_integer("{{object.durata}}");
++        var elapsed_time = elapsed_time_to_integer(this.value);
++        client.progress = elapsed_time/durata;
++        myRange.value = Math.floor(elapsed_time/durata * 1000);
+     });
+     $("#play").click(function() {
+         client.toggleReplay(this, "myRange")
+diff --git a/engine/templates/classifiche/cronaca.html b/engine/templates/classifiche/cronaca.html
+index aa20fed..0d97a3e 100644
+--- a/engine/templates/classifiche/cronaca.html
++++ b/engine/templates/classifiche/cronaca.html
+@@ -42,6 +42,7 @@
+     <div class="row pt-3 no-gutters">
+         <input type="range" min="0" max="1000" value="1000"  id="myRange">
+         <button id="play" class="ml-2"><i class="fas fa-play"></i></button>
++        <input value="{{object.durata}}" id="elapsedTimeText">
+     </div>
+     {% endif %}
+ 
+diff --git a/engine/templates/classifiche/punti_problemi.html b/engine/templates/classifiche/punti_problemi.html
+index bafafd4..6142e4c 100644
+--- a/engine/templates/classifiche/punti_problemi.html
++++ b/engine/templates/classifiche/punti_problemi.html
+@@ -32,6 +32,7 @@
+     <div class="row pt-3  no-gutters">
+         <input type="range" min="0" max="1000" value="1000"  id="myRange">
+         <button id="play" class="ml-2"><i class="fas fa-play"></i></button>
++        <input value="{{object.durata}}" id="elapsedTimeText">
+     </div>
+     {% endif %}
+ 
+diff --git a/engine/templates/classifiche/squadre.html b/engine/templates/classifiche/squadre.html
+index 9cc7d88..407c5f5 100644
+--- a/engine/templates/classifiche/squadre.html
++++ b/engine/templates/classifiche/squadre.html
+@@ -38,6 +38,7 @@
+     <div class="row pt-3 no-gutters">
+         <input type="range" min="0" max="1000" value="1000"  id="myRange">
+         <button id="play" class="ml-2"><i class="fas fa-play"></i></button>
++        <input value="{{object.durata}}" id="elapsedTimeText">
+     </div>
+     {% endif %}
+ 
+diff --git a/engine/templates/classifiche/stato_problemi.html b/engine/templates/classifiche/stato_problemi.html
+index 1338764..113a1bb 100644
+--- a/engine/templates/classifiche/stato_problemi.html
++++ b/engine/templates/classifiche/stato_problemi.html
+@@ -36,6 +36,7 @@
+     <div class="row pt-3 no-gutters">
+         <input type="range" min="0" max="1000" value="1000"  id="myRange">
+         <button id="play" class="ml-2"><i class="fas fa-play"></i></button>
++        <input value="{{object.durata}}" id="elapsedTimeText">
+     </div>
+     {% endif %}
+ 
+diff --git a/engine/templates/classifiche/unica.html b/engine/templates/classifiche/unica.html
+index e6dad36..84f4ac3 100644
+--- a/engine/templates/classifiche/unica.html
++++ b/engine/templates/classifiche/unica.html
+@@ -39,6 +39,7 @@
+     <div class="row pt-3 no-gutters">
+         <input type="range" min="0" max="1000" value="1000"  id="myRange">
+         <button id="play" class="ml-2"><i class="fas fa-play"></i></button>
++        <input value="{{object.durata}}" id="elapsedTimeText">
+     </div>
+     {% endif %}
+ 
