@@ -12,7 +12,7 @@ WORKDIR /root
 COPY turing turing
 
 RUN apt update -y -q && \
-    apt install -y -qq python3-pip vim
+    apt install -y -qq net-tools python3-pip vim
 
 RUN python3 -m pip install -r turing/requirements.txt --break-system-packages
 
