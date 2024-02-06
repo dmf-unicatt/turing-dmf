@@ -1,4 +1,4 @@
-[575, # 531 + 44 di bonus per errore di immissione
+[575, # turing non ha conflitto di ordine con scelta jolly, e quindi non serve considerare il bonus
 389,
 442,
 1728,
