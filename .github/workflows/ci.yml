@@ -16,6 +16,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true
       - name: Install dependencies
         run: |
           python3 -m pip -q install isort mypy pytest ruff yamllint
@@ -39,6 +41,8 @@ jobs:
         working-directory: docker
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true
       - name: Create container
         run: bash docker_create_container.sh
       - name: Create volume
