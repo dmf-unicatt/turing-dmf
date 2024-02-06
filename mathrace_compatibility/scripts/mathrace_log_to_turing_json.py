@@ -83,7 +83,7 @@ def convert(mathrace_log_filename: str, turing_json_filename: str):
         assert race_def_ints[9] == "100"
 
     # mathrace does not use the following race parameters
-    turing_dict["k_blocco"] = None
+    turing_dict["k_blocco"] = 1
     turing_dict["cutoff"] = None
 
     # Next lines starting with --- 004 contain the definition of the initial score for each question
