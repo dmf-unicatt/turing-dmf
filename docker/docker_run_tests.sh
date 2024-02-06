@@ -30,6 +30,7 @@ docker exec ${CONTAINER_ID} /bin/bash -c "\
     cd turing && \
     echo 'Run disfida tests first' && \
     python3 manage.py test engine.tests.LiveTests.test_json_folder && \
-    echo 'Run all tests afterwards' && \
+    rm -rf engine/test_gare/*.json engine/test_gare/*.score && \
+    echo 'Run all remaining tests afterwards' && \
     python3 manage.py test \
 "
