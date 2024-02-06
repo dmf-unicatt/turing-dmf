@@ -42,3 +42,22 @@ index a79d2c9..469164e 100644
  
      def test_modifica_consegna_due_squadre(self):
          self.crea_gara(5, n_blocco=10, k_blocco=10, soluzioni=[0, 0])
+diff --git a/engine/tests.py b/engine/tests.py
+index bc52e33..c225f4a 100644
+--- a/engine/tests.py
++++ b/engine/tests.py
+@@ -518,12 +518,12 @@ class LiveTests(StaticLiveServerTestCase, TuringTests):
+             prob = random.randint(1, m)
+             r = random.randint(0, 1)
+             self.consegna(squadra=sq, problema=prob, risposta=r)
++            if r != 0:
++                points[sq-1] -= 10
+             if prob in solved[sq-1]: continue
+             if r == 0:
+                 points[sq-1] += problem_points[prob-1]
+                 solved[sq-1].add(prob)
+-            else:
+-                points[sq-1] -= 10
+ 
+         self.go_to_minute(110)
+         for i in range(m):
