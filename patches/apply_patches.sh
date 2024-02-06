@@ -19,4 +19,4 @@ apply_patch 0000_customize_footer.patch
 apply_patch 0001_show_elapsed_time_instead_of_countdown.patch
 apply_patch 0002_change_elapsed_time_via_textbox.patch
 apply_patch 0003_penalize_wrong_answer_after_correct_answer.patch
-apply_patch 0004_renamed_chrome_options_in_webdriver.patch
+apply_patch 0004_selenium_updates.patch
