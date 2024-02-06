@@ -1,0 +1,17 @@
+diff --git a/engine/tests.py b/engine/tests.py
+index 469164e..bc52e33 100644
+--- a/engine/tests.py
++++ b/engine/tests.py
+@@ -705,11 +705,7 @@ class LiveTests(StaticLiveServerTestCase, TuringTests):
+                         with open(os.path.join(test_dir, base + '.score')) as f:
+                             scores = json.load(f)
+                     except FileNotFoundError: # pragma: no cover
+-                        scores = [None] * len(self.gara.squadre.all())
+-                        for s in self.gara.squadre.all():
+-                            scores[s.num-1] = int(input('Punteggio atteso della squadra {}:'.format(s.nome)))
+-                        with open(os.path.join(test_dir, base + '.score'), 'w') as f:
+-                            json.dump(scores, f)
++                        raise
+ 
+                     for i, score in enumerate(scores):
+                         with self.subTest(team_id=i+1):
