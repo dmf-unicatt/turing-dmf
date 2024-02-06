@@ -11,11 +11,12 @@ import pathlib
 import sys
 
 
-def convert(mathrace_log_filename: str, turing_json_filename: str):
+def convert(mathrace_log_filename: str, turing_json_filename: str) -> None:
+    """Convert a race from mathrace log format to turing json format."""
     with open(mathrace_log_filename) as mathrace_log_file:
         mathrace_log = [line.strip("\n") for line in mathrace_log_file.readlines()]
 
-    turing_dict = dict()
+    turing_dict: dict[str, int | str | list[dict[str, int | str]] | None] = dict()
 
     # Race name
     race_name = pathlib.Path(mathrace_log_filename).name.replace(".extracted.log", "")
@@ -86,7 +87,7 @@ def convert(mathrace_log_filename: str, turing_json_filename: str):
     turing_dict["cutoff"] = None
 
     # Next lines starting with --- 004 contain the definition of the initial score for each question
-    questions = list()
+    questions: list[dict[str, int | str]] = list()
     for q in range(num_questions):
         question_def = mathrace_log[line]
         line += 1
@@ -106,7 +107,7 @@ def convert(mathrace_log_filename: str, turing_json_filename: str):
     line += 1
 
     # Loop over events during the race
-    events = list()
+    events: list[dict[str, int | str]] = list()
     manual_bonuses = list()
     timestamp_offset = None
     while True:

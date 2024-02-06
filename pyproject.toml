@@ -19,7 +19,7 @@ warn_unused_ignores = true
 [tool.ruff]
 exclude = ["turing/"]
 line-length = 120
-target-version = "py311"
+target-version = "py310"
 select = ["ANN", "D", "E", "F", "FLY", "ICN", "N", "Q", "RUF", "UP", "W"]
 
 [tool.ruff.pycodestyle]
