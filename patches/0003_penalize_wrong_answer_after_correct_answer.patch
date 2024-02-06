@@ -1,0 +1,22 @@
+diff --git a/engine/static/engine/js/client.js b/engine/static/engine/js/client.js
+index 255ea0f..ee986ff 100644
+--- a/engine/static/engine/js/client.js
++++ b/engine/static/engine/js/client.js
+@@ -300,7 +300,7 @@ class Risposta {
+             }
+         }
+         else {
+-            if (this.risolto>=1) return;
++            // if (this.risolto>=1) return;
+             this.errori += 1;
+             this.squadra.aggiungi_risposta(false);
+             if (!this.squadra.ospite && (this.gara.k_blocco == null || this.errori <= this.gara.k_blocco))
+@@ -321,7 +321,7 @@ class Risposta {
+             }
+         }
+         else {
+-            if (this.risolto>=1) return;
++            // if (this.risolto>=1) return;
+             this.errori -= 1;
+             this.squadra.rimuovi_risposta(false);
+             if (!this.squadra.ospite && (this.gara.k_blocco == null || this.errori < this.gara.k_blocco))
