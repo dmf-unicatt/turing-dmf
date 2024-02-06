@@ -109,10 +109,13 @@ def convert(mathrace_log_filename: str, turing_json_filename: str):
     # Loop over events during the race
     events = list()
     manual_bonuses = list()
+    timestamp_offset = None
     while True:
-        timestamp, event_type, event_content = mathrace_log[line].split(" ", 2)
+        timestamp_str, event_type, event_content = mathrace_log[line].split(" ", 2)
         line += 1
         if event_type in ("010", "011", "110", "120"):
+            assert timestamp_offset is not None
+            timestamp = int(timestamp_str) + timestamp_offset
             if " PROT" in event_content:
                 event_content, _ = event_content.split(" PROT")
             else:
@@ -120,7 +123,7 @@ def convert(mathrace_log_filename: str, turing_json_filename: str):
                 event_content, _ = event_content.split(" squadra")
             event_content_ints = event_content.split(" ")
             event_content_dict = {
-                "orario": (race_start + datetime.timedelta(seconds=int(timestamp))).isoformat(),
+                "orario": (race_start + datetime.timedelta(seconds=timestamp)).isoformat(),
                 "squadra_id" : event_content_ints[0], "problema" : event_content_ints[1]}
             if event_type in ("010", "120"):
                 # jolly was chosen
@@ -131,11 +134,19 @@ def convert(mathrace_log_filename: str, turing_json_filename: str):
                 assert len(event_content_ints) == 3
                 event_content_dict.update({"subclass": "Consegna", "risposta": event_content_ints[2]})
             else:
-                raise RuntimeError(f"Invalid event type {event_type} at time {timestamp}")
+                raise RuntimeError(f"Invalid event type {event_type} at time {timestamp_str}")
             events.append(event_content_dict)
-        elif event_type in ("021", "022", "101", "121", "901"):
-            # rendering update
+        elif event_type in ("021", "121"):
+            # jolly deadline
             continue
+        elif event_type in ("022", "101", "901"):
+            # timer update
+            if timestamp_offset is None:
+                assert event_content.startswith("aggiorna punteggio esercizi")
+                timestamp_offset = 60 - int(timestamp_str)
+            else:
+                # assume that the offset is constant throughout the race
+                continue
         elif event_type in ("130", ):
             # manual addition of bonus to fix registration errors: we do not handle those cases
             manual_bonuses.append(event_content)
@@ -143,7 +154,7 @@ def convert(mathrace_log_filename: str, turing_json_filename: str):
             # race ending event
             break
         else:
-            raise RuntimeError(f"Invalid event type {event_type} at time {timestamp}")
+            raise RuntimeError(f"Invalid event type {event_type} at time {timestamp_str}")
     turing_dict["eventi"] = events
 
     # Save dictionary to json file (and text file, in case of non empty manual bonus)
