@@ -7,6 +7,12 @@
 
 set -e
 
+if [[ -z "$1" ]]; then
+    COMMAND="/bin/bash"
+else
+    COMMAND="$1"
+fi
+
 CONTAINER_ID_FILE=".docker_container_id"
 CONTAINER_ID=$(cat "${CONTAINER_ID_FILE}")
-docker exec -it ${CONTAINER_ID} /bin/bash
+docker exec -it ${CONTAINER_ID} $COMMAND
