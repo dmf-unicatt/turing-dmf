@@ -13,8 +13,10 @@ RUN apt update -y -q && \
     apt install -y -qq net-tools python3-pip vim
 
 COPY turing turing
+COPY patches patches
 
-RUN python3 -m pip install -r turing/requirements.txt --break-system-packages
+RUN bash patches/apply_patches.sh && \
+    python3 -m pip install -r turing/requirements.txt --break-system-packages
 
 RUN cat <<EOF >> /root/turing/Turing/settings.ini
 [settings]
