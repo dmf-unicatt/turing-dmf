@@ -53,8 +53,6 @@ jobs:
         run: bash docker_start.sh
       - name: Run tests
         run: bash docker_run_tests.sh
-      - name: Run a mock terminal
-        run: bash docker_terminal.sh date
       - name: Stop container
         run: bash docker_stop.sh
       - name: Destroy container

@@ -25,7 +25,7 @@ for SCORE_FILE in *.expected.score; do
     docker cp ${SCORE_FILE} ${CONTAINER_ID}:/root/turing/engine/test_gare/${SCORE_FILE/.expected.score/.score}
 done
 
-docker exec -it ${CONTAINER_ID} /bin/bash -c "\
+docker exec ${CONTAINER_ID} /bin/bash -c "\
     export DISPLAY=$DISPLAY && \
     cd turing && \
     echo 'Run disfida tests first' && \
