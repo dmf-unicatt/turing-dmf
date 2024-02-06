@@ -1,0 +1,13 @@
+diff --git a/engine/templates/baseheader.html b/engine/templates/baseheader.html
+index 84c8902..137c759 100644
+--- a/engine/templates/baseheader.html
++++ b/engine/templates/baseheader.html
+@@ -63,7 +63,7 @@
+ {% block footer %}
+     <footer class="font-small text-light bg-dark mt-3 py-1 pl-2">
+         <div class="pull-left">
+-          Powered by <a href="{% url 'engine:about' %}">Turing</a>.
++          Powered by <a href="{% url 'engine:about' %}">Turing</a> (customized version).
+         </div>
+     </footer>
+ {% endblock %}
