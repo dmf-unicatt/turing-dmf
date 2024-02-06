@@ -20,3 +20,25 @@ index 255ea0f..ee986ff 100644
              this.errori -= 1;
              this.squadra.rimuovi_risposta(false);
              if (!this.squadra.ospite && (this.gara.k_blocco == null || this.errori < this.gara.k_blocco))
+diff --git a/engine/tests.py b/engine/tests.py
+index a79d2c9..469164e 100644
+--- a/engine/tests.py
++++ b/engine/tests.py
+@@ -642,13 +642,13 @@ class LiveTests(StaticLiveServerTestCase, TuringTests):
+         self.consegna(squadra=1, problema=2, risposta=43)
+         self.check_punti_squadra(squadra=1, expected=50-10-10)
+ 
+-        # Correggi la prima: la penalità della seconda sparisce
++        # Correggi la prima: la penalità della seconda NON sparisce
+         self.modifica(evento, risposta=42)
+-        self.check_punti_squadra(squadra=1, expected=50+40)
++        self.check_punti_squadra(squadra=1, expected=50+40-10)
+ 
+-        # Un errore successivo non viene comunque considerato
++        # Un errore successivo viene comunque considerato
+         self.consegna(squadra=1, problema=2, risposta=43)
+-        self.check_punti_squadra(squadra=1, expected=50+40)
++        self.check_punti_squadra(squadra=1, expected=50+40-10-10)
+ 
+     def test_modifica_consegna_due_squadre(self):
+         self.crea_gara(5, n_blocco=10, k_blocco=10, soluzioni=[0, 0])
