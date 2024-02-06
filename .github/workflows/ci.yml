@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -31,6 +31,30 @@ jobs:
       - name: Run yamllint
         run: |
           python3 -m yamllint -d "{ignore: turing, extends: default, rules: {document-start: {present: false}, line-length: disable, truthy: {check-keys: false}}}" .
+
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: docker
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create container
+        run: bash docker_create_container.sh
+      - name: Create volume
+        run: bash docker_create_volume.sh
+      - name: Create database
+        run: bash docker_create_database.sh
+      - name: Start container
+        run: bash docker_start.sh
+      - name: Run tests
+        run: bash docker_run_tests.sh
+      - name: Run a mock terminal
+        run: bash docker_terminal.sh date
+      - name: Stop container
+        run: bash docker_stop.sh
+      - name: Destroy container
+        run: bash docker_destroy_container.sh
 
   warn:
     runs-on: ubuntu-latest
