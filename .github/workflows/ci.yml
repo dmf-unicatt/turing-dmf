@@ -43,10 +43,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: true
-      - name: Create container
-        run: bash docker_create_container.sh
       - name: Create volume
         run: bash docker_create_volume.sh
+      - name: Create container
+        run: bash docker_create_container.sh
       - name: Create database
         run: bash docker_create_database.sh
       - name: Start container
