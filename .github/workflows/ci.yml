@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+    branches:
+      - main
+  schedule:
+    - cron: "0 0 * * MON"
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          python3 -m pip -q install isort mypy pytest ruff yamllint
+      - name: Run ruff
+        run: |
+          python3 -m ruff .
+      - name: Run isort
+        run: |
+          python3 -m isort --check --diff .
+      - name: Run mypy
+        run: |
+          python3 -m mypy .
+      - name: Run yamllint
+        run: |
+          python3 -m yamllint -d "{ignore: turing, extends: default, rules: {document-start: {present: false}, line-length: disable, truthy: {check-keys: false}}}" .
+
+  warn:
+    runs-on: ubuntu-latest
+    if: github.repository == 'dmf-unicatt/turing-docker' && github.ref == 'refs/heads/main' && github.event_name == 'schedule'
+    steps:
+      - name: Warn if scheduled workflow is about to be disabled
+        uses: fem-on-colab/warn-workflow-about-to-be-disabled-action@main
+        with:
+          workflow-filename: ci.yml
+          days-elapsed: 50
