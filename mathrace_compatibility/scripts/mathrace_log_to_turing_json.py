@@ -23,7 +23,7 @@ def convert(mathrace_log_filename: str, turing_json_filename: str):
 
     # Race year
     race_year = int(race_name.replace("journal_", ""))
-    race_start = datetime.datetime(race_year, 1, 1)
+    race_start = datetime.datetime(race_year, 1, 1, tzinfo=datetime.timezone.utc)
     turing_dict["inizio"] = race_start.isoformat()
 
     # Line counter
