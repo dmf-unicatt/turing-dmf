@@ -44,9 +44,10 @@ def convert(mathrace_log_filename: str, turing_json_filename: str):
         race_def, _ = race_def.split(" -- squadre:")
     else:
         race_def, _ = race_def.split(" squadre:")
+    race_def_ints = race_def.split(" ")
+    assert len(race_def_ints) == 10
 
     # From the second line, determine the participating teams
-    race_def_ints = race_def.split(" ")
     num_teams = int(race_def_ints[0])
     turing_dict["squadre"] = [{"nome": f"Squadra {t + 1}", "num": t + 1, "ospite": False} for t in range(num_teams)]
 
@@ -63,24 +64,22 @@ def convert(mathrace_log_filename: str, turing_json_filename: str):
     assert bonus_cardinality == 10
     turing_dict["fixed_bonus"] = "20,15,10,8,6,5,4,3,2,1"
 
-    # Switch between different editions to complete the values in the second line
-    if len(race_def_ints) == 5:
-        # log format pre 2012 did not have the following information. Assume default values
-        turing_dict["super_mega_bonus"] = "0,0,0,0,0,0"
-        turing_dict["n_blocco"] = None
-        assert race_def_ints[4] == "1"
-        turing_dict["durata"] = 120
-    else:
-        assert len(race_def_ints) == 10
-        superbonus_cardinality = int(race_def_ints[4])
-        assert superbonus_cardinality == 6
-        turing_dict["super_mega_bonus"] = "100,60,40,30,20,10"
-        turing_dict["n_blocco"] = int(race_def_ints[5])
-        assert race_def_ints[6] == "1"
-        assert race_def_ints[7] == "1"
-        turing_dict["durata"] = int(race_def_ints[8])
-        assert turing_dict["durata"] == 120
-        assert race_def_ints[9] == "100"
+    # From the second line, determine superbonus cardinality
+    superbonus_cardinality = int(race_def_ints[4])
+    assert superbonus_cardinality == 6
+    turing_dict["super_mega_bonus"] = "100,60,40,30,20,10"
+
+    # From the second line, determine the value of n
+    turing_dict["n_blocco"] = int(race_def_ints[5])
+
+    # From the second line, determine the total time of the race
+    turing_dict["durata"] = int(race_def_ints[8])
+    assert turing_dict["durata"] == 120
+
+    # Three further items in the second line are ignored
+    assert race_def_ints[6] == "1"
+    assert race_def_ints[7] == "1"
+    assert race_def_ints[9] == "100"
 
     # mathrace does not use the following race parameters
     turing_dict["k_blocco"] = 1
