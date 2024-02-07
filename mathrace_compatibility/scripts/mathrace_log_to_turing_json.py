@@ -63,24 +63,42 @@ def convert(mathrace_log_filename: str, turing_json_filename: str) -> None:
     # From the second line, determine the bonus cardinality
     bonus_cardinality = int(race_def_ints[3])
     assert bonus_cardinality == 10
-    turing_dict["fixed_bonus"] = "20,15,10,8,6,5,4,3,2,1"
+    if mathrace_log[line].startswith("--- 011 "):
+        fixed_bonus_def = mathrace_log[line]
+        line += 1
+        fixed_bonus_def = fixed_bonus_def[8:]
+        assert "definizione dei" in fixed_bonus_def
+        fixed_bonus_def, _ = fixed_bonus_def.split("definizione dei")
+        fixed_bonus_def_ints = fixed_bonus_def.split(" ")
+        turing_dict["fixed_bonus"] = ",".join(fixed_bonus_def_ints[1:bonus_cardinality+1])
+    else:
+        turing_dict["fixed_bonus"] = "20,15,10,8,6,5,4,3,2,1"
 
     # From the second line, determine superbonus cardinality
     superbonus_cardinality = int(race_def_ints[4])
     assert superbonus_cardinality == 6
-    turing_dict["super_mega_bonus"] = "100,60,40,30,20,10"
+    if mathrace_log[line].startswith("--- 012 "):
+        super_mega_bonus_def = mathrace_log[line]
+        line += 1
+        super_mega_bonus_def = super_mega_bonus_def[8:]
+        assert "definizione dei" in super_mega_bonus_def
+        super_mega_bonus_def, _ = super_mega_bonus_def.split("definizione dei")
+        super_mega_bonus_def_ints = super_mega_bonus_def.split(" ")
+        turing_dict["super_mega_bonus"] = ",".join(super_mega_bonus_def_ints[1:superbonus_cardinality+1])
+    else:
+        turing_dict["super_mega_bonus"] = "100,60,40,30,20,10"
 
     # From the second line, determine the value of n
     turing_dict["n_blocco"] = int(race_def_ints[5])
 
     # From the second line, determine the total time of the race
     turing_dict["durata"] = int(race_def_ints[8])
-    assert turing_dict["durata"] == 120
+    assert turing_dict["durata"] in (120, 135)
 
     # Three further items in the second line are ignored
     assert race_def_ints[6] == "1"
     assert race_def_ints[7] == "1"
-    assert race_def_ints[9] == "100"
+    assert int(race_def_ints[9]) == turing_dict["durata"] - 20
 
     # mathrace does not use the following race parameters
     turing_dict["k_blocco"] = 1
@@ -114,8 +132,14 @@ def convert(mathrace_log_filename: str, turing_json_filename: str) -> None:
         timestamp_str, event_type, event_content = mathrace_log[line].split(" ", 2)
         line += 1
         if event_type in ("010", "011", "110", "120"):
-            assert timestamp_offset is not None
-            timestamp = int(timestamp_str) + timestamp_offset
+            if timestamp_offset is not None:
+                timestamp = int(timestamp_str) + timestamp_offset
+            else:
+                # allow jolly to be selected before the offset is computed, since
+                # setting it with a slightly wrong timestamp does not affect the overall
+                # score of the race
+                assert event_type in ("010", "120")
+                timestamp = int(timestamp_str)
             if " PROT" in event_content:
                 event_content, _ = event_content.split(" PROT")
             else:
