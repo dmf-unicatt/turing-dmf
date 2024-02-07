@@ -92,13 +92,14 @@ def convert(mathrace_log_filename: str, turing_json_filename: str) -> None:
     turing_dict["n_blocco"] = int(race_def_ints[5])
 
     # From the second line, determine the total time of the race
-    turing_dict["durata"] = int(race_def_ints[8])
-    assert turing_dict["durata"] in (120, 135)
+    durata = int(race_def_ints[8])
+    assert durata in (120, 135)
+    turing_dict["durata"] = durata
 
     # Three further items in the second line are ignored
     assert race_def_ints[6] == "1"
     assert race_def_ints[7] == "1"
-    assert int(race_def_ints[9]) == turing_dict["durata"] - 20
+    assert int(race_def_ints[9]) == durata - 20
 
     # mathrace does not use the following race parameters
     turing_dict["k_blocco"] = 1
@@ -117,7 +118,7 @@ def convert(mathrace_log_filename: str, turing_json_filename: str) -> None:
         assert len(question_def_ints) == 2
         assert question_def_ints[0] == str(q + 1)
         questions.append({
-            "problema": q + 1, "nome": f"Problema {q + 1}", "risposta": "1", "punteggio": question_def_ints[1]})
+            "problema": q + 1, "nome": f"Problema {q + 1}", "risposta": "1", "punteggio": int(question_def_ints[1])})
     turing_dict["soluzioni"] = questions
 
     # Next line should mark the start of the race
@@ -146,9 +147,9 @@ def convert(mathrace_log_filename: str, turing_json_filename: str) -> None:
                 assert " squadra" in event_content
                 event_content, _ = event_content.split(" squadra")
             event_content_ints = event_content.split(" ")
-            event_content_dict = {
+            event_content_dict: dict[str, int | str] = {
                 "orario": (race_start + datetime.timedelta(seconds=timestamp)).isoformat(),
-                "squadra_id" : event_content_ints[0], "problema" : event_content_ints[1]}
+                "squadra_id" : int(event_content_ints[0]), "problema" : int(event_content_ints[1])}
             if event_type in ("010", "120"):
                 # jolly was chosen
                 event_content_dict.update({"subclass": "Jolly"})
@@ -156,7 +157,7 @@ def convert(mathrace_log_filename: str, turing_json_filename: str) -> None:
             elif event_type in ("011", "110"):
                 # answer was submitted
                 assert len(event_content_ints) == 3
-                event_content_dict.update({"subclass": "Consegna", "risposta": event_content_ints[2]})
+                event_content_dict.update({"subclass": "Consegna", "risposta": int(event_content_ints[2])})
             else:
                 raise RuntimeError(f"Invalid event type {event_type} at time {timestamp_str}")
             events.append(event_content_dict)
