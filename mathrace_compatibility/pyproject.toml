@@ -1,0 +1,85 @@
+[build-system]
+requires = ["setuptools>=62", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mathrace-compatibility"
+version = "0.0.dev1"
+authors = [
+    {name = "Francesco Ballarin", email = "francesco.ballarin@unicatt.it"},
+]
+maintainers = [
+    {name = "Francesco Ballarin", email = "francesco.ballarin@unicatt.it"},
+]
+description = "Interfacing mathrace and turing"
+license = {file = "../LICENSE"}
+requires-python = ">=3.10"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
+    "Operating System :: POSIX",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS :: MacOS X",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules"
+]
+dependencies = []
+
+[project.urls]
+homepage = "https://github.com/dmf-unicatt/turing-docker"
+repository = "https://github.com/dmf-unicatt/turing-docker"
+issues = "https://github.com/dmf-unicatt/turing-docker/issues"
+funding = "https://github.com/sponsors/francesco-ballarin"
+
+[project.optional-dependencies]
+docs = [
+    "sphinx"
+]
+lint = [
+    "isort",
+    "mypy",
+    "ruff",
+    "yamllint"
+]
+unit_tests = [
+    "coverage[toml]",
+    "pytest"
+]
+
+[tool.isort]
+line_length = 120
+
+[tool.mypy]
+check_untyped_defs = true
+disallow_any_unimported = true
+disallow_untyped_defs = true
+no_implicit_optional = true
+pretty = true
+show_error_codes = true
+strict = true
+warn_return_any = true
+warn_unused_ignores = true
+
+[tool.pytest.ini_options]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = ["ANN", "D", "E", "F", "FLY", "ICN", "N", "Q", "RUF", "UP", "W"]
+ignore = ["ANN101"]
+
+[tool.ruff.lint.per-file-ignores]
+"mathrace_compatibility/__init__.py" = ["F401"]
+
+[tool.ruff.lint.pycodestyle]
+max-doc-length = 120
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
