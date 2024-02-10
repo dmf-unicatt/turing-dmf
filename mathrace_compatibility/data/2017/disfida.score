@@ -18,7 +18,8 @@
 369,
 240,
 608,
-1811, # 1801 + 10 di bonus per errore di immissione
+# il risultato ufficiale è 1811, dato da 1801 + 10 di bonus per errore di immissione, che non consideriamo in turing:
+1801,
 601,
 372,
 517,

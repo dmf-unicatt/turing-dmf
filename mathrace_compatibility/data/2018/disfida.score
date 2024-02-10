@@ -13,7 +13,8 @@
 585,
 344,
 1184,
-1624, # 1614 + 10 di bonus per errore di immissione
+# il risultato ufficiale è 1624, dato da 1614 + 10 di bonus per errore di immissione, che non consideriamo in turing:
+1614,
 496,
 540,
 477,
