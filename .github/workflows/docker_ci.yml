@@ -23,6 +23,8 @@ jobs:
           submodules: true
       - name: Create volume
         run: bash docker_create_volume.sh
+      - name: Create secret key
+        run: bash docker_create_secret_key.sh
       - name: Create image
         run: bash docker_create_image.sh
       - name: Create container

@@ -1,2 +1,3 @@
 .docker_container_id
+.docker_secret_key
 .docker_volume_id

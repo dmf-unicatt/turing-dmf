@@ -10,4 +10,7 @@ set -e
 # Do not run any further if we are not connected to the internet
 wget -q --spider https://www.google.com
 
-docker build --pull -t turing-dmf:latest -f Dockerfile ..
+SECRET_KEY_FILE=".docker_secret_key"
+SECRET_KEY=$(cat "${SECRET_KEY_FILE}")
+
+docker build --pull --build-arg SECRET_KEY=${SECRET_KEY} -t turing-dmf:latest -f Dockerfile ..

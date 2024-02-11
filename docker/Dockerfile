@@ -7,6 +7,8 @@
 FROM debian:12
 MAINTAINER Francesco Ballarin <francesco.ballarin@unicatt.it>
 
+ARG SECRET_KEY
+
 WORKDIR /root
 
 RUN apt update -y -q && \
@@ -20,7 +22,7 @@ RUN bash patches/turing/apply_patches.sh && \
 
 RUN cat <<EOF >> /root/turing/Turing/settings.ini
 [settings]
-SECRET_KEY=ab&v1v}7G+$*m$pg:zkUNHUhhYA&yKuWPETi!r{b?T{UXKuj=t
+SECRET_KEY=$SECRET_KEY
 DEBUG=True
 DEV_MODE=False
 ALLOWED_HOSTS=*

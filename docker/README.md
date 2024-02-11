@@ -20,15 +20,19 @@ cd turing-dmf/docker
 ```
 bash docker_create_volume.sh
 ```
-3. Create a `turing-dmf:latest` docker image based on the current **Turing @ DMF** repository:
+3. Create a secret key for `django`:
+```
+bash docker_create_secret_key.sh
+```
+4. Create a `turing-dmf:latest` docker image based on the current **Turing @ DMF** repository:
 ```
 bash docker_create_image.sh
 ```
-4. Create a docker container based on the current `turing-dmf:latest` docker image:
+5. Create a docker container based on the current `turing-dmf:latest` docker image:
 ```
 bash docker_create_container.sh
 ```
-5. Create a database for **Turing**:
+6. Create a database for **Turing**:
 ```
 bash docker_create_database.sh
 ```
