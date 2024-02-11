@@ -44,7 +44,7 @@ def expected_journal_versions_all(data_dir: pathlib.Path) -> dict[pathlib.Path, 
         data_dir / "2021" / "cesenatico_semifinale_D.journal": "r11184",
         data_dir / "2021" / "cesenatico_semifinale_E.journal": "r11184",
         data_dir / "2021" / "cesenatico_semifinale_F.journal": "r11184",
-        data_dir / "2023" / "disfida.journal": "r11184",
+        data_dir / "2023" / "disfida_legacy_format.journal": "r11184",
         # r11189
         data_dir / "2015" / "disfida.journal": "r11189",
         # r17497
@@ -91,6 +91,7 @@ def expected_journal_versions_all(data_dir: pathlib.Path) -> dict[pathlib.Path, 
         data_dir / "2023" / "qualificazione_femminile_2.journal": "r20642",
         data_dir / "2023" / "qualificazione_femminile_3.journal": "r20642",
         # r20644
+        data_dir / "2023" / "disfida_new_format.journal": "r20644",
         data_dir / "2024" / "february_9_short_run.journal": "r20644",
     }
 

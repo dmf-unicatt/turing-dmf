@@ -30,7 +30,8 @@ def data_journals_basic(data_dir: pathlib.Path) -> list[pathlib.Path]:
         data_dir / "2019" / "disfida.journal",
         data_dir / "2020" / "disfida.journal",
         data_dir / "2022" / "disfida.journal",
-        data_dir / "2023" / "disfida.journal",
+        data_dir / "2023" / "disfida_legacy_format.journal",
+        data_dir / "2023" / "disfida_new_format.journal",
         # kangourou: different total duration, score keeps increasing to the end of the race
         data_dir / "2014" / "kangourou.journal",
         data_dir / "2015" / "kangourou.journal",
@@ -48,7 +49,7 @@ def data_journals_basic(data_dir: pathlib.Path) -> list[pathlib.Path]:
         data_dir / "2023" / "qualificazione_femminile_1.journal",
         data_dir / "2023" / "qualificazione_femminile_2.journal",
         data_dir / "2023" / "qualificazione_femminile_3.journal",
-        # local tests: different timestamp format
+        # additional tests: different timestamp format
         data_dir / "2024" / "february_9_short_run.journal",
     ]
 
