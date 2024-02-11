@@ -12,10 +12,9 @@ WORKDIR /root
 RUN apt update -y -q && \
     apt install -y -qq curl net-tools python3-pip vim wget
 
-# Part 1: turing and its runtime dependencies
-COPY turing turing
-COPY patches patches
+COPY . .
 
+# Part 1: turing and its runtime dependencies
 RUN bash patches/turing/apply_patches.sh && \
     python3 -m pip install -r turing/requirements.txt --break-system-packages
 
