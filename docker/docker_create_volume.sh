@@ -15,5 +15,4 @@ if [[ -f "${VOLUME_ID_FILE}" ]]; then
 else
     VOLUME_ID=$(docker volume create turing-database-$(date +%s))
     echo ${VOLUME_ID} > ${VOLUME_ID_FILE}
-    echo "You can now create a container by running docker_create_cointainer.sh"
 fi

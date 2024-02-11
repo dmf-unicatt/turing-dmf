@@ -15,5 +15,4 @@ if [ "$( docker container inspect -f '{{.State.Running}}' ${CONTAINER_ID} )" == 
     exit 1
 else
     docker start ${CONTAINER_ID}
-    echo "Visit http://localhost:8080 in your browser"
 fi
