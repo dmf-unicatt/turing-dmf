@@ -16,7 +16,7 @@ RUN apt update -y -q && \
 COPY turing turing
 COPY patches patches
 
-RUN bash patches/apply_patches.sh && \
+RUN bash patches/turing/apply_patches.sh && \
     python3 -m pip install -r turing/requirements.txt --break-system-packages
 
 RUN cat <<EOF >> /root/turing/Turing/settings.ini
