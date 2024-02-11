@@ -7,6 +7,11 @@
 
 set -e
 
+if [[ ! -e "docker" || ! -e "mathrace_interaction" || ! -e "patches" || ! -e "turing" ]]; then
+    echo "This script must be run as 'bash patches/turing/apply_patches.sh' from the top level directory of the repository"
+    exit 1
+fi
+
 apply_patch () {
     # Apply a patch, but only if it was not applied before
     if ! patch -R -p1 -s -f --dry-run < ../patches/turing/$1 1> /dev/null 2>&1; then
@@ -20,4 +25,3 @@ apply_patch 0001_show_elapsed_time_instead_of_countdown.patch
 apply_patch 0002_change_elapsed_time_via_textbox.patch
 apply_patch 0003_penalize_wrong_answer_after_correct_answer.patch
 apply_patch 0004_selenium_updates.patch
-apply_patch 0005_tests_raise_error_on_missing_score.patch
