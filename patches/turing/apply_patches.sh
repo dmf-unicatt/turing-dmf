@@ -9,8 +9,8 @@ set -e
 
 apply_patch () {
     # Apply a patch, but only if it was not applied before
-    if ! patch -R -p1 -s -f --dry-run < ../patches/$1 1> /dev/null 2>&1; then
-        patch -p1 < ../patches/$1
+    if ! patch -R -p1 -s -f --dry-run < ../patches/turing/$1 1> /dev/null 2>&1; then
+        patch -p1 < ../patches/turing/$1
     fi
 }
 
