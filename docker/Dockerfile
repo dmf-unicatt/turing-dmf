@@ -10,7 +10,7 @@ MAINTAINER Francesco Ballarin <francesco.ballarin@unicatt.it>
 WORKDIR /root
 
 RUN apt update -y -q && \
-    apt install -y -qq curl net-tools python3-pip vim wget
+    apt install -y -qq curl net-tools python3-pip unzip vim wget
 
 COPY . .
 
@@ -39,8 +39,7 @@ RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key
     apt update -y -q && \
     apt install -y -qq google-chrome-stable
 
-RUN apt install -y -qq unzip && \
-    LATEST_STABLE_RELEASE=$(curl -sS https://googlechromelabs.github.io/chrome-for-testing/LATEST_RELEASE_STABLE) && \
+RUN LATEST_STABLE_RELEASE=$(curl -sS https://googlechromelabs.github.io/chrome-for-testing/LATEST_RELEASE_STABLE) && \
     CHROME_BASE_URL=https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/$LATEST_STABLE_RELEASE && \
     wget -O /tmp/chromedriver.zip $CHROME_BASE_URL/linux64/chromedriver-linux64.zip && \
     unzip /tmp/chromedriver.zip -d /usr/local/bin && \
