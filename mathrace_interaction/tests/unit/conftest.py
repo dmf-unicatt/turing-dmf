@@ -55,7 +55,7 @@ def data_journals_basic(data_dir: pathlib.Path) -> list[pathlib.Path]:
 
 
 @pytest.fixture
-def data_journals_all(data_dir: pathlib.Path, data_journals_basic: list[pathlib.Path]) -> pathlib.Path:
+def data_journals_all(data_dir: pathlib.Path, data_journals_basic: list[pathlib.Path]) -> list[pathlib.Path]:
     """Return all journals in the data directory."""
     return [
         *data_journals_basic,

@@ -5,10 +5,11 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """Determine the version of a mathrace journal."""
 
+import pathlib
 import typing
 
 
-def determine_journal_version(journal_filename: str) -> str:
+def determine_journal_version(journal_filename: pathlib.Path) -> str:
     """
     Determine the version of a mathrace journal.
 
@@ -97,7 +98,6 @@ def determine_journal_version(journal_filename: str) -> str:
 
           This change affects all race event codes.
     """
-
     with open(journal_filename) as journal_file:
         journal = [line.strip("\n") for line in journal_file.readlines()]
 

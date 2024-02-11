@@ -36,7 +36,7 @@ def test_data_both_journal_and_score_files_exist(
 
 def test_data_contains_only_journal_and_score_files(data_dir: pathlib.Path) -> None:
     """Test that the data directory only contains journal and score files."""
-    for entry in data_dir.rglob(f"*"):
+    for entry in data_dir.rglob("*"):
         assert entry.is_file() or entry.is_dir()
         if entry.is_file():
             assert entry.suffix in (".journal", ".score")
@@ -49,7 +49,7 @@ def test_data_contains_only_journal_and_score_files(data_dir: pathlib.Path) -> N
 def test_data_journal_all_fixture(data_dir: pathlib.Path, data_journals_all: list[pathlib.Path]) -> None:
     """Test that the data_journals_all fixture actually contains all journal files."""
     data_journals_actual = set()
-    for entry in data_dir.rglob(f"*"):
+    for entry in data_dir.rglob("*"):
         assert entry.is_file() or entry.is_dir()
         if entry.is_file():
             if entry.suffix == ".journal":
