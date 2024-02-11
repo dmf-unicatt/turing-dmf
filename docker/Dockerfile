@@ -18,12 +18,12 @@ COPY . .
 
 # Part 1: turing and its runtime dependencies
 RUN bash patches/turing/apply_patches.sh && \
-    python3 -m pip install -r turing/requirements.txt --break-system-packages
+    python3 -m pip install --break-system-packages -r turing/requirements.txt
 
 RUN cat <<EOF >> /root/turing/Turing/settings.ini
 [settings]
 SECRET_KEY=$SECRET_KEY
-DEBUG=True
+DEBUG=False
 DEV_MODE=False
 ALLOWED_HOSTS=*
 INTERNAL_IPS=127.0.0.1
@@ -33,7 +33,9 @@ EMAIL_HOST_PASSWORD=
 REGISTRATION_OPEN=
 EOF
 
-RUN ln -s /mnt/database/db.sqlite3 turing/
+RUN cd turing && \
+    ln -s /mnt/database/db.sqlite3 . && \
+    python3 manage.py collectstatic
 
 # Part 2: test dependencies
 RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - && \
@@ -47,7 +49,7 @@ RUN LATEST_STABLE_RELEASE=$(curl -sS https://googlechromelabs.github.io/chrome-f
     unzip /tmp/chromedriver.zip -d /usr/local/bin && \
     rm -rf /tmp/chrome*
 
-RUN python3 -m pip install -r turing/requirements-dev.txt --break-system-packages
+RUN python3 -m pip install --break-system-packages -r turing/requirements-dev.txt
 
 # The end: run server on docker container start
 CMD cd turing && python3 manage.py runserver 0.0.0.0:8080
