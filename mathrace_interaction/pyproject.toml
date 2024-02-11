@@ -3,7 +3,7 @@ requires = ["setuptools>=62", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "mathrace-compatibility"
+name = "mathrace-interaction"
 version = "0.0.dev1"
 authors = [
     {name = "Francesco Ballarin", email = "francesco.ballarin@unicatt.it"},
@@ -76,7 +76,7 @@ select = ["ANN", "D", "E", "F", "FLY", "ICN", "N", "Q", "RUF", "UP", "W"]
 ignore = ["ANN101"]
 
 [tool.ruff.lint.per-file-ignores]
-"mathrace_compatibility/__init__.py" = ["F401"]
+"mathrace_interaction/__init__.py" = ["F401"]
 
 [tool.ruff.lint.pycodestyle]
 max-doc-length = 120

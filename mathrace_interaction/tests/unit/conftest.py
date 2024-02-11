@@ -12,7 +12,7 @@ import pytest
 
 @pytest.fixture
 def data_dir() -> pathlib.Path:
-    """Return the data directory of mathrace-compatibility."""
+    """Return the data directory of mathrace-interaction."""
     return pathlib.Path(__file__).parent.parent.parent / "data"
 
 

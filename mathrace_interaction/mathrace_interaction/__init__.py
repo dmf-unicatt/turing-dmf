@@ -3,4 +3,4 @@
 # This file is part of Turing @ DMF.
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
-"""mathrace-compatibility main module."""
+"""mathrace-interaction main module."""

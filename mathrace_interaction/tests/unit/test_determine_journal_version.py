@@ -3,13 +3,13 @@
 # This file is part of Turing @ DMF.
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
-"""Test mathrace_compatibility.determine_journal_version."""
+"""Test mathrace_interaction.determine_journal_version."""
 
 import pathlib
 
 import pytest
 
-from mathrace_compatibility.determine_journal_version import determine_journal_version
+from mathrace_interaction.determine_journal_version import determine_journal_version
 
 
 @pytest.fixture
