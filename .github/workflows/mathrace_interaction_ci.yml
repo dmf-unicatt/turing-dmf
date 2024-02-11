@@ -1,0 +1,74 @@
+name: mathrace-interaction CI
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+    branches:
+      - main
+  schedule:
+    - cron: "0 0 * * MON"
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container: debian:12
+    defaults:
+      run:
+        working-directory: mathrace_interaction
+    steps:
+      - name: Install git
+        run: |
+          export DEBIAN_FRONTEND="noninteractive"
+          apt update -y -q
+          apt install -y -qq git
+        working-directory: .
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Install non-pip dependencies of the mathrace-interaction library
+        run: |
+          export DEBIAN_FRONTEND="noninteractive"
+          apt install -y -qq python3-pip
+          rm /usr/lib/python3.*/EXTERNALLY-MANAGED
+      - name: Install the mathrace-interaction library
+        run: |
+          python3 -m pip install .[docs,lint,tests]
+      - name: Clean build files
+        run: |
+          git config --global --add safe.directory $PWD
+          git clean -xdf
+        working-directory: .
+      - name: Run ruff
+        run: |
+          python3 -m ruff .
+      - name: Run isort
+        run: |
+          python3 -m isort --check --diff .
+      - name: Run mypy
+        run: |
+          python3 -m mypy .
+      - name: Run yamllint
+        run: |
+          python3 -m yamllint -d "{ignore: turing, extends: default, rules: {document-start: {present: false}, line-length: disable, truthy: {check-keys: false}}}" ../.github
+      - name: Run documentation generation
+        run: |
+          cd docs && python3 -m sphinx -W -b html . build/html
+      - name: Run tests
+        run: |
+          python3 -m coverage run --source=mathrace_interaction -m pytest -svv tests/unit
+      - name: Check test coverage
+        run: |
+          python3 -m coverage report --fail-under=100 --show-missing --skip-covered
+
+  warn:
+    runs-on: ubuntu-latest
+    if: github.repository == 'dmf-unicatt/turing-dmf' && github.ref == 'refs/heads/main' && github.event_name == 'schedule'
+    steps:
+      - name: Warn if scheduled workflow is about to be disabled
+        uses: fem-on-colab/warn-workflow-about-to-be-disabled-action@main
+        with:
+          workflow-filename: mathrace_interaction_ci.yml
+          days-elapsed: 50
