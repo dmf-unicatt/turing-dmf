@@ -24,6 +24,9 @@ COPY turing turing
 RUN apt install -y -qq libpq-dev postgresql postgresql-client postgresql-contrib && \
     echo "$POSTGRES_PASSWORD\n$POSTGRES_PASSWORD" | passwd postgres
 
+# postgres has created a new user, which should be allow read-only access to /root
+RUN chmod go+rx /root
+
 RUN bash patches/turing/apply_patches.sh && \
     python3 -m pip install --break-system-packages -r turing/requirements.txt
 

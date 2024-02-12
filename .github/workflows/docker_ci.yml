@@ -14,6 +14,10 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        database-type: [PostgreSQL, SQLite3]
+      fail-fast: false
     defaults:
       run:
         working-directory: docker
@@ -21,22 +25,22 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: true
-      - name: Create secrets
-        run: bash docker_create_secrets.sh
-      - name: Create volume
-        run: bash docker_create_volume.sh
       - name: Create image
-        run: bash docker_create_image.sh
-      - name: Create container
-        run: bash docker_create_container.sh
-      - name: Start container
-        run: bash docker_start.sh
-      - name: Run tests
-        run: bash docker_run_tests.sh
-      - name: Stop container
-        run: bash docker_stop.sh
-      - name: Destroy container
-        run: bash docker_destroy_container.sh
+        run: |
+          bash docker_create_secrets.sh
+          bash docker_create_volume.sh
+          bash docker_create_image.sh
+      - name: Run tests with docker run
+        run: |
+          bash docker_run_tests.sh run ${{ matrix.database-type }}
+      - name: Run tests with docker exec
+        if: matrix.database-type != 'SQLite3'
+        run: |
+          bash docker_create_container.sh
+          bash docker_start.sh
+          bash docker_run_tests.sh exec ${{ matrix.database-type }}
+          bash docker_stop.sh
+          bash docker_destroy_container.sh
 
   warn:
     runs-on: ubuntu-latest

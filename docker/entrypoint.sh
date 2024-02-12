@@ -57,17 +57,17 @@ else
     echo "Reusing existing postgres database"
 fi
 
-# Ask turing to initialize the django database, if not already done previously
-DJANGO_DATABASE_MIGRATED_FILE=${POSTGRES_CLUSTER_DATA_DIRECTORY}/.django_database_migrated
-if [[ ! -f ${DJANGO_DATABASE_MIGRATED_FILE} ]]; then
-    echo "Initializing django database"
+# Ask turing to initialize the django database migrations, if not already done previously
+DJANGO_DATABASE_MIGRATIONS_FILE=/root/turing/.django_database_migrations
+if [[ ! -f ${DJANGO_DATABASE_MIGRATIONS_FILE} ]]; then
+    echo "Initializing django database migrations"
     cd /root/turing
     python3 manage.py makemigrations
     python3 manage.py makemigrations engine
     python3 manage.py migrate
-    touch ${DJANGO_DATABASE_MIGRATED_FILE}
+    touch ${DJANGO_DATABASE_MIGRATIONS_FILE}
 else
-    echo "Not initializing again django database"
+    echo "Not initializing again django database migrations"
 fi
 
 # Add a default administration user to the django database, if not already done previously
@@ -85,6 +85,12 @@ else
 fi
 
 # Start the server
-echo "Starting the server"
-cd /root/turing
-python3 manage.py runserver 0.0.0.0:8080
+if [[ $# -eq 0 ]]; then
+    echo "Starting the server"
+    cd /root/turing
+    python3 manage.py runserver 0.0.0.0:8080
+else
+    echo "NOT starting the server because a custom command $@ was provided"
+    cd /root
+    exec "$@"
+fi
