@@ -2,3 +2,4 @@
 .docker_django_secret_key
 .docker_postgres_password
 .docker_volume_id
+dockerfile.sh

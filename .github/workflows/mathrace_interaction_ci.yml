@@ -14,7 +14,28 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - name: without-turing
+            setup_container: ""
+          - name: with-turing
+            setup_container: |
+              export DEBIAN_FRONTEND="noninteractive"
+              export DJANGO_SECRET_KEY="github-actions"
+              export POSTGRES_PASSWORD="github-actions"
+              echo "set -e" > docker/dockerfile.sh
+              dkr2sh/dkr2sh.sed < docker/Dockerfile >> docker/dockerfile.sh
+              sed -i "s/rsync/echo rsync/g" docker/dockerfile.sh
+              sed -i "s/passwd/echo passwd/g" docker/dockerfile.sh
+              sed -i "s|/root|${PWD}|g" docker/dockerfile.sh
+              sed -i "s|/root|${PWD}|g" docker/entrypoint.sh
+              bash docker/dockerfile.sh
+              sh -c "echo \"${POSTGRES_PASSWORD}\n${POSTGRES_PASSWORD}\" | passwd postgres"
+              bash docker/entrypoint.sh echo "Disabling server startup"
+      fail-fast: false
     container: debian:12
+    name: test (${{ matrix.name }})
     defaults:
       run:
         working-directory: mathrace_interaction
@@ -28,6 +49,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: true
+      - name: Setup container
+        run: ${{ matrix.setup_container }}
+        working-directory: .
       - name: Install non-pip dependencies of mathrace-interaction
         run: |
           export DEBIAN_FRONTEND="noninteractive"
