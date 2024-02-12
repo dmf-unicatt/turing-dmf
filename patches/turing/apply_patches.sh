@@ -12,18 +12,30 @@ if [[ ! -e "patches" || ! -e "turing" ]]; then
     exit 1
 fi
 
-apply_patch () {
-    # Apply a patch, but only if it was not applied before
-    if ! patch -R -p1 -s -f --dry-run < ../patches/turing/$1 1> /dev/null 2>&1; then
-        patch -p1 < ../patches/turing/$1
-    fi
-}
-
 cd turing
-apply_patch 0000_customize_footer.patch
-apply_patch 0001_show_elapsed_time_instead_of_countdown.patch
-apply_patch 0002_change_elapsed_time_via_textbox.patch
-apply_patch 0003_penalize_wrong_answer_after_correct_answer.patch
-apply_patch 0004_selenium_updates.patch
-apply_patch 0005_serve_static_files_with_whitenoise.patch
-apply_patch 0007_test_pk_for_postgres.patch
+
+# git submodules work with a detached HEAD. The following command returns 0 on detached HEAD, 1 if on branch
+# The production environment will typically operate on a git submodule repo with detached HEAD,
+# and patches must be applied in that case.
+# Local development environment may have already manually applied patches, e.g. while testing a further patch
+# to be added. In that case, we skip applying patching altogether, and it is the responsability of the developer
+# to have all previous patches already applied.
+HEAD_DETACHED=$(git branch --show-current | wc -l)
+if [[ ${HEAD_DETACHED} -eq 1 ]]; then
+    echo "Currently on a branch, assuming that it already contains the required patches."
+else
+    apply_patch () {
+        echo "Applying patch $1"
+        patch -p1 < ../patches/turing/$1
+    }
+
+    echo "On a detached HEAD, applying patches"
+    apply_patch 0000_customize_footer.patch
+    apply_patch 0001_show_elapsed_time_instead_of_countdown.patch
+    apply_patch 0002_change_elapsed_time_via_textbox.patch
+    apply_patch 0003_penalize_wrong_answer_after_correct_answer.patch
+    apply_patch 0004_selenium_updates.patch
+    apply_patch 0005_serve_static_files_with_whitenoise.patch
+    apply_patch 0006_test_pk_for_postgres.patch
+    apply_patch 0007_durata_blocco.patch
+fi

@@ -15,13 +15,14 @@ ARG POSTGRES_PASSWORD
 WORKDIR /root
 
 RUN apt update -y -q && \
-    apt install -y -qq curl net-tools python3-pip sudo unzip vim wget
+    apt install -y -qq curl git net-tools python3-pip sudo unzip vim wget
 
 # Part 1: turing
 COPY patches patches
 COPY turing turing
+COPY .git/modules/turing turing/.git
 
-RUN bash patches/turing/apply_patches.sh
+RUN sed -i "/worktree =/d" turing/.git/config && bash patches/turing/apply_patches.sh
 
 RUN apt install -y -qq libpq-dev postgresql postgresql-client postgresql-contrib python3-psycopg2 python3-selenium && \
     echo "$POSTGRES_PASSWORD\n$POSTGRES_PASSWORD" | passwd postgres
