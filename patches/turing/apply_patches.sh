@@ -7,7 +7,7 @@
 
 set -e
 
-if [[ ! -e "docker" || ! -e "mathrace_interaction" || ! -e "patches" || ! -e "turing" ]]; then
+if [[ ! -e "mathrace_interaction" || ! -e "patches" || ! -e "turing" ]]; then
     echo "This script must be run as 'bash patches/turing/apply_patches.sh' from the top level directory of the repository"
     exit 1
 fi
