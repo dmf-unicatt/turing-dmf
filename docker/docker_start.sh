@@ -18,7 +18,15 @@ else
     docker start ${CONTAINER_ID}
     # Entrypoint outputs are not reported to stdout, but logged: fetch them and print them to stdout, after waiting
     # a reasonable amount of time for the entrypoint to be done
-    MAX_TRY=10
+    ARCH=$(dpkg --print-architecture)
+    if [[ ${ARCH} == "armhf" ]]; then
+        # armhf is slower than standard archs, so wait a bit more time before giving up
+        MAX_TRY=30
+        SLEEP=3
+    else
+        MAX_TRY=10
+        SLEEP=1
+    fi
     for TRY in $(seq 1 ${MAX_TRY}); do
         DOCKER_LOG=$(docker logs --since "${START_TIME}" --timestamps ${CONTAINER_ID})
         if [[ "${DOCKER_LOG}" == *"Starting the server"* ]]; then
@@ -26,7 +34,7 @@ else
             break
         else
             if [[ ${TRY} != ${MAX_TRY} ]]; then
-                sleep 1
+                sleep ${SLEEP}
             else
                 echo "${DOCKER_LOG}"
                 echo "Server did not start after ${MAX_TRY} seconds. Log output may be incomplete."
