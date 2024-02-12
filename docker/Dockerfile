@@ -17,18 +17,20 @@ WORKDIR /root
 RUN apt update -y -q && \
     apt install -y -qq curl net-tools python3-pip sudo unzip vim wget
 
-# Part 1: turing and its runtime dependencies
+# Part 1: turing
 COPY patches patches
 COPY turing turing
 
-RUN apt install -y -qq libpq-dev postgresql postgresql-client postgresql-contrib && \
+RUN bash patches/turing/apply_patches.sh
+
+RUN apt install -y -qq libpq-dev postgresql postgresql-client postgresql-contrib python3-psycopg2 python3-selenium && \
     echo "$POSTGRES_PASSWORD\n$POSTGRES_PASSWORD" | passwd postgres
 
 # postgres has created a new user, which should be allow read-only access to /root
 RUN chmod go+rx /root
 
-RUN bash patches/turing/apply_patches.sh && \
-    python3 -m pip install --break-system-packages -r turing/requirements.txt
+RUN python3 -m pip install --break-system-packages -r turing/requirements.txt && \
+    python3 -m pip install --break-system-packages -r turing/requirements-dev.txt
 
 RUN cat <<EOF > /root/turing/Turing/settings.ini
 [settings]
@@ -46,24 +48,10 @@ EOF
 RUN cd turing && \
     python3 manage.py collectstatic
 
-# Part 2: turing and its test dependencies
-RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - && \
-    sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list' && \
-    apt update -y -q && \
-    apt install -y -qq google-chrome-stable
-
-RUN LATEST_STABLE_RELEASE=$(curl -sS https://googlechromelabs.github.io/chrome-for-testing/LATEST_RELEASE_STABLE) && \
-    CHROME_BASE_URL=https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/$LATEST_STABLE_RELEASE && \
-    wget -O /tmp/chromedriver.zip $CHROME_BASE_URL/linux64/chromedriver-linux64.zip && \
-    unzip /tmp/chromedriver.zip -d /usr/local/bin && \
-    rm -rf /tmp/chrome*
-
-RUN python3 -m pip install --break-system-packages -r turing/requirements-dev.txt
-
-# Part 3: mathrace-interaction
+# Part 2: mathrace-interaction
 COPY mathrace_interaction mathrace_interaction
 
-# Part 4: set up entrypoint that:
+# Part 3: set up entrypoint that:
 # * creates and initialize databases on first run,
 # * starts the server
 COPY docker/entrypoint.sh /usr/local/bin/docker-entrypoint.sh
