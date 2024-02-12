@@ -45,7 +45,7 @@ RDS_PASSWORD=$POSTGRES_PASSWORD
 RDS_HOSTNAME=localhost
 EOF
 
-RUN cd turing && \
+RUN cd /root/turing && \
     python3 manage.py collectstatic
 
 # Part 2: mathrace-interaction
