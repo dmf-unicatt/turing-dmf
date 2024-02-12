@@ -10,7 +10,6 @@ set -e
 VOLUME_ID_FILE=".docker_volume_id"
 if [[ -f "${VOLUME_ID_FILE}" ]]; then
     echo "A database volume already exists!"
-    echo "If you want to destroy it and create a new one, please run docker_destroy_volume.sh"
     exit 1
 else
     VOLUME_ID=$(docker volume create turing-database-$(date +%s))
