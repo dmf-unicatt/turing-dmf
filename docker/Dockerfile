@@ -21,7 +21,7 @@ RUN apt update -y -q && \
 COPY patches patches
 COPY turing turing
 
-RUN apt install -y -qq postgresql postgresql-client postgresql-contrib && \
+RUN apt install -y -qq libpq-dev postgresql postgresql-client postgresql-contrib && \
     echo "$POSTGRES_PASSWORD\n$POSTGRES_PASSWORD" | passwd postgres
 
 RUN bash patches/turing/apply_patches.sh && \
