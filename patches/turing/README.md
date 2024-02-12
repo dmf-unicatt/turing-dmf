@@ -8,3 +8,4 @@ This directory contains a few local patches. Most of them are related to changes
 3. `0003_penalize_wrong_answer_after_correct_answer.patch`: this change affects the score of a team which submits an incorrect answer after having already provided a correct answer to the same question. In that case, **Turing** does not penalize the team by deducting 10 points out of their current score, while **mathrace** does reduce their score by 10 points. To preserve compatibility with **mathrace**, in that case **Turing @ DMF** penalizes the team.
 4. `0004_selenium_updates.patch`: update internal tests to support new `selenium` versions.
 5. `0005_serve_static_files_with_whitenoise.patch`: use [`whitenoise`](https://pypi.org/project/whitenoise/) to serve static files.
+6. `0006_require_psycopg2.patch`: require [`psycopg2-binary`](https://pypi.org/project/psycopg2-binary/) to use a PostgreSQL database instead of the default SQLite3 one.
