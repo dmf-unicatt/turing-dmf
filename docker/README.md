@@ -32,6 +32,11 @@ bash docker_create_image.sh
 ```
 bash docker_create_container.sh
 ```
+6. Database is created upon the first run of the container with
+```
+bash docker_start.sh
+```
+The terminal will display the username and password of the administrator account, which can be subsequently changed through the web interface.
 
 ## 3. Run the docker container
 
@@ -43,7 +48,7 @@ cd turing-dmf/docker
 ```
 bash docker_start.sh
 ```
-**Turing** will be available at `https://host-server:8080`. The database will be initialized upon the first run.
+**Turing** will be available at `https://host-server:8080`.
 3. Attach a terminal to the running docker container
 ```
 bash docker_terminal.sh

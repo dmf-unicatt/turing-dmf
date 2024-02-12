@@ -73,9 +73,12 @@ fi
 # Add a default administration user to the django database, if not already done previously
 DJANGO_ADMIN_INITIALIZED_FILE=${POSTGRES_CLUSTER_DATA_DIRECTORY}/.django_admin_initialized
 if [[ ! -f ${DJANGO_ADMIN_INITIALIZED_FILE} ]]; then
-    echo "Initialize the default django administrator user with username admin and password admin. Make sure to change both the username and the password as soon as possible!"
+    export DJANGO_SUPERUSER_USERNAME=admin
+    export DJANGO_SUPERUSER_PASSWORD=$(cat /dev/urandom | tr -dc 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$^&*-_=+' | head -c 10; echo)
+    export DJANGO_SUPERUSER_EMAIL="admin@admin.it"
+    echo "Initialize the default django administrator user with username ${DJANGO_SUPERUSER_USERNAME} and password ${DJANGO_SUPERUSER_PASSWORD}"
     cd /root/turing
-    DJANGO_SUPERUSER_EMAIL=admin@admin.it DJANGO_SUPERUSER_USERNAME=admin DJANGO_SUPERUSER_PASSWORD=admin python3 manage.py createsuperuser --no-input
+    python3 manage.py createsuperuser --no-input
     touch ${DJANGO_ADMIN_INITIALIZED_FILE}
 else
     echo "Not initializing again default django administrator"
