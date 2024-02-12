@@ -5,18 +5,24 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 FROM debian:12
+# If upgrading the version number from 12 to the next debian release, make sure to do the same
+# also in the shell scripts stored in this directory.
 MAINTAINER Francesco Ballarin <francesco.ballarin@unicatt.it>
 
 ARG SECRET_KEY
+ARG POSTGRES_PASSWORD
 
 WORKDIR /root
 
 RUN apt update -y -q && \
-    apt install -y -qq curl net-tools python3-pip unzip vim wget
+    apt install -y -qq curl net-tools python3-pip sudo unzip vim wget
 
 COPY . .
 
 # Part 1: turing and its runtime dependencies
+RUN apt install -y -qq postgresql postgresql-client postgresql-contrib && \
+    echo "$POSTGRES_PASSWORD\n$POSTGRES_PASSWORD" | passwd postgres
+
 RUN bash patches/turing/apply_patches.sh && \
     python3 -m pip install --break-system-packages -r turing/requirements.txt
 
@@ -27,14 +33,13 @@ DEBUG=False
 DEV_MODE=False
 ALLOWED_HOSTS=*
 INTERNAL_IPS=127.0.0.1
-EMAIL_HOST=
-EMAIL_HOST_USER=
-EMAIL_HOST_PASSWORD=
-REGISTRATION_OPEN=
+RDS_DB_NAME=turing-dmf-db
+RDS_USERNAME=postgres
+RDS_PASSWORD=$POSTGRES_PASSWORD
+RDS_HOSTNAME=localhost
 EOF
 
 RUN cd turing && \
-    ln -s /mnt/database/db.sqlite3 . && \
     python3 manage.py collectstatic
 
 # Part 2: test dependencies
@@ -52,4 +57,4 @@ RUN LATEST_STABLE_RELEASE=$(curl -sS https://googlechromelabs.github.io/chrome-f
 RUN python3 -m pip install --break-system-packages -r turing/requirements-dev.txt
 
 # The end: run server on docker container start
-CMD cd turing && python3 manage.py runserver 0.0.0.0:8080
+CMD service postgresql start && cd turing && python3 manage.py runserver 0.0.0.0:8080

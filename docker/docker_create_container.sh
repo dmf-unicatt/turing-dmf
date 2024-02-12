@@ -8,13 +8,10 @@
 set -e
 
 VOLUME_ID_FILE=".docker_volume_id"
-if [[ ! -f "${VOLUME_ID_FILE}" ]]; then
-    echo "The database volume does not exist!"
-    echo "Please create it with docker_create_volume.sh"
-    exit 1
-else
-    VOLUME_ID=$(cat "${VOLUME_ID_FILE}")
-fi
+VOLUME_ID=$(cat "${VOLUME_ID_FILE}")
+
+POSTGRES_DATA_DIRECTORY_FILE=".docker_postgres_data_directory"
+POSTGRES_DATA_DIRECTORY=$(cat "${POSTGRES_DATA_DIRECTORY_FILE}")
 
 CONTAINER_ID_FILE=".docker_container_id"
 if [[ -f "${CONTAINER_ID_FILE}" ]]; then
@@ -28,6 +25,6 @@ else
     docker network create --subnet=10.200.1.0/24 turing-dmf-network
     # Start docker container on a fixed IP address. The corresponding mac address is generated following
     # https://maclookup.app/faq/how-do-i-identify-the-mac-address-of-a-docker-container-interface
-    CONTAINER_ID=$(docker create --net turing-dmf-network --ip 10.200.1.23 --mac-address 02:42:0a:c8:01:17 -p 8080:8080 -v /tmp/shared-turing-dmf:/tmp/shared-turing-dmf -v ${VOLUME_ID}:/mnt/database -e DOCKERHOSTNAME=$(cat /etc/hostname) turing-dmf:latest)
+    CONTAINER_ID=$(docker create --net turing-dmf-network --ip 10.200.1.23 --mac-address 02:42:0a:c8:01:17 -p 8080:8080 -v /tmp/shared-turing-dmf:/tmp/shared-turing-dmf -v ${VOLUME_ID}:${POSTGRES_DATA_DIRECTORY} -e DOCKERHOSTNAME=$(cat /etc/hostname) turing-dmf:latest)
     echo ${CONTAINER_ID} > ${CONTAINER_ID_FILE}
 fi

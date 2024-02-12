@@ -13,4 +13,7 @@ wget -q --spider https://www.google.com
 SECRET_KEY_FILE=".docker_secret_key"
 SECRET_KEY=$(cat "${SECRET_KEY_FILE}")
 
-docker build --pull --build-arg SECRET_KEY=${SECRET_KEY} -t turing-dmf:latest -f Dockerfile ..
+POSTGRES_PASSWORD_FILE=".docker_postgres_password"
+POSTGRES_PASSWORD=$(cat "${POSTGRES_PASSWORD_FILE}")
+
+docker build --pull --build-arg SECRET_KEY=${SECRET_KEY} --build-arg POSTGRES_PASSWORD=${POSTGRES_PASSWORD} -t turing-dmf:latest -f Dockerfile ..
