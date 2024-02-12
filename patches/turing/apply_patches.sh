@@ -27,3 +27,4 @@ apply_patch 0003_penalize_wrong_answer_after_correct_answer.patch
 apply_patch 0004_selenium_updates.patch
 apply_patch 0005_serve_static_files_with_whitenoise.patch
 apply_patch 0006_require_psycopg2.patch
+apply_patch 0007_test_pk_for_postgres.patch

@@ -9,3 +9,4 @@ This directory contains a few local patches. Most of them are related to changes
 4. `0004_selenium_updates.patch`: update internal tests to support new `selenium` versions.
 5. `0005_serve_static_files_with_whitenoise.patch`: use [`whitenoise`](https://pypi.org/project/whitenoise/) to serve static files.
 6. `0006_require_psycopg2.patch`: require [`psycopg2-binary`](https://pypi.org/project/psycopg2-binary/) to use a PostgreSQL database instead of the default SQLite3 one.
+7. `0007_test_pk_for_postgres.patch`: update tests for compatibility with PostgreSQL. It seems that SQLite3 uses a standalone database at every test and/or resets primary keys at every test, while PostgreSQL does not. Due to this, some hardcoded primary keys had to be replaced with a value fetched from the current database state.
