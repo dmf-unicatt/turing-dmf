@@ -1,0 +1,29 @@
+diff --git a/engine/models.py b/engine/models.py
+index e30d05d..16c16d6 100644
+--- a/engine/models.py
++++ b/engine/models.py
+@@ -70,10 +70,10 @@ class Gara(models.Model):
+     nome = models.CharField(max_length=200, help_text="Nome della gara")
+     inizio = models.DateTimeField(blank=True, null=True)
+     durata = models.DurationField(default=timedelta(hours=2), help_text="Durata nel formato hh:mm:ss")
+-    n_blocco = models.PositiveSmallIntegerField(blank=True, null=True,  # Il valore NULL non fa bloccare mai il punteggio
++    n_blocco = models.PositiveSmallIntegerField(blank=True, default=2, null=True,  # Il valore NULL non fa bloccare mai il punteggio
+                                                 verbose_name="Parametro N",
+                                                 help_text="Numero di risposte esatte che bloccano il punteggio di un problema")
+-    k_blocco = models.PositiveSmallIntegerField(blank=True, null=True,  # Il valore NULL fa aumentare sempre il punteggio
++    k_blocco = models.PositiveSmallIntegerField(blank=True, default=1, null=True,  # Il valore NULL fa aumentare sempre il punteggio
+                                                 verbose_name="Parametro K",
+                                                 help_text="Numero di risposte errate che aumentano il punteggio di un problema")
+     durata_blocco = models.DurationField(default=timedelta(minutes=20), help_text="Il punteggio dei problemi viene bloccato quando il tempo rimanente è quello indicato in questo campo nel formato hh:mm:ss")
+diff --git a/engine/tests.py b/engine/tests.py
+index 3a4e52f..ca90423 100644
+--- a/engine/tests.py
++++ b/engine/tests.py
+@@ -788,6 +788,7 @@ class HtmlTests(StaticLiveServerTestCase, TuringTests):
+         self.selenium.get(url)
+         self.selenium.find_element(By.NAME, "nome").send_keys("prova")
+         self.selenium.find_element(By.NAME, "cutoff").send_keys("3")
++        self.selenium.find_element(By.NAME, "k_blocco").clear()
+         self.selenium.find_element(By.NAME, "k_blocco").send_keys("5")
+         self.selenium.find_element(By.ID, "submit").click()
+ 

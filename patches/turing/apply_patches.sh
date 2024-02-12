@@ -38,4 +38,5 @@ else
     apply_patch 0005_serve_static_files_with_whitenoise.patch
     apply_patch 0006_test_pk_for_postgres.patch
     apply_patch 0007_durata_blocco.patch
+    apply_patch 0008_default_n_k_blocco.patch
 fi
