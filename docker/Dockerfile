@@ -9,7 +9,7 @@ FROM debian:12
 # also in the shell scripts stored in this directory.
 MAINTAINER Francesco Ballarin <francesco.ballarin@unicatt.it>
 
-ARG SECRET_KEY
+ARG DJANGO_SECRET_KEY
 ARG POSTGRES_PASSWORD
 
 WORKDIR /root
@@ -17,18 +17,19 @@ WORKDIR /root
 RUN apt update -y -q && \
     apt install -y -qq curl net-tools python3-pip sudo unzip vim wget
 
-COPY . .
-
 # Part 1: turing and its runtime dependencies
+COPY patches patches
+COPY turing turing
+
 RUN apt install -y -qq postgresql postgresql-client postgresql-contrib && \
     echo "$POSTGRES_PASSWORD\n$POSTGRES_PASSWORD" | passwd postgres
 
 RUN bash patches/turing/apply_patches.sh && \
     python3 -m pip install --break-system-packages -r turing/requirements.txt
 
-RUN cat <<EOF >> /root/turing/Turing/settings.ini
+RUN cat <<EOF > /root/turing/Turing/settings.ini
 [settings]
-SECRET_KEY=$SECRET_KEY
+SECRET_KEY=$DJANGO_SECRET_KEY
 DEBUG=False
 DEV_MODE=False
 ALLOWED_HOSTS=*
@@ -42,7 +43,7 @@ EOF
 RUN cd turing && \
     python3 manage.py collectstatic
 
-# Part 2: test dependencies
+# Part 2: turing and its test dependencies
 RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - && \
     sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list' && \
     apt update -y -q && \
@@ -56,5 +57,11 @@ RUN LATEST_STABLE_RELEASE=$(curl -sS https://googlechromelabs.github.io/chrome-f
 
 RUN python3 -m pip install --break-system-packages -r turing/requirements-dev.txt
 
-# The end: run server on docker container start
-CMD service postgresql start && cd turing && python3 manage.py runserver 0.0.0.0:8080
+# Part 3: mathrace-interaction
+COPY mathrace_interaction mathrace_interaction
+
+# Part 4: set up entrypoint that:
+# * creates and initialize databases on first run,
+# * starts the server
+COPY docker/entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+ENTRYPOINT ["docker-entrypoint.sh"]

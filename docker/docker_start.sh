@@ -15,4 +15,7 @@ if [ "$( docker container inspect -f '{{.State.Running}}' ${CONTAINER_ID} )" == 
     exit 1
 else
     docker start ${CONTAINER_ID}
+    # Entrypoint outputs are not reported to stdout, but logged: fetch them and print them to stdout, after waiting
+    # a reasonable amount of time for the entrypoint to be done
+    sleep 5 && docker logs --since "6s" --timestamps ${CONTAINER_ID}
 fi

@@ -10,10 +10,12 @@ set -e
 # Do not run any further if we are not connected to the internet
 wget -q --spider https://www.google.com
 
-SECRET_KEY_FILE=".docker_secret_key"
-SECRET_KEY=$(cat "${SECRET_KEY_FILE}")
+# Read in secrets
+DJANGO_SECRET_KEY_FILE=".docker_django_secret_key"
+DJANGO_SECRET_KEY=$(cat "${DJANGO_SECRET_KEY_FILE}")
 
 POSTGRES_PASSWORD_FILE=".docker_postgres_password"
 POSTGRES_PASSWORD=$(cat "${POSTGRES_PASSWORD_FILE}")
 
-docker build --pull --build-arg SECRET_KEY=${SECRET_KEY} --build-arg POSTGRES_PASSWORD=${POSTGRES_PASSWORD} -t turing-dmf:latest -f Dockerfile ..
+# Build image
+docker build --pull --build-arg DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY} --build-arg POSTGRES_PASSWORD=${POSTGRES_PASSWORD} -t turing-dmf:latest -f Dockerfile ..

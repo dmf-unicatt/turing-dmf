@@ -1,5 +1,4 @@
 .docker_container_id
-.docker_postgres_data_directory
+.docker_django_secret_key
 .docker_postgres_password
-.docker_secret_key
 .docker_volume_id

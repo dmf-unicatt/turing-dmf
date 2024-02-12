@@ -16,23 +16,19 @@ git clone --recurse-submodules https://github.com/dmf-unicatt/turing-dmf.git
 ```
 cd turing-dmf/docker
 ```
-2. Create a docker volume that will contain the database:
-```
-bash docker_create_volume.sh
-```
-3. Create a secret key for `django` and a password for `postgresql`:
+2. Create a secret key for `django` and a password for `postgresql`:
 ```
 bash docker_create_secrets.sh
+```
+3. Create a docker volume that will contain the database:
+```
+bash docker_create_volume.sh
 ```
 4. Create a `turing-dmf:latest` docker image based on the current **Turing @ DMF** repository:
 ```
 bash docker_create_image.sh
 ```
-5. Create a database for **Turing**:
-```
-bash docker_create_database.sh
-```
-6. Create a docker container based on the current `turing-dmf:latest` docker image:
+5. Create a docker container based on the current `turing-dmf:latest` docker image:
 ```
 bash docker_create_container.sh
 ```
@@ -47,7 +43,7 @@ cd turing-dmf/docker
 ```
 bash docker_start.sh
 ```
-**Turing** will be available at `https://host-server:8080`.
+**Turing** will be available at `https://host-server:8080`. The database will be initialized upon the first run.
 3. Attach a terminal to the running docker container
 ```
 bash docker_terminal.sh
@@ -75,7 +71,8 @@ bash docker_destroy_container.sh
 ```
 Note that:
 - the container must not be running in order to destroy it.
-- the database will be preserved upon destroying the container.
+- secrets will be preserved upon destroying the container, and must not be regenarated.
+- database volume (including the database itself) will be preserved upon the destroying the container, and must not be regenerated.
 3. Refresh the `turing-dmf:latest` docker image based on the updated **Turing @ DMF** repository:
 ```
 bash docker_create_image.sh
@@ -84,5 +81,3 @@ bash docker_create_image.sh
 ```
 bash docker_create_container.sh
 ```
-
-Note that one must not run the command to create the docker volume containing the database, nor the command to create the database itself, since they are preserved upon destroying the former container.
