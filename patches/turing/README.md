@@ -8,5 +8,5 @@ This directory contains a few local patches. Most of them are related to changes
 3. `0003_penalize_wrong_answer_after_correct_answer.patch`: this change affects the score of a team which submits an incorrect answer after having already provided a correct answer to the same question. In that case, **Turing** does not penalize the team by deducting 10 points out of their current score, while **mathrace** does reduce their score by 10 points. To preserve compatibility with **mathrace**, in that case **Turing @ DMF** penalizes the team.
 4. `0004_selenium_updates.patch`: update internal tests to support new `selenium` versions.
 5. `0005_serve_static_files_with_whitenoise.patch`: use [`whitenoise`](https://pypi.org/project/whitenoise/) to serve static files.
-6. (this patch was deleted)
-7. `0007_test_pk_for_postgres.patch`: update tests for compatibility with PostgreSQL. It seems that SQLite3 uses a standalone database at every test and/or resets primary keys at every test, while PostgreSQL does not. Due to this, some hardcoded primary keys had to be replaced with a value fetched from the current database state.
+6. `0006_test_pk_for_postgres.patch`: update tests for compatibility with PostgreSQL. It seems that SQLite3 uses a standalone database at every test and/or resets primary keys at every test, while PostgreSQL does not. Due to this, some hardcoded primary keys had to be replaced with a value fetched from the current database state.
+7. `0007_durata_blocco.patch`: allow customization of the deadline time for question score periodic increase.

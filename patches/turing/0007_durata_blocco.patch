@@ -1,0 +1,176 @@
+diff --git a/engine/models.py b/engine/models.py
+index a4199a3..e30d05d 100644
+--- a/engine/models.py
++++ b/engine/models.py
+@@ -76,6 +76,7 @@ class Gara(models.Model):
+     k_blocco = models.PositiveSmallIntegerField(blank=True, null=True,  # Il valore NULL fa aumentare sempre il punteggio
+                                                 verbose_name="Parametro K",
+                                                 help_text="Numero di risposte errate che aumentano il punteggio di un problema")
++    durata_blocco = models.DurationField(default=timedelta(minutes=20), help_text="Il punteggio dei problemi viene bloccato quando il tempo rimanente è quello indicato in questo campo nel formato hh:mm:ss")
+     num_problemi = models.PositiveSmallIntegerField(default=20,
+                                                     verbose_name="Problemi",
+                                                     help_text="Numero di problemi")
+@@ -141,6 +142,11 @@ class Gara(models.Model):
+             return None
+         return self.inizio + self.durata
+ 
++    def get_ora_blocco(self):
++        if not self.inizio:
++            return None
++        return self.inizio + self.durata - self.durata_blocco
++
+     def finished(self):
+         return (self.inizio is not None) and (timezone.now() > self.get_ora_fine())
+ 
+@@ -282,6 +288,7 @@ class Gara(models.Model):
+ 
+         this.inizio = parse(data['inizio'])
+         this.durata = timedelta(minutes=data['durata'])
++        this.durata_blocco = timedelta(minutes=data['durata_blocco'])
+         this.num_problemi = len(data['soluzioni'])
+         this.save()
+ 
+@@ -308,7 +315,7 @@ class Gara(models.Model):
+ 
+     def to_dict(self):
+         d = {}
+-        for k in {'nome', 'inizio', 'durata', 'n_blocco', 'k_blocco', 'num_problemi', 'cutoff', 'num_problemi', 'fixed_bonus', 'super_mega_bonus'}:
++        for k in {'nome', 'inizio', 'durata', 'durata_blocco', 'n_blocco', 'k_blocco', 'num_problemi', 'cutoff', 'num_problemi', 'fixed_bonus', 'super_mega_bonus'}:
+             d[k] = getattr(self, k)
+ 
+         d.update({
+diff --git a/engine/static/engine/js/client.js b/engine/static/engine/js/client.js
+index ee986ff..ba3af2f 100644
+--- a/engine/static/engine/js/client.js
++++ b/engine/static/engine/js/client.js
+@@ -40,6 +40,7 @@ class Gara {
+         this.last_event = 0;
+         this._time = this.inizio; // Parte a calcolare dall'inizio della gara
+         this.fine = new Date(data.fine);
++        this.tempo_blocco = new Date(data.tempo_blocco);
+         this.en_plein = 0;
+ 
+         for (var i in data.jolly) {
+@@ -132,7 +133,7 @@ class Gara {
+     get soglia_blocco() {
+         // Il momento in cui i problemi smettono di salire
+         if (this.inizio == null) return new Date();
+-        return new Date(this.fine.getTime() - 1000*60*20);
++        return this.tempo_blocco;
+     }
+ 
+     get scadenza_jolly() {
+diff --git a/engine/templates/gara/parametri.html b/engine/templates/gara/parametri.html
+index 049e2d0..ab4f395 100644
+--- a/engine/templates/gara/parametri.html
++++ b/engine/templates/gara/parametri.html
+@@ -1,15 +1,20 @@
+ {% load crispy_forms_tags %}
+ 
+     <div class="form-row">
+-        <div class="form-group col-md-6">
++        <div class="col-md-6 form-group">
+             {{ form.nome|as_crispy_field }}
+         </div>
+-        <div class="col-md-3 form-group">
++        <div class="col-md-6 form-group">
+             {{ form.num_problemi|as_crispy_field }}
+         </div>
+-        <div class="col-md-3 form-group">
++    </div>
++    <div class="form-row">
++        <div class="col-md-6 form-group">
+             {{ form.durata|as_crispy_field }}
+         </div>
++        <div class="col-md-6 form-group">
++            {{ form.durata_blocco|as_crispy_field }}
++        </div>
+     </div>
+     <div class="form-row">
+         <div class="col-md-4 form-group">
+diff --git a/engine/tests.py b/engine/tests.py
+index 8ec2ae1..3a4e52f 100644
+--- a/engine/tests.py
++++ b/engine/tests.py
+@@ -912,7 +912,7 @@ class HtmlTests(StaticLiveServerTestCase, TuringTests):
+         self.assertEqual(len(c), 0)
+ 
+     def test_modifica_parametri(self):
+-        self.crea_gara(num_squadre=3, soluzioni=[1,], num_ospiti=0, n_blocco=2, k_blocco=5, iniziata=True, admin=self.user, durata=timedelta(hours=2))
++        self.crea_gara(num_squadre=3, soluzioni=[1,], num_ospiti=0, n_blocco=2, k_blocco=5, iniziata=True, admin=self.user, durata=timedelta(hours=2), durata_blocco=timedelta(minutes=20))
+         gara = Gara.objects.first()
+ 
+         url = self.get_url("engine:gara-parametri", pk=gara.pk)
+@@ -921,6 +921,8 @@ class HtmlTests(StaticLiveServerTestCase, TuringTests):
+         self.selenium.find_element(By.NAME, "nome").send_keys("prova")
+         self.selenium.find_element(By.NAME, "durata").clear()
+         self.selenium.find_element(By.NAME, "durata").send_keys("02:30:00")
++        self.selenium.find_element(By.NAME, "durata_blocco").clear()
++        self.selenium.find_element(By.NAME, "durata_blocco").send_keys("00:30:00")
+         self.selenium.find_element(By.NAME, "k_blocco").clear()
+         self.selenium.find_element(By.NAME, "k_blocco").send_keys("6")
+         self.selenium.find_element(By.NAME, "num_problemi").clear()
+@@ -929,13 +931,14 @@ class HtmlTests(StaticLiveServerTestCase, TuringTests):
+ 
+         gara = Gara.objects.first()
+         self.assertEqual(gara.durata, timedelta(hours=2,minutes=30))
++        self.assertEqual(gara.durata_blocco, timedelta(minutes=30))
+         self.assertEqual(gara.k_blocco, 6)
+         self.assertEqual(gara.num_problemi, 7)
+         self.assertEqual(len(Soluzione.objects.filter(gara=gara)), 7)
+         self.assertEqual(gara.nome, "prova")
+ 
+     def test_riduci_problemi(self):
+-        self.crea_gara(num_squadre=3, soluzioni=[1,2,3,4,5], num_ospiti=0, n_blocco=2, k_blocco=5, iniziata=True, admin=self.user, durata=timedelta(hours=2))
++        self.crea_gara(num_squadre=3, soluzioni=[1,2,3,4,5], num_ospiti=0, n_blocco=2, k_blocco=5, iniziata=True, admin=self.user, durata=timedelta(hours=2), durata_blocco=timedelta(minutes=20))
+         gara = Gara.objects.first()
+ 
+         url = self.get_url("engine:gara-parametri", pk=gara.pk)
+@@ -981,7 +984,7 @@ class ValidationTests(MyTestCase, TuringTests):
+     def test_crea_gara_bonus_negativi(self):
+         self.url = reverse('engine:gara-new')
+         self.data = {
+-            "nome": "Prova", "num_problemi": "20", "durata": "02:00:00", "n_blocco": "2", "cutoff": "", "k_blocco": "5",
++            "nome": "Prova", "num_problemi": "20", "durata": "02:00:00", "durata_blocco": "00:20:00", "n_blocco": "2", "cutoff": "", "k_blocco": "5",
+             "fixed_bonus_0": "20", "fixed_bonus_1": "15", "fixed_bonus_2": "10", "fixed_bonus_3": "8", "fixed_bonus_4": "6",
+             "fixed_bonus_5": "5", "fixed_bonus_6": "4", "fixed_bonus_7": "3", "fixed_bonus_8": "2", "fixed_bonus_9": "-1",
+             "super_mega_bonus_0": "100", "super_mega_bonus_1": "60", "super_mega_bonus_2": "40", "super_mega_bonus_3": "30",
+@@ -1132,7 +1135,7 @@ class PermissionTests(MyTestCase, TuringTests):
+     def test_crea_gara_permission(self):
+         self.url = reverse('engine:gara-new')
+         self.data = {
+-            "nome": "Prova", "num_problemi": "20", "durata": "02:00:00", "n_blocco": "2", "cutoff": "", "k_blocco": "5",
++            "nome": "Prova", "num_problemi": "20", "durata": "02:00:00", "durata_blocco": "00:20:00", "n_blocco": "2", "cutoff": "", "k_blocco": "5",
+             "fixed_bonus_0": "20", "fixed_bonus_1": "+15", "fixed_bonus_2": "+10", "fixed_bonus_3": "+8", "fixed_bonus_4": "+6",
+             "fixed_bonus_5": "+5", "fixed_bonus_6": "+4", "fixed_bonus_7": "+3", "fixed_bonus_8": "+2", "fixed_bonus_9": "+1",
+             "super_mega_bonus_0": "100", "super_mega_bonus_1": "+60", "super_mega_bonus_2": "+40", "super_mega_bonus_3": "+30",
+@@ -1158,7 +1161,7 @@ class PermissionTests(MyTestCase, TuringTests):
+         gara = Gara.objects.first()
+         self.url = reverse('engine:gara-parametri', kwargs={'pk':gara.pk})
+         self.data = {
+-            "nome": "Prova", "num_problemi": "20", "durata": "02:00:00", "n_blocco": "2", "cutoff": "", "k_blocco": "5",
++            "nome": "Prova", "num_problemi": "20", "durata": "02:00:00", "durata_blocco": "00:20:00", "n_blocco": "2", "cutoff": "", "k_blocco": "5",
+             "fixed_bonus_0": "20", "fixed_bonus_1": "+15", "fixed_bonus_2": "+10", "fixed_bonus_3": "+8", "fixed_bonus_4": "+6",
+             "fixed_bonus_5": "+5", "fixed_bonus_6": "+4", "fixed_bonus_7": "+3", "fixed_bonus_8": "+2", "fixed_bonus_9": "+1",
+             "super_mega_bonus_0": "100", "super_mega_bonus_1": "+60", "super_mega_bonus_2": "+40", "super_mega_bonus_3": "+30",
+diff --git a/engine/views.py b/engine/views.py
+index c96d33c..14c3d33 100644
+--- a/engine/views.py
++++ b/engine/views.py
+@@ -64,7 +64,7 @@ class SignUpClosedView(TemplateView):
+ class CreaOModificaGaraView(SuccessMessageMixin):
+     """ Superclasse per astrarre metodi comuni a CreaGaraView e ModificaGaraView"""
+     model = Gara
+-    fields = ['nome', 'durata', 'n_blocco', 'k_blocco',
++    fields = ['nome', 'durata', 'durata_blocco', 'n_blocco', 'k_blocco',
+               'num_problemi', 'cutoff', 'fixed_bonus', 'super_mega_bonus', 'jolly', 'testo']
+ 
+     def get_form(self):
+@@ -407,6 +407,7 @@ class StatusView(DetailView):
+             return JsonResponse(resp)
+ 
+         resp['fine'] = gara.get_ora_fine()
++        resp['tempo_blocco'] = gara.get_ora_blocco()
+ 
+         resp['consegne'] = gara.get_consegne()
+         resp['jolly'] = gara.get_jolly()
