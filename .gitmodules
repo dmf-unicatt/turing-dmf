@@ -1,3 +1,6 @@
 [submodule "turing"]
 	path = turing
 	url = https://gitlab.com/drago-96/turing.git
+[submodule "dkr2sh"]
+	path = dkr2sh
+	url = https://github.com/dsschneidermann/dkr2sh.git
