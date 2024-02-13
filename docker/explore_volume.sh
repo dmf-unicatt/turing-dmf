@@ -7,6 +7,7 @@
 
 set -e
 
-CONTAINER_ID_FILE=".docker_container_id"
-CONTAINER_ID=$(cat "${CONTAINER_ID_FILE}")
-docker stop ${CONTAINER_ID}
+VOLUME_ID_FILE=".volume_id"
+VOLUME_ID=$(cat "${VOLUME_ID_FILE}")
+
+docker run -it --rm -v ${VOLUME_ID}:/mnt/volume --workdir=/mnt/volume debian:12

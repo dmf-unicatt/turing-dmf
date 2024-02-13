@@ -7,7 +7,7 @@
 
 set -e
 
-DJANGO_SECRET_KEY_FILE=".docker_django_secret_key"
+DJANGO_SECRET_KEY_FILE=".django_secret_key"
 if [[ -f "${DJANGO_SECRET_KEY_FILE}" ]]; then
     echo "A django secret key already exists!"
     echo "If you want to destroy it and create a new one, please remove the ${DJANGO_SECRET_KEY_FILE} file"
@@ -17,7 +17,7 @@ else
     echo ${DJANGO_SECRET_KEY} > ${DJANGO_SECRET_KEY_FILE}
 fi
 
-POSTGRES_PASSWORD_FILE=".docker_postgres_password"
+POSTGRES_PASSWORD_FILE=".postgres_password"
 if [[ -f "${POSTGRES_PASSWORD_FILE}" ]]; then
     echo "A postgres password already exists!"
     echo "If you want to destroy it and create a new one, please remove the ${POSTGRES_PASSWORD_FILE} file"

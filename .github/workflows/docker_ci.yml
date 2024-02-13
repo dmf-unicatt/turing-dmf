@@ -27,20 +27,20 @@ jobs:
           submodules: true
       - name: Create image
         run: |
-          bash docker_create_secrets.sh
-          bash docker_create_volume.sh
-          bash docker_create_image.sh
+          ./create_secrets.sh
+          ./create_volume.sh
+          ./create_image.sh
       - name: Run tests with docker run
         run: |
-          bash docker_run_tests.sh run ${{ matrix.database-type }}
+          ./run_turing_tests.sh run ${{ matrix.database-type }}
       - name: Run tests with docker exec
         if: matrix.database-type != 'SQLite3'
         run: |
-          bash docker_create_container.sh
-          bash docker_start.sh
-          bash docker_run_tests.sh exec ${{ matrix.database-type }}
-          bash docker_stop.sh
-          bash docker_destroy_container.sh
+          ./create_container.sh
+          ./start_container.sh
+          ./run_turing_tests.sh exec ${{ matrix.database-type }}
+          ./stop_container.sh
+          ./destroy_container.sh
 
   warn:
     runs-on: ubuntu-latest

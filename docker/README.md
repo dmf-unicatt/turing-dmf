@@ -18,23 +18,23 @@ cd turing-dmf/docker
 ```
 2. Create a secret key for `django` and a password for `postgresql`:
 ```
-bash docker_create_secrets.sh
+./create_secrets.sh
 ```
 3. Create a docker volume that will contain the database:
 ```
-bash docker_create_volume.sh
+./create_volume.sh
 ```
 4. Create a `turing-dmf:latest` docker image based on the current **Turing @ DMF** repository:
 ```
-bash docker_create_image.sh
+./create_image.sh
 ```
 5. Create a docker container based on the current `turing-dmf:latest` docker image:
 ```
-bash docker_create_container.sh
+./create_container.sh
 ```
 6. Database is created upon the first run of the container with
 ```
-bash docker_start.sh
+./start_container.sh
 ```
 The terminal will display the username and password of the administrator account, which can be subsequently changed through the web interface.
 
@@ -46,20 +46,20 @@ cd turing-dmf/docker
 ```
 2. Start the container, including the `django` server:
 ```
-bash docker_start.sh
+./start_container.sh
 ```
 **Turing** will be available at `https://host-server:8080`.
 3. Attach a terminal to the running docker container
 ```
-bash docker_terminal.sh
+./attach_terminal.sh
 ```
 4. Explore the database volume with
 ```
-bash docker_explore_volume.sh
+./explore_volume.sh
 ```
 5. Stop the running docker container
 ```
-bash docker_stop.sh
+./stop_container.sh
 ```
 
 ## 4. Rebuild the docker container
@@ -72,7 +72,7 @@ cd turing-dmf/docker
 ```
 2. Destroy the existing container
 ```
-bash docker_destroy_container.sh
+./destroy_container.sh
 ```
 Note that:
 - the container must not be running in order to destroy it.
@@ -80,9 +80,9 @@ Note that:
 - database volume (including the database itself) will be preserved upon the destroying the container, and must not be regenerated.
 3. Refresh the `turing-dmf:latest` docker image based on the updated **Turing @ DMF** repository:
 ```
-bash docker_create_image.sh
+./create_image.sh
 ```
 4. Create a docker container based on the refreshed `turing-dmf:latest` docker image:
 ```
-bash docker_create_container.sh
+./create_container.sh
 ```

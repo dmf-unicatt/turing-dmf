@@ -26,7 +26,7 @@ if [[ "${POSTGRES_CLUSTER_NAME}" != *"-cluster" ]]; then
 fi
 POSTGRES_CLUSTER_DATA_DIRECTORY=/mnt/postgres_data_directory
 
-# Create a new postgres cluster with data directory that matches the volume mounted in docker_create_container.sh,
+# Create a new postgres cluster with data directory that matches the volume mounted in create_container.sh,
 # if not already done previously
 # Note that the marker file .postgres_cluster_created cannot be put in ${POSTGRES_CLUSTER_DATA_DIRECTORY},
 # because the cluster needs to be re-created in every container. This is safe upon container destruction because

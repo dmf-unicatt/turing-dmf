@@ -7,14 +7,14 @@
 
 set -e
 
-VOLUME_ID_FILE=".docker_volume_id"
+VOLUME_ID_FILE=".volume_id"
 VOLUME_ID=$(cat "${VOLUME_ID_FILE}")
 
-CONTAINER_ID_FILE=".docker_container_id"
+CONTAINER_ID_FILE=".container_id"
 if [[ -f "${CONTAINER_ID_FILE}" ]]; then
     echo "A container already exists!"
-    echo "If you want to start it, please run docker_start.sh"
-    echo "If you want to destroy it and create a new one, please run docker_destroy_container.sh"
+    echo "If you want to start it, please run ./start.sh"
+    echo "If you want to destroy it and create a new one, please run ./destroy_container.sh"
     exit 1
 else
     # Ensure that docker's network has been customized, otherwise the docker IP address conflicts

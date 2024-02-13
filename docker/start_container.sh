@@ -7,11 +7,11 @@
 
 set -e
 
-CONTAINER_ID_FILE=".docker_container_id"
+CONTAINER_ID_FILE=".container_id"
 CONTAINER_ID=$(cat "${CONTAINER_ID_FILE}")
 if [ "$( docker container inspect -f '{{.State.Running}}' ${CONTAINER_ID} )" == "true" ]; then
     echo "The container is already running!"
-    echo "If you want to attach a terminal to it, please run docker_terminal.sh"
+    echo "If you want to attach a terminal to it, please run ./attach_terminal.sh"
     exit 1
 else
     START_TIME=$(date +%s)

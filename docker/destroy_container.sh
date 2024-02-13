@@ -7,11 +7,11 @@
 
 set -e
 
-CONTAINER_ID_FILE=".docker_container_id"
+CONTAINER_ID_FILE=".container_id"
 CONTAINER_ID=$(cat "${CONTAINER_ID_FILE}")
 if [ "$( docker container inspect -f '{{.State.Running}}' ${CONTAINER_ID} )" == "true" ]; then
     echo "The container is still running!"
-    echo "Please stop it first with docker_stop.sh"
+    echo "Please stop it first with ./stop.sh"
     exit 1
 else
     docker network rm turing-dmf-network

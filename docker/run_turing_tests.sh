@@ -44,7 +44,7 @@ RUN_TEST_EXEC="\
 
 if [[ "${EXEC_OR_RUN}" == "exec" ]]; then
     if [[ "${DATABASE_TYPE}" == "PostgreSQL" ]]; then
-        CONTAINER_ID_FILE=".docker_container_id"
+        CONTAINER_ID_FILE=".container_id"
         CONTAINER_ID=$(cat "${CONTAINER_ID_FILE}")
         docker exec ${CONTAINER_ID} /bin/bash -c "${DATABASE_SETUP} && ${RUN_TEST_EXEC}"
     elif [[ "${DATABASE_TYPE}" == "SQLite3" ]]; then

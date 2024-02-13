@@ -7,7 +7,7 @@
 
 set -e
 
-VOLUME_ID_FILE=".docker_volume_id"
+VOLUME_ID_FILE=".volume_id"
 if [[ -f "${VOLUME_ID_FILE}" ]]; then
     echo "A database volume already exists!"
     exit 1

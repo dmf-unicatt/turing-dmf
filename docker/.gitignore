@@ -1,5 +1,5 @@
-.docker_container_id
-.docker_django_secret_key
-.docker_postgres_password
-.docker_volume_id
+.container_id
+.django_secret_key
+.postgres_password
+.volume_id
 dockerfile.sh
