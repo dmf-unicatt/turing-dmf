@@ -43,8 +43,9 @@
 0 120 17 17 PROT:16 squadra 17 sceglie 17 come jolly
 0 120 18 7 PROT:17 squadra 18 sceglie 7 come jolly
 0 120 19 19 PROT:18 squadra 19 sceglie 19 come jolly
-31 110 19 1 1 PROT:19 squadra 19, quesito 1:giusto
+# 31 110 19 1 1 PROT:19 squadra 19, quesito 1:giusto  # FB: ho dovuto spostarlo qui sotto perché altrimenti viene prima del primo aggiornamento punteggio esercizi
 60 101 aggiorna punteggio esercizi, orologio: 1
+61 110 19 1 1 PROT:19 squadra 19, quesito 1:giusto
 120 101 aggiorna punteggio esercizi, orologio: 2
 169 110 10 1 1 PROT:20 squadra 10, quesito 1:giusto
 180 101 aggiorna punteggio esercizi, orologio: 3

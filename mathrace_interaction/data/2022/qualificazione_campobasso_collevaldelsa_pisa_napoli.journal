@@ -58,8 +58,9 @@
 0 120 32 9 PROT:31 squadra 32 sceglie 9 come jolly
 0 120 33 18 PROT:32 squadra 33 sceglie 18 come jolly
 0 120 34 16 PROT:33 squadra 34 sceglie 16 come jolly
-57 110 30 1 0 PROT:34 squadra 30, quesito 1:sbagliato
+# 57 110 30 1 0 PROT:34 squadra 30, quesito 1:sbagliato  # FB: ho dovuto spostarlo qui sotto perché altrimenti viene prima del primo aggiornamento punteggio esercizi
 60 101 aggiorna punteggio esercizi, orologio: 1
+61 110 30 1 0 PROT:34 squadra 30, quesito 1:sbagliato
 120 101 aggiorna punteggio esercizi, orologio: 2
 129 110 30 1 1 PROT:35 squadra 30, quesito 1:giusto
 161 110 28 1 1 PROT:36 squadra 28, quesito 1:giusto
