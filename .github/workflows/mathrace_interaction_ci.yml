@@ -10,6 +10,9 @@ on:
   schedule:
     - cron: "0 0 * * MON"
   workflow_dispatch:
+    inputs:
+      full_integration_tests:
+        description: "If yes, run integration tests with --all-journals. Default value is no"
 
 jobs:
   test:
@@ -75,18 +78,47 @@ jobs:
           python3 -m isort --check --diff .
       - name: Run mypy
         run: |
-          python3 -m mypy .
+          python3 -m mypy --exclude=conftest.py .
+          python3 -m mypy tests/integration/conftest.py
+          python3 -m mypy tests/unit/conftest.py
       - name: Run yamllint
         run: |
           python3 -m yamllint -d "{ignore: turing, extends: default, rules: {document-start: {present: false}, line-length: disable, truthy: {check-keys: false}}}" ../.github
       - name: Run documentation generation
         run: |
           cd docs && python3 -m sphinx -W -b html . build/html
-      - name: Run tests
+      - name: Run unit tests
         run: |
-          python3 -m coverage run --source=mathrace_interaction -m pytest -svv tests/unit
-      - name: Check test coverage
+          COVERAGE_FILE=.coverage_unit python3 -m coverage run --source=mathrace_interaction -m pytest tests/unit
+      - name: Determine integration tests options
+        id: determine_integration_tests_options
         run: |
+          WITH_INTEGRATION_TESTS=yes
+          FULL_INTEGRATION_TESTS=${{ inputs.full_integration_tests }}
+          if [ "${{ github.event_name }}" == "schedule" ]; then
+            FULL_INTEGRATION_TESTS=yes
+          fi
+          if [ "${{ matrix.name }}" != "with-turing" ]; then
+            WITH_INTEGRATION_TESTS=no
+            FULL_INTEGRATION_TESTS=no
+          fi
+          if [ "${FULL_INTEGRATION_TESTS}" != "yes" ] && [ "${FULL_INTEGRATION_TESTS}" != "no" ]; then
+            FULL_INTEGRATION_TESTS=no
+          fi
+          echo "with_integration_tests=${WITH_INTEGRATION_TESTS}" >> ${GITHUB_OUTPUT}
+          echo "full_integration_tests=${FULL_INTEGRATION_TESTS}" >> ${GITHUB_OUTPUT}
+      - name: Run integration tests (basic)
+        if: steps.determine_integration_tests_options.outputs.with_integration_tests == 'yes' && steps.determine_integration_tests_options.outputs.full_integration_tests != 'yes'
+        run: |
+          COVERAGE_FILE=.coverage_integration python3 -m coverage run --source=mathrace_interaction -m pytest tests/integration
+      - name: Run integration tests (full)
+        if: steps.determine_integration_tests_options.outputs.with_integration_tests == 'yes' && steps.determine_integration_tests_options.outputs.full_integration_tests == 'yes'
+        run: |
+          COVERAGE_FILE=.coverage_integration python3 -m coverage run --source=mathrace_interaction -m pytest --all-journals tests/integration
+      - name: Combine coverage reports
+        if: steps.determine_integration_tests_options.outputs.with_integration_tests == 'yes'
+        run: |
+          python3 -m coverage combine .coverage*
           python3 -m coverage report --fail-under=100 --show-missing --skip-covered
 
   warn:

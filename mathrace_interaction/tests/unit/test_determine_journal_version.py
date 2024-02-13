@@ -13,7 +13,7 @@ from mathrace_interaction.determine_journal_version import determine_journal_ver
 
 
 @pytest.fixture
-def expected_journal_versions_all(data_dir: pathlib.Path) -> dict[pathlib.Path, str]:
+def expected_journal_versions(data_dir: pathlib.Path) -> dict[pathlib.Path, str]:
     """Return the expected journal versions for all journals in the data directory."""
     return {
         # r5539
@@ -96,21 +96,21 @@ def expected_journal_versions_all(data_dir: pathlib.Path) -> dict[pathlib.Path, 
     }
 
 
-def test_expected_journal_versions_all_fixture(
-    data_journals_all: list[pathlib.Path], expected_journal_versions_all: dict[pathlib.Path, str]
+def test_expected_journal_versions_fixture(
+    data_journals: list[pathlib.Path], expected_journal_versions: dict[pathlib.Path, str]
 ) -> None:
-    """Test that the expected_journal_versions_all fixture actually contains all journal files."""
-    data_journals_difference = set(data_journals_all).symmetric_difference(expected_journal_versions_all.keys())
+    """Test that the expected_journal_versions fixture actually contains all journal files."""
+    data_journals_difference = set(data_journals).symmetric_difference(expected_journal_versions.keys())
     assert len(data_journals_difference) == 0, f"Unlisted journals found {data_journals_difference}"
 
 
 def test_determine_journal_version(
-    data_journals_all: list[pathlib.Path], expected_journal_versions_all: dict[pathlib.Path, str]
+    data_journals: list[pathlib.Path], expected_journal_versions: dict[pathlib.Path, str]
 ) -> None:
     """Test determine_journal_version with all journals in the data directory."""
-    for journal in data_journals_all:
+    for journal in data_journals:
         with open(journal) as journal_stream:
             actual_version = determine_journal_version(journal_stream)
-        expected_version = expected_journal_versions_all[journal]
+        expected_version = expected_journal_versions[journal]
         assert actual_version == expected_version, (
             f"{journal} version was determined as {actual_version}, but the expected version was {expected_version}")

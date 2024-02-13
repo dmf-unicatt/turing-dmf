@@ -44,19 +44,3 @@ def test_data_contains_only_journal_and_score_files(data_dir: pathlib.Path) -> N
             pass
         else:
             raise RuntimeError(f"Invalid {entry}")
-
-
-def test_data_journal_all_fixture(data_dir: pathlib.Path, data_journals_all: list[pathlib.Path]) -> None:
-    """Test that the data_journals_all fixture actually contains all journal files."""
-    data_journals_actual = set()
-    for entry in data_dir.rglob("*"):
-        assert entry.is_file() or entry.is_dir()
-        if entry.is_file():
-            if entry.suffix == ".journal":
-                data_journals_actual.add(entry)
-        elif entry.is_dir():
-            pass
-        else:
-            raise RuntimeError(f"Invalid {entry}")
-    data_journals_difference = data_journals_actual.symmetric_difference(data_journals_all)
-    assert len(data_journals_difference) == 0, f"Unlisted journals found {data_journals_difference}"
