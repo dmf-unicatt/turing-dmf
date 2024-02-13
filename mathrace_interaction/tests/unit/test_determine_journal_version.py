@@ -91,8 +91,10 @@ def expected_journal_versions(data_dir: pathlib.Path) -> dict[pathlib.Path, str]
         data_dir / "2023" / "qualificazione_femminile_2.journal": "r20642",
         data_dir / "2023" / "qualificazione_femminile_3.journal": "r20642",
         # r20644
-        data_dir / "2023" / "disfida_new_format.journal": "r20644",
-        data_dir / "2024" / "february_9_short_run.journal": "r20644",
+        # ... untested ...
+        # r25013
+        data_dir / "2023" / "disfida_new_format.journal": "r25013",
+        data_dir / "2024" / "february_9_short_run.journal": "r25013",
     }
 
 

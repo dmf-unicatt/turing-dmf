@@ -32,7 +32,7 @@ def determine_journal_version(journal_stream: typing.TextIO) -> str:
 
         The following versions are available:
 
-        * r5539 (Fri Jan 18 00:21:11 2013 +0000): initial version.
+        * r5539 (2013-01-18 01:21:11 +0100): initial version.
 
           This version uses the following race setup codes:
           ° --- 001: file begin
@@ -51,7 +51,7 @@ def determine_journal_version(journal_stream: typing.TextIO) -> str:
           ° timestamp 029: race end
           ° timestamp 091: manual addition of a bonus
 
-        * r11167 (Sun Mar 8 19:41:09 2015 +0000): this version introduced some code changes in race events.
+        * r11167 (2015-03-08 20:41:09 +0100): this version introduced some code changes in race events.
 
           All race event codes were changed as follows:
           ° 0 200: race start was changed from 002 to 200
@@ -64,51 +64,58 @@ def determine_journal_version(journal_stream: typing.TextIO) -> str:
           ° timestamp 202: race resumed was changed from 028 to 202
           ° timestamp 210: race end was changed from 029 to 210
 
-        * r11184 (Tue Mar 10 08:04:16 2015 +0000): this version introduced protocol numbers in
+        * r11184 (2015-03-10 09:04:16 +0100): this version introduced protocol numbers in
           race events 110 and 120
 
-        * r11189 (Tue Mar 10 11:01:10 2015 +0000): this version added a further timer event.
+        * r11189 (2015-03-10 12:01:10 +0100): this version added a further timer event.
 
-          A new race event code is introduced:
+          The following event setup codes were added:
           ° timestamp 901: timer update for the second timer.
 
-        * r17497 (Tue May 28 22:55:27 2019 +0000): this version added support for non-default k.
+        * r17497 (2019-05-29 00:55:27 +0200): this version added support for non-default k.
 
           The following race setup codes were changed:
           ° --- 003: race definition appends the value of k to the one of n with the notation n.k
 
-        * r17505 (Thu May 30 19:37:33 2019 +0000): this version added team definition as a race code.
+        * r17505 (2019-05-30 21:37:33 +0200): this version added team definition as a race code.
 
           The following race setup codes were added:
           ° --- 005: team definition
 
-        * r17548 (Fri Jun 7 19:45:05 2019 +0000): this version added support for guest teams.
+        * r17548 (2019-06-07 21:45:05 +0200): this version added and alternative race definition.
 
           The following race setup codes were added:
           ° --- 002: alternative race definition
 
-        * r20642 (Fri Jun 4 23:31:45 2021 +0000): this version added bonus and superbonus race codes.
+        * r20642 (2021-06-05 01:31:45 +0200): this version added bonus and superbonus race codes.
 
           The following race setup codes were added:
           ° --- 011: bonus definition
           ° --- 012: superbonus definition
 
-        * r20644 (Mon Jun 7 23:36:41 2021 +0000): this version prints human readable timestamps
+        * r20644 (2021-06-08 01:36:41 +0200): this version prints human readable timestamps
           of the form hh:mm:ss.msec instead of number of elapsed seconds.
 
           This change affects all race event codes.
+
+        * r25013 (2024-02-13 00:10:49 +0100): this version added an extra field to the question definition.
+          The field currently stores a 0000 placeholder, but in future may store the exact answer to the question.
+
+          The following race setup codes were changed:
+          ° --- 004: question definition
     """
     journal = [line.strip("\n") for line in journal_stream.readlines()]
 
     # Since all versions after the fallback one use the event code 200 for the race start,
     # a journal containing the code 002 is a fallback journal
     if _has_line_matching_condition(journal, lambda line: line == "0 002 inizio gara"):
-        assert not _has_line_matching_condition(journal, lambda line: line == "0 200 inizio gara")
+        if _has_line_matching_condition(journal, lambda line: line == "0 200 inizio gara"):
+            raise RuntimeError("More than one race start event detected, with different event codes")
         return "r5539"
 
     # List all non-fallback versions
     possible_versions = [
-        "r11167", "r11184", "r11189", "r17497", "r17505", "r17548", "r20642", "r20644"
+        "r11167", "r11184", "r11189", "r17497", "r17505", "r17548", "r20642", "r20644", "r25013"
     ]
 
     # r11184 introduced protocol numbers for events 110 and 120. If protocol numbers are present,
@@ -166,6 +173,18 @@ def determine_journal_version(journal_stream: typing.TextIO) -> str:
         _remove_from_list_if_present(possible_versions, "r17505")
         _remove_from_list_if_present(possible_versions, "r17548")
         _remove_from_list_if_present(possible_versions, "r20642")
+
+    # r25013 added an extra field to question definition, with a placeholder answer
+    # compatible with previous versions r11167, r11184, r11189, r17497, r17505, r17548, r20642 and r20644
+    if _has_line_matching_condition(journal, lambda line: line.startswith("--- 004") and "0000" in line):
+        _remove_from_list_if_present(possible_versions, "r11167")
+        _remove_from_list_if_present(possible_versions, "r11184")
+        _remove_from_list_if_present(possible_versions, "r11189")
+        _remove_from_list_if_present(possible_versions, "r17497")
+        _remove_from_list_if_present(possible_versions, "r17505")
+        _remove_from_list_if_present(possible_versions, "r17548")
+        _remove_from_list_if_present(possible_versions, "r20642")
+        _remove_from_list_if_present(possible_versions, "r20644")
 
     # If more than one versions are left, return the earliest one, i.e. the one with the highest
     # backward compatibility
