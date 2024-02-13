@@ -109,7 +109,8 @@ def test_determine_journal_version(
 ) -> None:
     """Test determine_journal_version with all journals in the data directory."""
     for journal in data_journals_all:
-        actual_version = determine_journal_version(journal)
+        with open(journal) as journal_stream:
+            actual_version = determine_journal_version(journal_stream)
         expected_version = expected_journal_versions_all[journal]
         assert actual_version == expected_version, (
             f"{journal} version was determined as {actual_version}, but the expected version was {expected_version}")
