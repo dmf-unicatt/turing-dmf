@@ -86,3 +86,10 @@ Note that:
 ```
 ./create_container.sh
 ```
+
+## 5. Tips and tricks
+
+1. Protect secret and volume file from accidental deletion by running
+```
+./prevent_accidental_deletion.sh
+```
