@@ -3,7 +3,7 @@
 # This file is part of Turing @ DMF.
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
-"""pytest configuration file for unit tests."""
+"""pytest configuration file for functional tests."""
 
 import pathlib
 
