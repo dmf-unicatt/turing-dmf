@@ -15,5 +15,5 @@ def test_journal_reader_writer_on_data(journal: pathlib.Path) -> None:
     """Test that journal_reader runs successfully on all journals in the data directory."""
     # TODO convert into a read + write test
     journal_date = datetime.datetime(int(journal.parent.name), 1, 1, tzinfo=datetime.UTC)
-    with journal_reader(open(journal), journal.name, journal_date) as journal_stream:
-        journal_stream.read()
+    with journal_reader(open(journal)) as journal_stream:
+        journal_stream.read(journal.name, journal_date)
