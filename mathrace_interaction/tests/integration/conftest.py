@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """pytest configuration file for integration tests."""
 
+import functools
 import pathlib
 
 import _pytest
@@ -94,6 +95,7 @@ _journals_is_basic_testing = {
     _data_dir / "2024" / "february_9_short_run.journal": True,
 }
 
+@functools.cache
 def generate_journals(all_journals: bool) -> list[pathlib.Path]:
     """
     Return journals files in the data directory on which tests should be run.
@@ -133,13 +135,13 @@ def pytest_generate_tests(metafunc: pytest.Metafunc) -> None:
         metafunc.parametrize("journal", journals, ids=journals_as_str)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def data_dir() -> pathlib.Path:
     """Return the data directory of mathrace-interaction."""
     return _data_dir
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def journals(request: _pytest.fixtures.SubRequest) -> list[pathlib.Path]:
     """Return journals files in the data directory on which tests should be run."""
     return generate_journals(request.config.option.all_journals)

@@ -35,13 +35,13 @@ def pytest_generate_tests(metafunc: pytest.Metafunc) -> None:
         metafunc.parametrize("journal", _journals, ids=_journals_as_str)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def data_dir() -> pathlib.Path:
     """Return the data directory of mathrace-interaction."""
     return _data_dir
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def journals() -> list[pathlib.Path]:
     """Return all journals in the data directory, as a fixture."""
     return _journals
