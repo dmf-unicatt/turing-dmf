@@ -785,9 +785,13 @@ class JournalReaderR17548(JournalReaderR17505):
         self._process_alternative_race_definition_total_time_deadline_score_increase_entry(
             line, race_def_split[3], turing_dict)
 
-        # Bonus and superbonus cardinality are not reported in this format, and delayed to the next two lines
-        turing_dict["mathrace_only"]["bonus_cardinality"] = "N/A"
-        turing_dict["mathrace_only"]["superbonus_cardinality"] = "N/A"
+        # Bonus and superbonus cardinality are not reported in this format, and are assumed to have default values.
+        turing_dict["mathrace_only"]["bonus_cardinality"] = "10"
+        turing_dict["mathrace_only"]["superbonus_cardinality"] = "6"
+        self._process_race_definition_bonus_cardinality_entry(
+            "not-really-used", turing_dict["mathrace_only"]["bonus_cardinality"], turing_dict)
+        self._process_race_definition_superbonus_cardinality_entry(
+            "not-really-used", turing_dict["mathrace_only"]["superbonus_cardinality"], turing_dict)
 
         # mathrace does not store the cutoff, hence leave it unset in turing
         turing_dict["cutoff"] = None
@@ -932,7 +936,7 @@ class JournalReaderR20642(JournalReaderR17548):
         bonus_cardinality = turing_dict["mathrace_only"][mathrace_key]
         if bonus_cardinality == "N/A":
             # Read in all numbers in the line, except for the first one containing the maximum cardinality
-            bouns_values_end = -1
+            bouns_values_end = None
             turing_dict["mathrace_only"][mathrace_key] = bonus_values_cardinality
         else:
             if int(bonus_values_cardinality) < int(bonus_cardinality):

@@ -53,6 +53,7 @@ tests = [
 
 [tool.isort]
 line_length = 120
+order_by_type = false
 
 [tool.mypy]
 check_untyped_defs = true
