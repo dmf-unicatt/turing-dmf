@@ -52,6 +52,9 @@ RUN cd /root/turing && \
 # Part 2: mathrace-interaction
 COPY mathrace_interaction mathrace_interaction
 
+RUN cd /root/mathrace_interaction && \
+    python3 -m pip install --break-system-packages .[tests]
+
 # Part 3: set up entrypoint that:
 # * creates and initialize databases on first run,
 # * starts the server
