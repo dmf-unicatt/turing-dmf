@@ -136,22 +136,22 @@ class AbstractJournalReader(abc.ABC):
     @abc.abstractmethod
     def _read_race_definition_section(self, turing_dict: TuringDict) -> None:
         """Read the race definition section."""
-        pass
+        pass  # pragma: no cover
 
     @abc.abstractmethod
     def _read_questions_definition_section(self, turing_dict: TuringDict) -> None:
         """Read the questions definition section."""
-        pass
+        pass  # pragma: no cover
 
     @abc.abstractmethod
     def _read_teams_definition_section(self, turing_dict: TuringDict) -> None:
         """Read the teams definition section."""
-        pass
+        pass  # pragma: no cover
 
     @abc.abstractmethod
     def _read_race_events_section(self, turing_dict: TuringDict) -> None:
         """Read all race events."""
-        pass
+        pass  # pragma: no cover
 
 
 class JournalReaderR5539(AbstractJournalReader):
@@ -365,12 +365,15 @@ class JournalReaderR5539(AbstractJournalReader):
     def _read_questions_definition_section(self, turing_dict: TuringDict) -> None:
         """Read the questions definition section."""
         # Define first a default configuration in which every question has a score of 20
+        if "default_score" not in turing_dict["mathrace_only"]:
+            turing_dict["mathrace_only"]["default_score"] = "20"
+        default_score = turing_dict["mathrace_only"]["default_score"]
         questions: list[dict[str, str]] = list()
         num_questions = int(turing_dict["num_problemi"])
         for q in range(num_questions):
             questions.append({
                 "problema": str(q + 1), "nome": f"Problema {q + 1}",
-                "risposta": str(int(True)), "punteggio": "20"
+                "risposta": str(int(True)), "punteggio": default_score
             })
         turing_dict["soluzioni"] = questions
         # Update the default initialization based on values read from file
@@ -514,7 +517,7 @@ class JournalReaderR5539(AbstractJournalReader):
         """Process a manual bonus event."""
         event_datetime = self._convert_timestamp_to_datetime(timestamp_str, True, turing_dict)
         turing_dict["mathrace_only"]["manual_bonuses"].append({
-            "orario": event_datetime, "motivazione": event_content})
+            "orario": event_datetime.isoformat(), "motivazione": event_content})
 
     def _convert_timestamp_to_datetime(
         self, timestamp_str: str, strict: bool, turing_dict: TuringDict
@@ -832,19 +835,20 @@ class JournalReaderR17548(JournalReaderR17505):
             num_questions, default_score = num_questions_alternative.split(":")
         else:
             num_questions = num_questions_alternative
+            default_score = "20"
         # Store the results in the dictionary
         turing_dict["mathrace_only"]["num_questions_alternative"] = num_questions_alternative
         turing_dict["num_problemi"] = num_questions
-        turing_dict["mathrace_only"]["default_score"] = num_questions_alternative
+        turing_dict["mathrace_only"]["default_score"] = default_score
         # It is now possible to set the initial score, if it calculation was delayed when reading the first entry
         initial_score = turing_dict["mathrace_only"]["initial_score"]
         if initial_score == "N/A":
-            initial_score == str(int(num_questions) * 10)
+            turing_dict["mathrace_only"]["initial_score"] = str(int(num_questions) * 10)
         else:
             expected_score = int(num_questions) * 10
             if int(initial_score) != expected_score:
                 raise RuntimeError(
-                    f"Invalid line {line} in race definition: the expected score is {expected_score}, "
+                    f"Invalid line {line} in alternative race definition: the expected score is {expected_score}, "
                     f"but the race definition contains {initial_score}. This is not compatible with turing, "
                     f"since it does not allow to change the initial score")
 
@@ -874,7 +878,7 @@ class JournalReaderR17548(JournalReaderR17505):
         """Process the total time of the race in the race definition line."""
         if "-" not in times:
             raise RuntimeError(
-                f"Invalid line {line} in race definition: it does not contain the opreator -")
+                f"Invalid line {line} in race definition: it does not contain the operator -")
         turing_dict["durata"], turing_dict["durata_blocco"] = times.split("-")
 
 
@@ -907,7 +911,7 @@ class JournalReaderR20642(JournalReaderR17548):
 
     def _read_race_definition_section(self, turing_dict: TuringDict) -> None:
         """Read the race definition section, including two further lines for bonus and superbonus definition."""
-        # Read the first line as in previous versions
+        # Read the section as in previous versions
         super()._read_race_definition_section(turing_dict)
 
         # Read next the bonus and superbonus definition, if available
@@ -923,6 +927,40 @@ class JournalReaderR20642(JournalReaderR17548):
             else:
                 self._process_bonus_or_superbonus_definition_line(line, turing_dict, mathrace_key, turing_key)
 
+    def _process_race_definition_line(self, line: str, turing_dict: TuringDict) -> None:
+        """Process the race definition line, undoing the default bonus/superbonus assignment of r17548."""
+        # Read the line as in previous versions
+        super()._process_race_definition_line(line, turing_dict)
+
+        # r17548 has set a default value of bonus and superbonus cardinality when using the alternative definition.
+        # Since this version now supports setting the bonus/superbonus definition lines, the user must now provide
+        # them and therefore there is no need to set defualt values.
+        if line[4:].startswith(self.RACE_DEFINITION_ALTERNATIVE):
+            turing_dict["mathrace_only"]["bonus_cardinality"] = "N/A"
+            turing_dict["mathrace_only"]["superbonus_cardinality"] = "N/A"
+
+    def _process_race_definition_bonus_cardinality_entry(
+        self, line: str, bonus_cardinality: str, turing_dict: TuringDict
+    ) -> None:
+        """
+        Process the bonus cardinality entry in the race definition line.
+
+        Earlier versions were hardcoding the value to 10. This is not true anymore in this version,
+        and the value can be any integer.
+        """
+        turing_dict["mathrace_only"]["bonus_cardinality"] = bonus_cardinality
+
+    def _process_race_definition_superbonus_cardinality_entry(
+        self, line: str, superbonus_cardinality: str, turing_dict: TuringDict
+    ) -> None:
+        """
+        Process the superbonus cardinality entry in the race definition line.
+
+        Earlier versions were hardcoding the value to 6. This is not true anymore in this version,
+        and the value can be any integer.
+        """
+        turing_dict["mathrace_only"]["superbonus_cardinality"] = superbonus_cardinality
+
     def _process_bonus_or_superbonus_definition_line(
         self, line: str, turing_dict: TuringDict, mathrace_key: str, turing_key: str
     ) -> None:
@@ -931,18 +969,18 @@ class JournalReaderR20642(JournalReaderR17548):
             line, _ = line[8:].split("definizione dei")
         else:
             line = line[8:]
-        bonus_split = line.split(" ")
+        bonus_split = line.strip(" ").split(" ")
         bonus_values_cardinality = bonus_split[0]
         bonus_cardinality = turing_dict["mathrace_only"][mathrace_key]
         if bonus_cardinality == "N/A":
             # Read in all numbers in the line, except for the first one containing the maximum cardinality
-            bouns_values_end = None
+            bonus_values_end = None
             turing_dict["mathrace_only"][mathrace_key] = bonus_values_cardinality
         else:
             if int(bonus_values_cardinality) < int(bonus_cardinality):
                 raise RuntimeError(f"Invalid line {line} in race definition: not enough values to read")
-            bouns_values_end = int(bonus_cardinality) + 1
-        turing_dict[turing_key] = ",".join(bonus_split[1:bouns_values_end])
+            bonus_values_end = int(bonus_cardinality) + 1
+        turing_dict[turing_key] = ",".join(bonus_split[1:bonus_values_end])
 
 
 class JournalReaderR20644(JournalReaderR20642):

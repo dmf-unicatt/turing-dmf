@@ -7,6 +7,7 @@
 
 import datetime
 import io
+import typing
 
 import pytest
 
@@ -531,3 +532,15 @@ def turing_dict(race_name: str, race_date: datetime.datetime) -> TuringDict:
 
         ]
     }
+
+@pytest.fixture
+def runtime_error_contains() -> typing.Callable[[typing.Callable[[], typing.Any], str], None]:
+    """Check that a RuntimeError is raised and contains the expected text."""
+    def _(call: typing.Callable[[], typing.Any], expected_error_text: str) -> None:
+        """Check that a RuntimeError is raised and contains the expected text (internal implementation)."""
+        with pytest.raises(RuntimeError) as excinfo:
+            call()
+        runtime_error_text = str(excinfo.value)
+        assert expected_error_text in runtime_error_text
+
+    return _
