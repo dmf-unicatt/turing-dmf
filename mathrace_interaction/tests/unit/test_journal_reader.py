@@ -11,9 +11,8 @@ import pathlib
 from mathrace_interaction.journal_reader import journal_reader
 
 
-def test_journal_reader_success(data_journals: list[pathlib.Path]) -> None:
+def test_journal_reader_success(journal: pathlib.Path) -> None:
     """Test that journal_reader runs successfully on all journals in the data directory."""
-    for journal in data_journals:
-        journal_date = datetime.datetime(int(journal.parent.name), 1, 1, tzinfo=datetime.UTC)
-        with journal_reader(open(journal), journal.name, journal_date) as journal_stream:
-            journal_stream.read()
+    journal_date = datetime.datetime(int(journal.parent.name), 1, 1, tzinfo=datetime.UTC)
+    with journal_reader(open(journal), journal.name, journal_date) as journal_stream:
+        journal_stream.read()

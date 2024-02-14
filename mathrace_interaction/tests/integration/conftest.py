@@ -16,7 +16,7 @@ _data_dir = pathlib.Path(__file__).parent.parent.parent / "data"
 # To keep the total runtime of tests under control, run tests by default on a subset of the available files.
 # Classify journals as either part of basic testing (key equal to True),
 # or only part of full testing (key equal to False)
-_data_journals_is_basic_testing = {
+_journals_is_basic_testing = {
     # disfida: different formats across the years
     _data_dir / "2013" / "disfida.journal": True,
     _data_dir / "2014" / "disfida.journal": True,
@@ -94,6 +94,18 @@ _data_journals_is_basic_testing = {
     _data_dir / "2024" / "february_9_short_run.journal": True,
 }
 
+def generate_journals(all_journals: bool) -> list[pathlib.Path]:
+    """
+    Return journals files in the data directory on which tests should be run.
+
+    By default, only a subset of the journal files will be returned.
+    All journal files are return if calling pytest with the --all-journals option.
+    """
+    if all_journals:
+        return list(_journals_is_basic_testing.keys())
+    else:
+        return [journal for (journal, is_basic_testing) in _journals_is_basic_testing.items() if is_basic_testing]
+
 
 def pytest_addoption(parser: pytest.Parser, pluginmanager: pytest.PytestPluginManager) -> None:
     """Add options to run tests on all journal files, rather than only the basic subset."""
@@ -108,10 +120,17 @@ def pytest_configure(config: pytest.Config) -> None:
 def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
     """Apply skip associated to the value of the command line option --all-journals."""
     if not config.getoption("--all-journals"):
-        skip_requires_all_journals_tests = pytest.mark.skip(reason="need --all-journals option to run")
+        requires_all_journals_marker = pytest.mark.skip(reason="need --all-journals option to run")
         for item in items:
             if "requires_all_journals" in item.keywords:
-                item.add_marker(skip_requires_all_journals_tests)
+                item.add_marker(requires_all_journals_marker)
+
+def pytest_generate_tests(metafunc: pytest.Metafunc) -> None:
+    """Parametrize tests with journal fixture over journals in the data directory."""
+    journals = generate_journals(metafunc.config.option.all_journals)
+    journals_as_str = [str(journal.relative_to(_data_dir)) for journal in journals]
+    if "journal" in metafunc.fixturenames:
+        metafunc.parametrize("journal", journals, ids=journals_as_str)
 
 
 @pytest.fixture(scope="session")
@@ -121,14 +140,6 @@ def data_dir() -> pathlib.Path:
 
 
 @pytest.fixture(scope="session")
-def data_journals(request: _pytest.fixtures.SubRequest) -> list[pathlib.Path]:
-    """
-    Return journals files in the data directory on which tests should be run.
-
-    By default, only a subset of the journal files will be returned.
-    All journal files are return if calling pytest with the --all-journals option.
-    """
-    if request.config.option.all_journals:
-        return list(_data_journals_is_basic_testing.keys())
-    else:
-        return [journal for (journal, is_basic_testing) in _data_journals_is_basic_testing.items() if is_basic_testing]
+def journals(request: _pytest.fixtures.SubRequest) -> list[pathlib.Path]:
+    """Return journals files in the data directory on which tests should be run."""
+    return generate_journals(request.config.option.all_journals)
