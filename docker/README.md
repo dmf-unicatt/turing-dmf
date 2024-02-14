@@ -89,7 +89,7 @@ Note that:
 
 ## 5. Tips and tricks
 
-1. Protect secret and volume file from accidental deletion by running
+1. Protect accidental deletion of container, secret and volume files by running
 ```
 ./prevent_accidental_deletion.sh
 ```
