@@ -355,13 +355,13 @@ class JournalReaderR5539(AbstractJournalReader):
         self, line: str, total_time: str, turing_dict: TuringDict
     ) -> None:
         """Process the total time of the race in the race definition line."""
-        turing_dict["durata"] = total_time
+        turing_dict["durata"] = str(datetime.timedelta(minutes=int(total_time)))
 
     def _process_race_definition_deadline_score_increase_entry(
         self, line: str, deadline_score_increase: str, turing_dict: TuringDict
     ) -> None:
         """Process the deadline time for question score periodic increase in the race definition line."""
-        turing_dict["durata_blocco"] = deadline_score_increase
+        turing_dict["durata_blocco"] = str(datetime.timedelta(minutes=int(deadline_score_increase)))
 
     def _read_questions_definition_section(self, turing_dict: TuringDict) -> None:
         """Read the questions definition section."""
@@ -858,7 +858,9 @@ class JournalReaderR17548(JournalReaderR17505):
         if "-" not in times:
             raise RuntimeError(
                 f"Invalid line {line} in race definition: it does not contain the operator -")
-        turing_dict["durata"], turing_dict["durata_blocco"] = times.split("-")
+        total_time, deadline_score_increase = times.split("-")
+        turing_dict["durata"] = str(datetime.timedelta(minutes=int(total_time)))
+        turing_dict["durata_blocco"] = str(datetime.timedelta(minutes=int(deadline_score_increase)))
 
 
 class JournalReaderR20642(JournalReaderR17548):

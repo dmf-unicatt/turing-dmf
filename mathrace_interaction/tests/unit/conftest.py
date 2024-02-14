@@ -457,8 +457,8 @@ def turing_dict(race_name: str, race_date: datetime.datetime) -> TuringDict:
     return {
         "nome": race_name,
         "inizio": race_date.isoformat(),
-        "durata": "10",
-        "durata_blocco": "2",
+        "durata": "0:10:00",
+        "durata_blocco": "0:02:00",
         "n_blocco": "4",
         "k_blocco": "1",
         "cutoff": None,
