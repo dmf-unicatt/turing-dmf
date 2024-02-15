@@ -409,7 +409,10 @@ class JournalReaderR5539(AbstractJournalReader):
 
     def _read_teams_definition_section(self, turing_dict: TuringDict) -> None:
         """Read the teams definition section."""
-        # This format does not really have a teams definition section, so initialize a default set of teams
+        self._initialize_teams_definition_with_default_definition(turing_dict)
+
+    def _initialize_teams_definition_with_default_definition(self, turing_dict: TuringDict) -> None:
+        """Initialize a default set of teams because this format does not really have a teams definition section."""
         num_teams = int(turing_dict["mathrace_only"]["num_teams"])
         turing_dict["squadre"] = [
             {"nome": f"Squadra {t + 1}", "num": str(t + 1), "ospite": False} for t in range(num_teams)]
@@ -703,22 +706,41 @@ class JournalReaderR17505(JournalReaderR17497):
 
     def _read_teams_definition_section(self, turing_dict: TuringDict) -> None:
         """Read the teams definition section."""
-        # Call the parent initialization to assign default values to any team which may not have been provided
-        super()._read_teams_definition_section(turing_dict)
-        teams = turing_dict["squadre"]
-        # Update the default initialization based on values read from file
+        # Assign an empty dictionary for each team
+        num_teams = int(turing_dict["mathrace_only"]["num_teams"])
+        teams: list[dict[str, bool | str]] = [dict() for _ in range(num_teams)]
+        # Initialize a team list based on the values read from file
         line, before, _ = self._read_line_with_positions()
         while line.startswith(f"--- {self.TEAM_DEFINITION}"):
             team_def = line[8:]
             team_id_str, team_guest_status, team_name = team_def.split(" ", maxsplit=2)
             team_id = int(team_id_str) - 1
             teams[team_id]["nome"] = team_name
+            teams[team_id]["num"] = team_id_str
             teams[team_id]["ospite"] = True if team_guest_status == "1" else False
             line, before, _ = self._read_line_with_positions()
         # The line that caused the while loop to break was not a team definition line, so we need to
         # reset the stream to the previous line
         self._reset_stream_to_position(before)
 
+        # After this section of the code, there may be three cases:
+        # 1. all teams were initialized, or
+        # 2. some, but not all, teams were initialized, or
+        # 3. no team was initializated
+        # Case 2 is inadmissible, since it would result in ambiguities in determining which teams are guests
+        # and which are not. If in case 1, team definition is complete. If in case 3, revert to default initialization.
+        number_of_initialized_teams = sum(len(team) > 0 for team in teams)
+        if number_of_initialized_teams == num_teams:
+            # Case 1: all teams were initialized
+            turing_dict["squadre"] = teams
+        elif number_of_initialized_teams == 0:
+            # Case 3: assign default values
+            self._initialize_teams_definition_with_default_definition(turing_dict)
+        else:
+            # Case 2: some, but not all, teams were initialized
+            raise RuntimeError(
+                "Must either initialize all teams or none, since only initializing some of them results in "
+                "ambiguities in determining which teams are guests and which are not")
 
 
 class JournalReaderR17548(JournalReaderR17505):
@@ -869,6 +891,19 @@ class JournalReaderR17548(JournalReaderR17505):
         total_time, deadline_score_increase = times.split("-")
         turing_dict["durata"] = int(total_time)
         turing_dict["durata_blocco"] = int(deadline_score_increase)
+
+    def _initialize_teams_definition_with_default_definition(self, turing_dict: TuringDict) -> None:
+        """Initialize a default set of teams according to standard or alternative race definition."""
+        if "num_teams_nonguests" in turing_dict["mathrace_only"]:
+            # Alternative race definition was used, so allocate all non guest teams first, and then all guest ones.
+            num_teams_nonguests = int(turing_dict["mathrace_only"]["num_teams_nonguests"])
+            num_teams_guests = int(turing_dict["mathrace_only"]["num_teams_guests"])
+            turing_dict["squadre"] = [
+                {"nome": f"Squadra {t + 1}", "num": str(t + 1), "ospite": False if t < num_teams_nonguests else True}
+                for t in range(num_teams_nonguests + num_teams_guests)]
+        else:
+            # Standard race definition was used. Assume there are no guest teams, and call parent implementation.
+            super()._initialize_teams_definition_with_default_definition(turing_dict)
 
 
 class JournalReaderR20642(JournalReaderR17548):

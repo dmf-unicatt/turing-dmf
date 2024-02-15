@@ -429,32 +429,6 @@ def test_journal_reader_missing_protocol_numbers(
         "Cannot determine protocol number from 2 3 PROT_AND_ANOTHER_STRING:2 squadra 2 sceglie 3 come jolly")
 
 
-def test_journal_reader_race_definition_before_r17497_team_definition_after_r17505(
-    race_date: datetime.datetime
-) -> None:
-    """Test the interplay between a race definition before r17497 with team definition defined in r17505."""
-    journal_with_guests = io.StringIO("""\
---- 001 inizializzazione simulatore
---- 003 10 7 70 10 6 4 1 1 10 2 -- squadre: 10 quesiti: 7
---- 005 1 0 Squadra A
---- 005 2 1 Squadra B
-0 200 inizio gara
-600 210 termine gara
---- 999 fine simulatore
-""")
-    with journal_reader(journal_with_guests) as journal_stream:
-        imported_dict = journal_stream.read("journal_with_guests", race_date)
-    assert imported_dict["n_blocco"] == "4"
-    assert imported_dict["k_blocco"] == "1"
-    assert len(imported_dict["squadre"]) == 10
-    assert imported_dict["squadre"][0]["nome"] == "Squadra A"
-    assert imported_dict["squadre"][0]["ospite"] is False
-    assert imported_dict["squadre"][1]["nome"] == "Squadra B"
-    assert imported_dict["squadre"][1]["ospite"] is True
-    assert imported_dict["squadre"][2]["nome"] == "Squadra 3"
-    assert imported_dict["squadre"][2]["ospite"] is False
-
-
 def test_journal_reader_race_definition_before_r17497_timestamps_after_20644(race_date: datetime.datetime) -> None:
     """Test the interplay between a race definition before r17497 with timestamps defined in r17505."""
     journal_with_timestamps = io.StringIO("""\
@@ -837,6 +811,103 @@ def test_journal_reader_bonus_superbonus_lines_with_comments(race_date: datetime
         imported_dict = journal_stream.read("journal_bonus_superbonus", race_date)
     assert imported_dict["fixed_bonus"] == "120,115,110,18,16,15,14,13,12,11"
     assert imported_dict["super_mega_bonus"] == "2100,260,240,230,220,210"
+
+
+@pytest.mark.parametrize(
+    "race_definition_line", [
+        "--- 003 10 7 70 10 6 4 1 1 10 2 -- squadre: 10 quesiti: 7",
+        "--- 002 8+2:70 7:40 4.1;1 10-2 -- squadre: 10 quesiti: 7"
+    ]
+)
+def test_journal_reader_interplay_race_definition_with_team_definition(
+    race_definition_line: str, race_date: datetime.datetime
+) -> None:
+    """Test the interplay between a race definition and team definition."""
+    journal_with_guests = io.StringIO(f"""\
+--- 001 inizializzazione simulatore
+{race_definition_line}
+--- 005 1 0 Squadra A
+--- 005 2 1 Squadra B
+--- 005 3 0 Squadra C
+--- 005 4 1 Squadra D
+--- 005 5 0 Squadra E
+--- 005 6 0 Squadra F
+--- 005 7 0 Squadra G
+--- 005 8 0 Squadra H
+--- 005 9 0 Squadra I
+--- 005 10 0 Squadra J
+0 200 inizio gara
+600 210 termine gara
+--- 999 fine simulatore
+""")
+    with journal_reader(journal_with_guests) as journal_stream:
+        imported_dict = journal_stream.read("journal_with_guests", race_date)
+    assert imported_dict["n_blocco"] == "4"
+    assert imported_dict["k_blocco"] == "1"
+    assert len(imported_dict["squadre"]) == 10
+    for s in range(10):
+        assert imported_dict["squadre"][s]["nome"] == f"Squadra {chr(s + 97).capitalize()}"
+        assert imported_dict["squadre"][s]["num"] == f"{s + 1}"
+        assert imported_dict["squadre"][s]["ospite"] is (True if s in (1, 3) else False)
+
+
+@pytest.mark.parametrize(
+    "race_definition_line,num_nonguests,num_guests", [
+        ("--- 003 10 7 70 10 6 4 1 1 10 2 -- squadre: 10 quesiti: 7", 10, 0),
+        ("--- 002 8+2:70 7:40 4.1;1 10-2 -- squadre: 10 quesiti: 7", 8, 2)
+    ]
+)
+def test_journal_reader_interplay_race_definition_and_guests_without_team_definition(
+    race_definition_line: str, num_nonguests: int, num_guests: int, race_date: datetime.datetime
+) -> None:
+    """
+    Test the interplay between a race definition and guests without team definition.
+
+    Guest teams, if present are at the end of the team list.
+    """
+    journal_with_guests = io.StringIO(f"""\
+--- 001 inizializzazione simulatore
+{race_definition_line}
+0 200 inizio gara
+600 210 termine gara
+--- 999 fine simulatore
+""")
+    with journal_reader(journal_with_guests) as journal_stream:
+        imported_dict = journal_stream.read("journal_with_guests", race_date)
+    assert imported_dict["n_blocco"] == "4"
+    assert imported_dict["k_blocco"] == "1"
+    assert len(imported_dict["squadre"]) == 10
+    assert sum(not imported_dict["squadre"][s]["ospite"] for s in range(10)) == num_nonguests
+    assert sum(imported_dict["squadre"][s]["ospite"] for s in range(10)) == num_guests
+    for s in range(10):
+        assert imported_dict["squadre"][s]["nome"] == f"Squadra {s + 1}"
+        assert imported_dict["squadre"][s]["num"] == f"{s + 1}"
+        assert imported_dict["squadre"][s]["ospite"] is (True if s >= num_nonguests else False)
+
+
+@pytest.mark.parametrize(
+    "race_definition_line", [
+        "--- 003 10 7 70 10 6 4 1 1 10 2 -- squadre: 10 quesiti: 7",
+        "--- 002 8+2:70 7:40 4.1;1 10-2 -- squadre: 10 quesiti: 7"
+    ]
+)
+def test_journal_reader_wrong_interplay_race_definition_with_team_definition(
+    race_definition_line: str, race_date: datetime.datetime, runtime_error_contains: RuntimeErrorContainsFixtureType
+) -> None:
+    """Test the interplay between a race definition and team definition when not all teams are listed."""
+    wrong_journal = io.StringIO(f"""\
+--- 001 inizializzazione simulatore
+{race_definition_line}
+--- 005 1 0 Squadra A
+--- 005 2 1 Squadra B
+0 200 inizio gara
+600 210 termine gara
+--- 999 fine simulatore
+""")
+    runtime_error_contains(
+        lambda: journal_reader(wrong_journal).__enter__().read("wrong_journal", race_date),
+        "Must either initialize all teams or none, since only initializing some of them results in "
+        "ambiguities in determining which teams are guests and which are not")
 
 
 def test_journal_reader_wrong_question_definition_placeholder(
