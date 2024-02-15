@@ -96,3 +96,7 @@ def list_journal_versions() -> list[str]:
           ° --- 004: question definition
     """
     return ["r5539", "r11167", "r11184", "r11189", "r17497", "r17505", "r17548", "r20642", "r20644", "r25013"]
+
+
+if __name__ == "__main__":
+    print(", ".join(list_journal_versions()))

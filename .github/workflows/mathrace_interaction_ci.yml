@@ -89,9 +89,10 @@ jobs:
           cd docs && python3 -m sphinx -W -b html . build/html
       - name: Run unit tests
         run: |
-          python3 -m coverage run --source=mathrace_interaction -m pytest tests/unit
-      - name: Check test coverage for unit tests
+          COVERAGE_FILE=.coverage_unit python3 -m coverage run --source=mathrace_interaction -m pytest tests/unit
+      - name: Check unit tests coverage
         run: |
+          python3 -m coverage combine .coverage*
           python3 -m coverage report --fail-under=100 --show-missing --skip-covered
       - name: Run functional tests
         run: |

@@ -6,7 +6,9 @@
 """Read a mathrace journal."""
 
 import abc
+import argparse
 import datetime
+import json
 import sys
 import types
 import typing
@@ -76,7 +78,6 @@ class AbstractJournalReader(abc.ABC):
 
         # Set name and date
         turing_dict["nome"] = race_name
-        turing_dict["mathrace_only"]["race_date"] = race_date
         turing_dict["inizio"] = race_date.isoformat()
 
         # The first line must contain the initialization of the file
@@ -539,8 +540,7 @@ class JournalReaderR5539(AbstractJournalReader):
                     f"Cannot convert {timestamp_str} to date and time because of empty timestamp offset")
             else:
                 timestamp = int(timestamp_str)
-        race_date = turing_dict["mathrace_only"]["race_date"]
-        assert isinstance(race_date, datetime.datetime)
+        race_date = datetime.datetime.fromisoformat(turing_dict["inizio"])
         return race_date + datetime.timedelta(seconds=timestamp)
 
     def _determine_mathrace_event_id(self, event_content: str) -> str:
@@ -1050,3 +1050,16 @@ def journal_reader(journal_stream: typing.TextIO) -> AbstractJournalReader:
     # Return an object of the class corresponding to the detected version
     journal_reader_class = getattr(sys.modules[__name__], f"JournalReader{version.capitalize()}")
     return journal_reader_class(journal_stream)  # type: ignore[no-any-return]
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-i", "--input-file", type=str, required=True, help="Path of the input journal file")
+    parser.add_argument("-n", "--race-name", type=str, required=True, help="Name of the race")
+    parser.add_argument("-d", "--race-date", type=str, required=True, help="Date of the race in a ISO 8601 format")
+    parser.add_argument("-o", "--output-file", type=str, required=True, help="Path of the output json file")
+    args = parser.parse_args()
+    with journal_reader(open(args.input_file)) as journal_stream:
+        turing_dict = journal_stream.read(args.race_name, datetime.datetime.fromisoformat(args.race_date))
+    with open(args.output_file, "w") as json_stream:
+        json_stream.write(json.dumps(turing_dict, indent=4))

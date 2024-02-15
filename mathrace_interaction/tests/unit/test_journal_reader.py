@@ -7,6 +7,8 @@
 
 import datetime
 import io
+import json
+import tempfile
 import typing
 
 import pytest
@@ -16,6 +18,7 @@ from mathrace_interaction.strip_mathrace_only_attributes_from_imported_turing im
     strip_mathrace_only_attributes_from_imported_turing)
 
 RuntimeErrorContainsFixtureType: typing.TypeAlias = typing.Callable[[typing.Callable[[], typing.Any], str], None]
+RunEntrypointFixtureType: typing.TypeAlias = typing.Callable[[str, list[str]], tuple[str, str]]
 
 
 def test_journal_reader(
@@ -26,6 +29,38 @@ def test_journal_reader(
         imported_dict = journal_stream.read(race_name, race_date)
     strip_mathrace_only_attributes_from_imported_turing(imported_dict)
     assert imported_dict == turing_dict
+
+
+@pytest.mark.parametrize(
+    "input_file_option,race_name_option,race_date_option,output_file_option", [
+        ("-i", "-n", "-d", "-o"),
+        ("--input-file", "--race-name", "--race-date", "--output-file")
+    ]
+)
+def test_journal_reader_entrypoint(
+    journal: io.StringIO, run_entrypoint: RunEntrypointFixtureType, race_name: str, race_date: datetime.datetime,
+    turing_dict: TuringDict, input_file_option: str, race_name_option: str, race_date_option: str,
+    output_file_option: str
+) -> None:
+    """Test running journal_reader as entrypoint."""
+    with tempfile.NamedTemporaryFile() as journal_file, tempfile.NamedTemporaryFile() as json_file:
+        with open(journal_file.name, "w") as journal_stream:
+            journal_stream.write(journal.read())
+        stdout, stderr = run_entrypoint(
+            "mathrace_interaction.journal_reader", [
+                input_file_option, journal_file.name, race_name_option, race_name,
+                race_date_option, race_date.isoformat(), output_file_option, json_file.name
+            ]
+        )
+        assert stdout == ""
+        assert stderr == ""
+        with open(json_file.name) as json_stream:
+            imported_dict = json.load(json_stream)
+        strip_mathrace_only_attributes_from_imported_turing(imported_dict)
+        assert imported_dict == turing_dict
+        # The same journal stream is shared on the parametrization on input_file_option: since the stream was consumed
+        # reset it to the beginning before passing to the next parametrized item
+        journal.seek(0)
 
 
 def test_journal_reader_wrong_first_line(
@@ -76,6 +111,7 @@ def test_journal_reader_wrong_race_definition_code(
     wrong_journal = io.StringIO("""\
 --- 001 inizializzazione simulatore
 --- 993 10 7 70 10 6 4 1 1 10 2 -- squadre: 10 quesiti: 7
+0 002 inizio gara
 """)
     runtime_error_contains(
         lambda: journal_reader(wrong_journal).__enter__().read("wrong_journal", race_date),
@@ -89,6 +125,7 @@ def test_journal_reader_wrong_race_definition_parts(
     wrong_journal = io.StringIO("""\
 --- 001 inizializzazione simulatore
 --- 003 10 7 70 10 6 4 1 1 10 2 00000 -- squadre: 10 quesiti: 7
+0 002 inizio gara
 """)
     runtime_error_contains(
         lambda: journal_reader(wrong_journal).__enter__().read("wrong_journal", race_date),
@@ -103,6 +140,7 @@ def test_journal_reader_wrong_race_definition_initial_score(
     wrong_journal = io.StringIO("""\
 --- 001 inizializzazione simulatore
 --- 003 10 7 99970 10 6 4 1 1 10 2 -- squadre: 10 quesiti: 7
+0 002 inizio gara
 """)
     runtime_error_contains(
         lambda: journal_reader(wrong_journal).__enter__().read("wrong_journal", race_date),
@@ -117,6 +155,7 @@ def test_journal_reader_wrong_race_definition_bonus_cardinality(
     wrong_journal = io.StringIO("""\
 --- 001 inizializzazione simulatore
 --- 003 10 7 70 99910 6 4 1 1 10 2 -- squadre: 10 quesiti: 7
+0 002 inizio gara
 """)
     runtime_error_contains(
         lambda: journal_reader(wrong_journal).__enter__().read("wrong_journal", race_date),
@@ -131,6 +170,7 @@ def test_journal_reader_wrong_race_definition_supbonus_cardinality(
     wrong_journal = io.StringIO("""\
 --- 001 inizializzazione simulatore
 --- 003 10 7 70 10 9996 4 1 1 10 2 -- squadre: 10 quesiti: 7
+0 002 inizio gara
 """)
     runtime_error_contains(
         lambda: journal_reader(wrong_journal).__enter__().read("wrong_journal", race_date),
@@ -145,6 +185,7 @@ def test_journal_reader_wrong_race_definition_alternative_k_blocco(
     wrong_journal = io.StringIO("""\
 --- 001 inizializzazione simulatore
 --- 003 10 7 70 10 6 4 9991 1 10 2 -- squadre: 10 quesiti: 7
+0 002 inizio gara
 """)
     runtime_error_contains(
         lambda: journal_reader(wrong_journal).__enter__().read("wrong_journal", race_date),
@@ -159,6 +200,7 @@ def test_journal_reader_wrong_race_definition_race_type(
     wrong_journal = io.StringIO("""\
 --- 001 inizializzazione simulatore
 --- 003 10 7 70 10 6 4 1 9991 10 2 -- squadre: 10 quesiti: 7
+0 002 inizio gara
 """)
     runtime_error_contains(
         lambda: journal_reader(wrong_journal).__enter__().read("wrong_journal", race_date),
@@ -166,9 +208,13 @@ def test_journal_reader_wrong_race_definition_race_type(
         "but the race definition contains 9991.")
 
 
-@pytest.mark.parametrize("extra_text", ["", " 0000"])
+@pytest.mark.parametrize(
+    "race_start_event,extra_text",
+    [("0 002 inizio gara", ""), ("00:00:00.000 200 inizio gara", " 0000")]
+)
 def test_journal_reader_wrong_question_definition(
-    extra_text: str, race_date: datetime.datetime, runtime_error_contains: RuntimeErrorContainsFixtureType
+    race_start_event: str, extra_text: str, race_date: datetime.datetime,
+    runtime_error_contains: RuntimeErrorContainsFixtureType
 ) -> None:
     """
     Test that journal_reader raises an error when a question definition line does not contain the expect word.
@@ -179,6 +225,7 @@ def test_journal_reader_wrong_question_definition(
 --- 001 inizializzazione simulatore
 --- 003 10 7 70 10 6 4 1 1 10 2 -- squadre: 10 quesiti: 7
 --- 004 1 20{extra_text}
+{race_start_event}
 """)
     runtime_error_contains(
         lambda: journal_reader(wrong_journal).__enter__().read("wrong_journal", race_date),
@@ -266,6 +313,8 @@ def test_journal_reader_wrong_race_start_text(
 --- 001 inizializzazione simulatore
 --- 003 10 7 70 10 6 4 1 1 10 2 -- squadre: 10 quesiti: 7
 0 002 inizio gara testo aggiuntivo
+# an extra line with the correct text is added to ensure that determine_journal_version returns a version
+0 002 inizio gara
 """)
     runtime_error_contains(
         lambda: journal_reader(wrong_journal).__enter__().read("wrong_journal", race_date),
@@ -431,6 +480,7 @@ def test_journal_reader_wrong_alternative_race_definition_parts(
     wrong_journal = io.StringIO("""\
 --- 001 inizializzazione simulatore
 --- 002 10+0:70 7:20 4.1;1 10-2 00000 -- squadre: 10 quesiti: 7
+0 200 inizio gara
 """)
     runtime_error_contains(
         lambda: journal_reader(wrong_journal).__enter__().read("wrong_journal", race_date),
@@ -508,6 +558,7 @@ def test_journal_reader_alternative_race_definition_num_teams_entry_with_wrong_i
     wrong_journal = io.StringIO("""\
 --- 001 inizializzazione simulatore
 --- 002 10:99970 7:20 4.1;1 10-2 -- squadre: 10 quesiti: 7
+0 200 inizio gara
 """)
     runtime_error_contains(
         lambda: journal_reader(wrong_journal).__enter__().read("wrong_journal", race_date),
@@ -643,6 +694,7 @@ def test_journal_reader_alternative_race_definition_with_wrong_alternative_k_blo
     wrong_journal = io.StringIO("""\
 --- 001 inizializzazione simulatore
 --- 002 10+2:70 7:40 4.1;9991 10-2 -- squadre: 12 quesiti: 7
+0 200 inizio gara
 """)
     runtime_error_contains(
         lambda: journal_reader(wrong_journal).__enter__().read("wrong_journal", race_date),
@@ -675,6 +727,7 @@ def test_journal_reader_alternative_race_definition_missing_deadline_score_incre
     wrong_journal = io.StringIO("""\
 --- 001 inizializzazione simulatore
 --- 002 10+2:70 7:40 4.1;1 10 -- squadre: 12 quesiti: 7
+0 200 inizio gara
 """)
     runtime_error_contains(
         lambda: journal_reader(wrong_journal).__enter__().read("wrong_journal", race_date),
@@ -779,6 +832,7 @@ def test_journal_reader_wrong_question_definition_placeholder(
 --- 003 10 7 70 10 6 4 1 1 10 2 -- squadre: 10 quesiti: 7
 --- 004 1 20 0000 quesito 1
 --- 004 2 20 9999 quesito 2
+0 200 inizio gara
 """)
     runtime_error_contains(
         lambda: journal_reader(wrong_journal).__enter__().read("wrong_journal", race_date),

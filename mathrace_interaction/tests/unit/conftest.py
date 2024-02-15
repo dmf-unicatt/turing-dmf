@@ -7,6 +7,7 @@
 
 import datetime
 import io
+import os
 import subprocess
 import sys
 import typing
@@ -553,8 +554,19 @@ def run_entrypoint() -> typing.Callable[[str, list[str]], tuple[str, str]]:
     """Run a module entrypoint."""
     def _(module: str, arguments: list[str]) -> tuple[str, str]:
         """Run a module entrypoint (internal implementation)."""
-        run_module = subprocess.run(
-            f'{sys.executable} -m {module} {" ".join(arguments)}', shell=True, capture_output=True)
+        library_name = "mathrace_interaction"
+        if "COVERAGE_RUN" not in os.environ or library_name not in module:
+            executable = sys.executable
+        else:
+            # Propagate coverage run to the subprocess. Note that a different COVERAGE_FILE is used, so it will
+            # be the caller's responsability to combine all files together when printing the coverage report.
+            dash_joined_arguments = "_".join(arguments)
+            printable_dash_joined_arguments = "".join(c for c in dash_joined_arguments if c.isalnum())
+            coverage_file = (
+                f'{os.path.join(os.getcwd(), os.environ.get("COVERAGE_FILE", ".coverage"))}'
+                f'_{module}_{printable_dash_joined_arguments}')
+            executable = (f"COVERAGE_FILE={coverage_file} {sys.executable} -m coverage run --source={library_name}")
+        run_module = subprocess.run(f'{executable} -m {module} {" ".join(arguments)}', shell=True, capture_output=True)
         stdout = run_module.stdout.decode().strip()
         stderr = run_module.stderr.decode().strip()
         if run_module.returncode != 0:

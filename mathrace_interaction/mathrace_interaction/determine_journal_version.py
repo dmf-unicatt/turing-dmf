@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """Determine the version of a mathrace journal."""
 
+import argparse
 import typing
 
 from mathrace_interaction.list_journal_versions import list_journal_versions
@@ -27,12 +28,24 @@ def determine_journal_version(journal_stream: typing.TextIO) -> str:
     """
     journal = [line.strip("\n") for line in journal_stream.readlines()]
 
+    # Raise an error on the trivial case in which the journal is empty
+    if "".join(journal) == "":
+        raise RuntimeError("The provided journal is empty")
+
     # Since all versions after the fallback one use the event code 200 for the race start,
-    # a journal containing the code 002 is a fallback journal
+    # a journal containing the code 002 is a fallback journal. Note that the condition for checking
+    # event code 002 operates on the entire line, since event code 002 certainly uses integer timestamps.
+    # Instead, event code 200 may operate on either integer timestamps or human readable ones, hence
+    # we only check if the line contains the string "200 inizio gara", neglecting the timestamp prefix.
     if _has_line_matching_condition(journal, lambda line: line == "0 002 inizio gara"):
-        if _has_line_matching_condition(journal, lambda line: line == "0 200 inizio gara"):
+        if _has_line_matching_condition(journal, lambda line: "200 inizio gara" in line):
             raise RuntimeError("More than one race start event detected, with different event codes")
         return "r5539"
+
+    # Now that we have concluded that the race start event code is 200 (and not 002), raise an error
+    # if it is not found, since the fail is certainly invalid.
+    if not _has_line_matching_condition(journal, lambda line: "200 inizio gara" in line):
+        raise RuntimeError("No race start event detected")
 
     # List all non-fallback versions
     possible_versions = list_journal_versions()
@@ -123,3 +136,12 @@ def _remove_from_list_if_present(list_: list[str], entry: str) -> None:
     """Remove an element from a list if the list actually contains it."""
     if entry in list_:
         list_.remove(entry)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-i", "--input-file", type=str, required=True, help="Path of the input journal file")
+    args = parser.parse_args()
+    with open(args.input_file) as journal_stream:
+        version = determine_journal_version(journal_stream)
+    print(version)
