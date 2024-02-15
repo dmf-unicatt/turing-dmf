@@ -7,6 +7,8 @@
 
 import datetime
 import io
+import subprocess
+import sys
 import typing
 
 import pytest
@@ -542,5 +544,24 @@ def runtime_error_contains() -> typing.Callable[[typing.Callable[[], typing.Any]
             call()
         runtime_error_text = str(excinfo.value)
         assert expected_error_text in runtime_error_text
+
+    return _
+
+
+@pytest.fixture
+def run_entrypoint() -> typing.Callable[[str, list[str]], tuple[str, str]]:
+    """Run a module entrypoint."""
+    def _(module: str, arguments: list[str]) -> tuple[str, str]:
+        """Run a module entrypoint (internal implementation)."""
+        run_module = subprocess.run(
+            f'{sys.executable} -m {module} {" ".join(arguments)}', shell=True, capture_output=True)
+        stdout = run_module.stdout.decode().strip()
+        stderr = run_module.stderr.decode().strip()
+        if run_module.returncode != 0:
+            raise RuntimeError(
+                f"Running {module} with arguments {arguments} failed with exit code {run_module.returncode}, "
+                f"stdout {stdout}, stderr {stderr}")
+        else:
+            return stdout, stderr
 
     return _
