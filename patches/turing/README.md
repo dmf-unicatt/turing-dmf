@@ -11,3 +11,4 @@ This directory contains a few local patches. Most of them are related to changes
 6. `0006_test_pk_for_postgres.patch`: update tests for compatibility with PostgreSQL. It seems that SQLite3 uses a standalone database at every test and/or resets primary keys at every test, while PostgreSQL does not. Due to this, some hardcoded primary keys had to be replaced with a value fetched from the current database state.
 7. `0007_durata_blocco.patch`: allow customization of the deadline time for question score periodic increase.
 8. `0008_default_n_k_blocco.patch`: add default values for `n_blocco` and `k_blocco`. **mathrace** only supports the case `k_blocco = 1`, and therefore we prefer to provide this value as the default to facilitate setting up **mathrace**-compatible races in **Turing @ DMF**.
+9. `0009_upload_journal.patch`: allow user to upload and import a **mathrace** journal.

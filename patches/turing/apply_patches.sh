@@ -39,4 +39,5 @@ else
     apply_patch 0006_test_pk_for_postgres.patch
     apply_patch 0007_durata_blocco.patch
     apply_patch 0008_default_n_k_blocco.patch
+    apply_patch 0009_upload_journal.patch
 fi
