@@ -18,7 +18,7 @@ from mathrace_interaction.journal_reader import TuringDict
 
 _journal_r5539 = """\
 --- 001 inizializzazione simulatore
---- 003 10 7 70 10 6 4 1 1 10 2 -- squadre: 10 quesiti: 7
+--- 003 10 7 70 10 6 4 1 1 10 8 -- squadre: 10 quesiti: 7
 --- 004 1 20 quesito 1
 --- 004 2 20 quesito 2
 --- 004 3 20 quesito 3
@@ -53,7 +53,7 @@ _journal_r5539 = """\
 
 _journal_r11167 = """\
 --- 001 inizializzazione simulatore
---- 003 10 7 70 10 6 4 1 1 10 2 -- squadre: 10 quesiti: 7
+--- 003 10 7 70 10 6 4 1 1 10 8 -- squadre: 10 quesiti: 7
 --- 004 1 20 quesito 1
 --- 004 2 20 quesito 2
 --- 004 3 20 quesito 3
@@ -88,7 +88,7 @@ _journal_r11167 = """\
 
 _journal_r11184 = """\
 --- 001 inizializzazione simulatore
---- 003 10 7 70 10 6 4 1 1 10 2 -- squadre: 10 quesiti: 7
+--- 003 10 7 70 10 6 4 1 1 10 8 -- squadre: 10 quesiti: 7
 --- 004 1 20 quesito 1
 --- 004 2 20 quesito 2
 --- 004 3 20 quesito 3
@@ -123,7 +123,7 @@ _journal_r11184 = """\
 
 _journal_r11189 = """\
 --- 001 inizializzazione simulatore
---- 003 10 7 70 10 6 4 1 1 10 2 -- squadre: 10 quesiti: 7
+--- 003 10 7 70 10 6 4 1 1 10 8 -- squadre: 10 quesiti: 7
 --- 004 1 20 quesito 1
 --- 004 2 20 quesito 2
 --- 004 3 20 quesito 3
@@ -159,7 +159,7 @@ _journal_r11189 = """\
 
 _journal_r17497 = """\
 --- 001 inizializzazione simulatore
---- 003 10 7 70 10 6 4.1 1 1 10 2 -- squadre: 10 quesiti: 7
+--- 003 10 7 70 10 6 4.1 1 1 10 8 -- squadre: 10 quesiti: 7
 --- 004 1 20 quesito 1
 --- 004 2 20 quesito 2
 --- 004 3 20 quesito 3
@@ -194,7 +194,7 @@ _journal_r17497 = """\
 
 _journal_r17505 = """\
 --- 001 inizializzazione simulatore
---- 003 10 7 70 10 6 4.1 1 1 10 2 -- squadre: 10 quesiti: 7
+--- 003 10 7 70 10 6 4.1 1 1 10 8 -- squadre: 10 quesiti: 7
 --- 004 1 20 quesito 1
 --- 004 2 20 quesito 2
 --- 004 3 20 quesito 3
@@ -460,8 +460,8 @@ def turing_dict(race_name: str, race_date: datetime.datetime) -> TuringDict:
     return {
         "nome": race_name,
         "inizio": race_date.isoformat(),
-        "durata": "0:10:00",
-        "durata_blocco": "0:02:00",
+        "durata": 10,
+        "durata_blocco": 2,
         "n_blocco": "4",
         "k_blocco": "1",
         "cutoff": None,

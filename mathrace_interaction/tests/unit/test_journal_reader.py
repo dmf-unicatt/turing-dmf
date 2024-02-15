@@ -208,6 +208,22 @@ def test_journal_reader_wrong_race_definition_race_type(
         "but the race definition contains 9991.")
 
 
+def test_journal_reader_race_event_with_inconsistent_deadline_score_increase(race_date: datetime.datetime) -> None:
+    """Test that journal_reader sets the deadline for score increase as zero when the last int is wrong."""
+    journal_with_wrong_deadline_score_increase = io.StringIO("""\
+--- 001 inizializzazione simulatore
+--- 003 10 7 70 10 6 4 1 1 10 999 -- squadre: 10 quesiti: 7
+0 002 inizio gara
+600 029 termine gara
+--- 999 fine simulatore
+""")
+    with journal_reader(journal_with_wrong_deadline_score_increase) as journal_stream:
+        dict_with_wrong_deadline_score_increase = journal_stream.read(
+            "journal_with_wrong_deadline_score_increase", race_date)
+    assert dict_with_wrong_deadline_score_increase["durata"] == 10
+    assert dict_with_wrong_deadline_score_increase["durata_blocco"] == 0
+
+
 @pytest.mark.parametrize(
     "race_start_event,extra_text",
     [("0 002 inizio gara", ""), ("00:00:00.000 200 inizio gara", " 0000")]
