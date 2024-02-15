@@ -53,6 +53,7 @@ tests = [
 
 [tool.isort]
 line_length = 120
+multi_line_output = 4
 order_by_type = false
 
 [tool.mypy]
