@@ -103,7 +103,7 @@
 0 120 16 7 PROT:15 squadra 16 sceglie 7 come jolly
 0 120 17 17 PROT:16 squadra 17 sceglie 17 come jolly
 0 120 18 4 PROT:17 squadra 18 sceglie 4 come jolly
-0 120 19 0 PROT:18 squadra 19 sceglie 0 come jolly
+0 120 19 1 PROT:18 squadra 19 sceglie 1 come jolly
 0 120 20 5 PROT:19 squadra 20 sceglie 5 come jolly
 0 120 21 4 PROT:20 squadra 21 sceglie 4 come jolly
 0 120 22 4 PROT:21 squadra 22 sceglie 4 come jolly
@@ -125,7 +125,7 @@
 0 120 38 4 PROT:37 squadra 38 sceglie 4 come jolly
 0 120 39 20 PROT:38 squadra 39 sceglie 20 come jolly
 0 120 40 4 PROT:39 squadra 40 sceglie 4 come jolly
-0 120 41 0 PROT:40 squadra 41 sceglie 0 come jolly
+0 120 41 1 PROT:40 squadra 41 sceglie 1 come jolly
 0 120 42 3 PROT:41 squadra 42 sceglie 3 come jolly
 0 120 43 7 PROT:42 squadra 43 sceglie 7 come jolly
 0 120 44 2 PROT:43 squadra 44 sceglie 2 come jolly
