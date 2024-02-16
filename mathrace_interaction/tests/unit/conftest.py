@@ -152,6 +152,7 @@ _journal_r11189 = """\
 540 101 aggiorna punteggio esercizi, orologio: 9
 570 110 9 3 1 PROT:9 squadra 9, quesito 3: giusto
 600 101 aggiorna punteggio esercizi, orologio: 10
+# the following event 901 differentiates this file from the r11184 one
 600 901 avanzamento estrapolato orologio: 10
 600 210 termine gara
 --- 999 fine simulatore

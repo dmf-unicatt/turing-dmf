@@ -313,6 +313,42 @@ def test_journal_reader_race_event_manual_bonus(
         "2 10 squadra 2 bonus 10 motivazione: errore inserimento dati")
 
 
+@pytest.mark.parametrize(
+    "generate_timestamp", [
+        lambda minute: str(60 * minute),
+        lambda minute: f"00:0{minute}:00" if minute < 10 else f"00:{minute}:00"
+    ]
+)
+def test_journal_reader_race_other_timer_ignored(
+    generate_timestamp: typing.Callable[[int], str], race_date: datetime.datetime
+) -> None:
+    """Test that race events associated to the second timer are ignored by journal_reader."""
+    journal_without_other_timer = io.StringIO(f"""\
+--- 001 inizializzazione simulatore
+--- 003 10 7 70 10 6 4 1 1 10 2 -- squadre: 10 quesiti: 7
+{generate_timestamp(0)} 200 inizio gara
+{generate_timestamp(1)} 101 aggiorna punteggio esercizi, orologio: 1
+{generate_timestamp(10)} 210 termine gara
+--- 999 fine simulatore
+""")
+    with journal_reader(journal_without_other_timer) as journal_stream:
+        dict_without_other_timer = journal_stream.read("race_other_timer_test", race_date)
+
+    journal_with_other_timer = io.StringIO(f"""\
+--- 001 inizializzazione simulatore
+--- 003 10 7 70 10 6 4 1 1 10 2 -- squadre: 10 quesiti: 7
+{generate_timestamp(0)} 200 inizio gara
+{generate_timestamp(1)} 101 aggiorna punteggio esercizi, orologio: 1
+{generate_timestamp(5)} 901 avanzamento estrapolato orologio: 5
+{generate_timestamp(10)} 210 termine gara
+--- 999 fine simulatore
+""")
+    with journal_reader(journal_with_other_timer) as journal_stream:
+        dict_with_other_timer = journal_stream.read("race_other_timer_test", race_date)
+
+    assert dict_without_other_timer == dict_with_other_timer
+
+
 def test_journal_reader_wrong_race_event_code(
     race_date: datetime.datetime, runtime_error_contains: RuntimeErrorContainsFixtureType
 ) -> None:
