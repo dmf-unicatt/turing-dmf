@@ -104,7 +104,7 @@ jobs:
         run: |
           WITH_INTEGRATION_TESTS=yes
           FULL_INTEGRATION_TESTS=${{ inputs.full_integration_tests }}
-          if [ "${{ github.event_name }}" == "schedule" ]; then
+          if [ "${{ github.event_name }}" = "schedule" ]; then
             FULL_INTEGRATION_TESTS=yes
           fi
           if [ "${{ matrix.name }}" != "with-turing" ]; then
