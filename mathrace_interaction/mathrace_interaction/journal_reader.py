@@ -14,6 +14,8 @@ import types
 import typing
 
 from mathrace_interaction.determine_journal_version import determine_journal_version
+from mathrace_interaction.strip_mathrace_only_attributes_from_imported_turing import (
+    strip_mathrace_only_attributes_from_imported_turing)
 from mathrace_interaction.turing_dict_type_alias import TuringDict
 
 
@@ -1103,5 +1105,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
     with journal_reader(open(args.input_file)) as journal_stream:
         turing_dict = journal_stream.read(args.race_name, datetime.datetime.fromisoformat(args.race_date))
+    strip_mathrace_only_attributes_from_imported_turing(turing_dict)
     with open(args.output_file, "w") as json_stream:
         json_stream.write(json.dumps(turing_dict, indent=4))

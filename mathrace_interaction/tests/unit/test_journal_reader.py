@@ -57,7 +57,6 @@ def test_journal_reader_entrypoint(
         assert stderr == ""
         with open(json_file.name) as json_stream:
             imported_dict = json.load(json_stream)
-        strip_mathrace_only_attributes_from_imported_turing(imported_dict)
         assert imported_dict == turing_dict
         # The same journal stream is shared on the parametrization on input_file_option: since the stream was consumed
         # reset it to the beginning before passing to the next parametrized item
