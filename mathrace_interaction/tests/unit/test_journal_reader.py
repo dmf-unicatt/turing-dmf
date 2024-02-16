@@ -248,25 +248,34 @@ def test_journal_reader_wrong_question_definition(
         f"Invalid line --- 004 1 20{extra_text} in question definition: it does not contain the word quesito")
 
 
-def test_journal_reader_race_suspension_ignored(race_date: datetime.datetime) -> None:
+@pytest.mark.parametrize(
+    "RACE_START,RACE_SUSPENDED,RACE_RESUMED,RACE_END,generate_timestamp", [
+        ("002", "027", "028", "029", lambda minute: str(60 * minute)),
+        ("200", "201", "202", "210", lambda minute: f"00:0{minute}:00" if minute < 10 else f"00:{minute}:00")
+    ]
+)
+def test_journal_reader_race_suspension_ignored(
+    RACE_START: str, RACE_SUSPENDED: str, RACE_RESUMED: str, RACE_END: str,  # noqa: N803
+    generate_timestamp: typing.Callable[[int], str], race_date: datetime.datetime
+) -> None:
     """Test that race suspension events are ignored by journal_reader."""
-    journal_without_suspension = io.StringIO("""\
+    journal_without_suspension = io.StringIO(f"""\
 --- 001 inizializzazione simulatore
 --- 003 10 7 70 10 6 4 1 1 10 2 -- squadre: 10 quesiti: 7
-0 002 inizio gara
-600 029 termine gara
+{generate_timestamp(0)} {RACE_START} inizio gara
+{generate_timestamp(10)} {RACE_END} termine gara
 --- 999 fine simulatore
 """)
     with journal_reader(journal_without_suspension) as journal_stream:
         dict_without_suspension = journal_stream.read("race_suspension_test", race_date)
 
-    journal_with_suspension = io.StringIO("""\
+    journal_with_suspension = io.StringIO(f"""\
 --- 001 inizializzazione simulatore
 --- 003 10 7 70 10 6 4 1 1 10 2 -- squadre: 10 quesiti: 7
-0 002 inizio gara
-300 027 gara sospesa
-400 028 gara ripresa
-600 029 termine gara
+{generate_timestamp(0)} {RACE_START} inizio gara
+{generate_timestamp(5)} {RACE_SUSPENDED} gara sospesa
+{generate_timestamp(6)} {RACE_RESUMED} gara ripresa
+{generate_timestamp(10)} {RACE_END} termine gara
 --- 999 fine simulatore
 """)
     with journal_reader(journal_with_suspension) as journal_stream:
