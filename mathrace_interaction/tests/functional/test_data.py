@@ -39,7 +39,11 @@ def test_data_contains_only_journal_and_score_files(data_dir: pathlib.Path) -> N
     for entry in data_dir.rglob("*"):
         assert entry.is_file() or entry.is_dir()
         if entry.is_file():
-            assert entry.suffix in (".journal", ".score")
+            if entry.name == "fix_phiquadro_journals.sh":
+                # allow auxiliary script
+                pass
+            else:
+                assert entry.suffix in (".journal", ".score")
         elif entry.is_dir():
             pass
         else:
