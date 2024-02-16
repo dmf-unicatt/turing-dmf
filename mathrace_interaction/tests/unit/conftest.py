@@ -14,7 +14,7 @@ import typing
 
 import pytest
 
-from mathrace_interaction.journal_reader import TuringDict
+from mathrace_interaction.turing_dict_type_alias import TuringDict
 
 _journal_r5539 = """\
 --- 001 inizializzazione simulatore

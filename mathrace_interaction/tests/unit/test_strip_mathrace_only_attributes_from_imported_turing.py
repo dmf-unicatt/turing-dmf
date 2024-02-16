@@ -11,9 +11,9 @@ import typing
 
 import pytest
 
-from mathrace_interaction.journal_reader import TuringDict
 from mathrace_interaction.strip_mathrace_only_attributes_from_imported_turing import (
     strip_mathrace_only_attributes_from_imported_turing)
+from mathrace_interaction.turing_dict_type_alias import TuringDict
 
 RunEntrypointFixtureType: typing.TypeAlias = typing.Callable[[str, list[str]], tuple[str, str]]
 

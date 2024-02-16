@@ -14,8 +14,7 @@ import types
 import typing
 
 from mathrace_interaction.determine_journal_version import determine_journal_version
-
-TuringDict: typing.TypeAlias = dict[str, typing.Any]
+from mathrace_interaction.turing_dict_type_alias import TuringDict
 
 
 class AbstractJournalReader(abc.ABC):
