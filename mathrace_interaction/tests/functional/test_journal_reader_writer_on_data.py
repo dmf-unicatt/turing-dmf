@@ -6,14 +6,14 @@
 """Test mathrace_interaction.journal_reader and mathrace_interaction.journal_writer on journals in data."""
 
 import datetime
-import pathlib
+import os
+import typing
 
 from mathrace_interaction.journal_reader import journal_reader
 
 
-def test_journal_reader_writer_on_data(journal: pathlib.Path) -> None:
+def test_journal_reader_writer_on_data(journal: typing.TextIO, journal_name: str) -> None:
     """Test that journal_reader runs successfully on all journals in the data directory."""
-    # TODO convert into a read + write test
-    journal_date = datetime.datetime(int(journal.parent.name), 1, 1, tzinfo=datetime.UTC)
-    with journal_reader(open(journal)) as journal_stream:
-        journal_stream.read(journal.name, journal_date)
+    journal_date = datetime.datetime(int(journal_name.split(os.sep)[0]), 1, 1, tzinfo=datetime.UTC)
+    with journal_reader(journal) as journal_stream:
+        journal_stream.read(journal_name, journal_date)

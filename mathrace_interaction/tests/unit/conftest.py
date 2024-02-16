@@ -14,6 +14,7 @@ import typing
 
 import pytest
 
+from mathrace_interaction.test_utils.parametrize_journal_fixtures import parametrize_journal_fixtures
 from mathrace_interaction.turing_dict_type_alias import TuringDict
 
 _journal_r5539 = """\
@@ -433,26 +434,11 @@ _journals = {
 
 def pytest_generate_tests(metafunc: pytest.Metafunc) -> None:
     """Parametrize tests with journal fixture over journals corresponding to different versions."""
-    journals = [io.StringIO(journal) for journal in _journals.values()]
-    journal_versions = list(_journals.keys())
-    other_journals = [io.StringIO(journal) for journal in _journals.values()]  # different streams than in journals!
-    other_journal_versions = list(journal_versions)  # create a copy of the one associated to journals!
-    other_journal_versions_names = [f"other_{key}" for key in _journals.keys()]
-    if "journal" in metafunc.fixturenames and "journal_version" in metafunc.fixturenames:
-        metafunc.parametrize("journal,journal_version", list(zip(journals, journal_versions)), ids=journal_versions)
-        if "other_journal" in metafunc.fixturenames and "other_journal_version" in metafunc.fixturenames:
-            metafunc.parametrize(
-                "other_journal,other_journal_version", list(zip(other_journals, other_journal_versions)),
-                ids=other_journal_versions_names)
-    elif "journal" in metafunc.fixturenames:
-        metafunc.parametrize("journal", journals, ids=journal_versions)
-        if "other_journal" in metafunc.fixturenames:
-            metafunc.parametrize("other_journal", other_journals, ids=other_journal_versions_names)
-    elif "journal_version" in metafunc.fixturenames:
-        metafunc.parametrize("journal_version", journal_versions)
-        if "other_journal_version" in metafunc.fixturenames:
-            metafunc.parametrize(
-                "other_journal_version", other_journal_versions, ids=other_journal_versions_names)
+    parametrize_journal_fixtures(
+        lambda: {journal_version: io.StringIO(journal) for (journal_version, journal) in _journals.items()},
+        lambda: {journal_version: journal_version for journal_version in _journals},
+        metafunc
+    )
 
 
 @pytest.fixture
