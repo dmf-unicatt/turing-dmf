@@ -3,7 +3,7 @@
 # This file is part of Turing @ DMF.
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
-"""Test mathrace_interaction.determine_journal_version."""
+"""Test mathrace_interaction.strip_mathrace_only_attributes_from_imported_turing."""
 
 import json
 import tempfile
