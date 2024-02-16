@@ -19,13 +19,13 @@ from mathrace_interaction.turing_dict_type_alias import TuringDict
 _journal_r5539 = """\
 --- 001 inizializzazione simulatore
 --- 003 10 7 70 10 6 4 1 1 10 8 -- squadre: 10 quesiti: 7
---- 004 1 20 quesito 1
---- 004 2 20 quesito 2
---- 004 3 20 quesito 3
---- 004 4 20 quesito 4
---- 004 5 20 quesito 5
---- 004 6 20 quesito 6
---- 004 7 20 quesito 7
+--- 004 1 20 quesito 1 punteggio iniziale 20
+--- 004 2 20 quesito 2 punteggio iniziale 20
+--- 004 3 20 quesito 3 punteggio iniziale 20
+--- 004 4 20 quesito 4 punteggio iniziale 20
+--- 004 5 20 quesito 5 punteggio iniziale 20
+--- 004 6 20 quesito 6 punteggio iniziale 20
+--- 004 7 20 quesito 7 punteggio iniziale 20
 0 002 inizio gara
 60 022 aggiorna punteggio esercizi, orologio: 1
 120 022 aggiorna punteggio esercizi, orologio: 2
@@ -54,13 +54,13 @@ _journal_r5539 = """\
 _journal_r11167 = """\
 --- 001 inizializzazione simulatore
 --- 003 10 7 70 10 6 4 1 1 10 8 -- squadre: 10 quesiti: 7
---- 004 1 20 quesito 1
---- 004 2 20 quesito 2
---- 004 3 20 quesito 3
---- 004 4 20 quesito 4
---- 004 5 20 quesito 5
---- 004 6 20 quesito 6
---- 004 7 20 quesito 7
+--- 004 1 20 quesito 1 punteggio iniziale 20
+--- 004 2 20 quesito 2 punteggio iniziale 20
+--- 004 3 20 quesito 3 punteggio iniziale 20
+--- 004 4 20 quesito 4 punteggio iniziale 20
+--- 004 5 20 quesito 5 punteggio iniziale 20
+--- 004 6 20 quesito 6 punteggio iniziale 20
+--- 004 7 20 quesito 7 punteggio iniziale 20
 0 200 inizio gara
 60 101 aggiorna punteggio esercizi, orologio: 1
 120 101 aggiorna punteggio esercizi, orologio: 2
@@ -89,13 +89,13 @@ _journal_r11167 = """\
 _journal_r11184 = """\
 --- 001 inizializzazione simulatore
 --- 003 10 7 70 10 6 4 1 1 10 8 -- squadre: 10 quesiti: 7
---- 004 1 20 quesito 1
---- 004 2 20 quesito 2
---- 004 3 20 quesito 3
---- 004 4 20 quesito 4
---- 004 5 20 quesito 5
---- 004 6 20 quesito 6
---- 004 7 20 quesito 7
+--- 004 1 20 quesito 1 punteggio iniziale 20
+--- 004 2 20 quesito 2 punteggio iniziale 20
+--- 004 3 20 quesito 3 punteggio iniziale 20
+--- 004 4 20 quesito 4 punteggio iniziale 20
+--- 004 5 20 quesito 5 punteggio iniziale 20
+--- 004 6 20 quesito 6 punteggio iniziale 20
+--- 004 7 20 quesito 7 punteggio iniziale 20
 0 200 inizio gara
 60 101 aggiorna punteggio esercizi, orologio: 1
 120 101 aggiorna punteggio esercizi, orologio: 2
@@ -124,13 +124,13 @@ _journal_r11184 = """\
 _journal_r11189 = """\
 --- 001 inizializzazione simulatore
 --- 003 10 7 70 10 6 4 1 1 10 8 -- squadre: 10 quesiti: 7
---- 004 1 20 quesito 1
---- 004 2 20 quesito 2
---- 004 3 20 quesito 3
---- 004 4 20 quesito 4
---- 004 5 20 quesito 5
---- 004 6 20 quesito 6
---- 004 7 20 quesito 7
+--- 004 1 20 quesito 1 punteggio iniziale 20
+--- 004 2 20 quesito 2 punteggio iniziale 20
+--- 004 3 20 quesito 3 punteggio iniziale 20
+--- 004 4 20 quesito 4 punteggio iniziale 20
+--- 004 5 20 quesito 5 punteggio iniziale 20
+--- 004 6 20 quesito 6 punteggio iniziale 20
+--- 004 7 20 quesito 7 punteggio iniziale 20
 0 200 inizio gara
 60 101 aggiorna punteggio esercizi, orologio: 1
 120 101 aggiorna punteggio esercizi, orologio: 2
@@ -161,13 +161,13 @@ _journal_r11189 = """\
 _journal_r17497 = """\
 --- 001 inizializzazione simulatore
 --- 003 10 7 70 10 6 4.1 1 1 10 8 -- squadre: 10 quesiti: 7
---- 004 1 20 quesito 1
---- 004 2 20 quesito 2
---- 004 3 20 quesito 3
---- 004 4 20 quesito 4
---- 004 5 20 quesito 5
---- 004 6 20 quesito 6
---- 004 7 20 quesito 7
+--- 004 1 20 quesito 1 punteggio iniziale 20
+--- 004 2 20 quesito 2 punteggio iniziale 20
+--- 004 3 20 quesito 3 punteggio iniziale 20
+--- 004 4 20 quesito 4 punteggio iniziale 20
+--- 004 5 20 quesito 5 punteggio iniziale 20
+--- 004 6 20 quesito 6 punteggio iniziale 20
+--- 004 7 20 quesito 7 punteggio iniziale 20
 0 200 inizio gara
 60 101 aggiorna punteggio esercizi, orologio: 1
 120 101 aggiorna punteggio esercizi, orologio: 2
@@ -196,13 +196,13 @@ _journal_r17497 = """\
 _journal_r17505 = """\
 --- 001 inizializzazione simulatore
 --- 003 10 7 70 10 6 4.1 1 1 10 8 -- squadre: 10 quesiti: 7
---- 004 1 20 quesito 1
---- 004 2 20 quesito 2
---- 004 3 20 quesito 3
---- 004 4 20 quesito 4
---- 004 5 20 quesito 5
---- 004 6 20 quesito 6
---- 004 7 20 quesito 7
+--- 004 1 20 quesito 1 punteggio iniziale 20
+--- 004 2 20 quesito 2 punteggio iniziale 20
+--- 004 3 20 quesito 3 punteggio iniziale 20
+--- 004 4 20 quesito 4 punteggio iniziale 20
+--- 004 5 20 quesito 5 punteggio iniziale 20
+--- 004 6 20 quesito 6 punteggio iniziale 20
+--- 004 7 20 quesito 7 punteggio iniziale 20
 --- 005 1 0 Squadra 1
 --- 005 2 0 Squadra 2
 --- 005 3 0 Squadra 3
@@ -241,13 +241,13 @@ _journal_r17505 = """\
 _journal_r17548 = """\
 --- 001 inizializzazione simulatore
 --- 002 10+0:70 7:20 4.1;1 10-2 -- squadre: 10 quesiti: 7
---- 004 1 20 quesito 1
---- 004 2 20 quesito 2
---- 004 3 20 quesito 3
---- 004 4 20 quesito 4
---- 004 5 20 quesito 5
---- 004 6 20 quesito 6
---- 004 7 20 quesito 7
+--- 004 1 20 quesito 1 punteggio iniziale 20
+--- 004 2 20 quesito 2 punteggio iniziale 20
+--- 004 3 20 quesito 3 punteggio iniziale 20
+--- 004 4 20 quesito 4 punteggio iniziale 20
+--- 004 5 20 quesito 5 punteggio iniziale 20
+--- 004 6 20 quesito 6 punteggio iniziale 20
+--- 004 7 20 quesito 7 punteggio iniziale 20
 --- 005 1 0 Squadra 1
 --- 005 2 0 Squadra 2
 --- 005 3 0 Squadra 3
@@ -286,15 +286,15 @@ _journal_r17548 = """\
 _journal_r20642 = """\
 --- 001 inizializzazione simulatore
 --- 002 10+0:70 7:20 4.1;1 10-2 -- squadre: 10 quesiti: 7
---- 011 10 20 15 10 8 6 5 4 3 2 1
---- 012 6 100 60 40 30 20 10
---- 004 1 20 quesito 1
---- 004 2 20 quesito 2
---- 004 3 20 quesito 3
---- 004 4 20 quesito 4
---- 004 5 20 quesito 5
---- 004 6 20 quesito 6
---- 004 7 20 quesito 7
+--- 011 10 20 15 10 8 6 5 4 3 2 1 definizione dei 10 livelli di bonus
+--- 012 6 100 60 40 30 20 10 definizione dei 6 livelli di superbonus
+--- 004 1 20 quesito 1 punteggio iniziale 20
+--- 004 2 20 quesito 2 punteggio iniziale 20
+--- 004 3 20 quesito 3 punteggio iniziale 20
+--- 004 4 20 quesito 4 punteggio iniziale 20
+--- 004 5 20 quesito 5 punteggio iniziale 20
+--- 004 6 20 quesito 6 punteggio iniziale 20
+--- 004 7 20 quesito 7 punteggio iniziale 20
 --- 005 1 0 Squadra 1
 --- 005 2 0 Squadra 2
 --- 005 3 0 Squadra 3
@@ -333,15 +333,15 @@ _journal_r20642 = """\
 _journal_r20644 = """\
 --- 001 inizializzazione simulatore
 --- 002 10+0:70 7:20 4.1;1 10-2 -- squadre: 10 quesiti: 7
---- 011 10 20 15 10 8 6 5 4 3 2 1
---- 012 6 100 60 40 30 20 10
---- 004 1 20 quesito 1
---- 004 2 20 quesito 2
---- 004 3 20 quesito 3
---- 004 4 20 quesito 4
---- 004 5 20 quesito 5
---- 004 6 20 quesito 6
---- 004 7 20 quesito 7
+--- 011 10 20 15 10 8 6 5 4 3 2 1 definizione dei 10 livelli di bonus
+--- 012 6 100 60 40 30 20 10 definizione dei 6 livelli di superbonus
+--- 004 1 20 quesito 1 punteggio iniziale 20
+--- 004 2 20 quesito 2 punteggio iniziale 20
+--- 004 3 20 quesito 3 punteggio iniziale 20
+--- 004 4 20 quesito 4 punteggio iniziale 20
+--- 004 5 20 quesito 5 punteggio iniziale 20
+--- 004 6 20 quesito 6 punteggio iniziale 20
+--- 004 7 20 quesito 7 punteggio iniziale 20
 --- 005 1 0 Squadra 1
 --- 005 2 0 Squadra 2
 --- 005 3 0 Squadra 3
@@ -380,8 +380,8 @@ _journal_r20644 = """\
 _journal_r25013 = """\
 --- 001 inizializzazione simulatore
 --- 002 10+0:70 7:20 4.1;1 10-2 -- squadre: 10 quesiti: 7
---- 011 10 20 15 10 8 6 5 4 3 2 1
---- 012 6 100 60 40 30 20 10
+--- 011 10 20 15 10 8 6 5 4 3 2 1 definizione dei 10 livelli di bonus
+--- 012 6 100 60 40 30 20 10 definizione dei 6 livelli di superbonus
 --- 004 1 20 0000 quesito 1
 --- 004 2 20 0000 quesito 2
 --- 004 3 20 0000 quesito 3
