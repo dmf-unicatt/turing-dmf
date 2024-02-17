@@ -28,7 +28,9 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Topic :: Software Development :: Libraries :: Python Modules"
 ]
-dependencies = []
+dependencies = [
+    "paramiko"
+]
 
 [project.urls]
 homepage = "https://github.com/dmf-unicatt/turing-dmf"
@@ -44,10 +46,13 @@ lint = [
     "isort",
     "mypy",
     "ruff",
+    "types-paramiko",
     "yamllint"
 ]
 tests = [
     "coverage[toml]",
+    "mock-ssh-server",
+    "pycryptodomex",
     "pytest"
 ]
 
@@ -55,6 +60,7 @@ tests = [
 line_length = 120
 multi_line_output = 4
 order_by_type = false
+use_parentheses = true
 
 [tool.mypy]
 check_untyped_defs = true
@@ -66,6 +72,12 @@ show_error_codes = true
 strict = true
 warn_return_any = true
 warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+module = [
+    "mockssh"
+]
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 

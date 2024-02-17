@@ -52,6 +52,8 @@ RUN cd /root/turing && \
 # Part 2: mathrace-interaction
 COPY mathrace_interaction mathrace_interaction
 
+RUN apt install -y -qq python3-paramiko python3-pycryptodome
+
 RUN cd /root/mathrace_interaction && \
     python3 -m pip install --break-system-packages .[tests]
 
