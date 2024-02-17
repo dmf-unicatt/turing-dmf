@@ -3,7 +3,7 @@
 # This file is part of Turing @ DMF.
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
-"""Test mathrace_interaction.strip_mathrace_only_attributes_from_imported_turing."""
+"""Test mathrace_interaction.utils.strip_mathrace_only_attributes_from_imported_turing."""
 
 import json
 import tempfile
@@ -11,9 +11,9 @@ import typing
 
 import pytest
 
-from mathrace_interaction.strip_mathrace_only_attributes_from_imported_turing import (
-    strip_mathrace_only_attributes_from_imported_turing)
 from mathrace_interaction.turing_dict_type_alias import TuringDict
+from mathrace_interaction.utils.strip_mathrace_only_attributes_from_imported_turing import (
+    strip_mathrace_only_attributes_from_imported_turing)
 
 RunEntrypointFixtureType: typing.TypeAlias = typing.Callable[[str, list[str]], tuple[str, str]]
 
@@ -66,7 +66,7 @@ def test_strip_mathrace_only_attributes_from_imported_turing_entrypoint(
         with open(input_json_file.name, "w") as input_json_stream:
             input_json_stream.write(json.dumps(imported_dict))
         stdout, stderr = run_entrypoint(
-            "mathrace_interaction.strip_mathrace_only_attributes_from_imported_turing", [
+            "mathrace_interaction.utils.strip_mathrace_only_attributes_from_imported_turing", [
                 input_file_option, input_json_file.name, output_file_option, output_json_file.name
             ]
         )
