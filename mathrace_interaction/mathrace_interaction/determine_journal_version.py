@@ -8,7 +8,7 @@
 import argparse
 import typing
 
-from mathrace_interaction.list_journal_versions import list_journal_versions
+from mathrace_interaction.utils.list_journal_versions import list_journal_versions
 
 
 def determine_journal_version(journal_stream: typing.TextIO) -> str:
