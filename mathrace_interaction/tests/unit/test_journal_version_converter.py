@@ -12,7 +12,7 @@ import typing
 import pytest
 
 from mathrace_interaction.journal_version_converter import journal_version_converter
-from mathrace_interaction.strip_comments_and_unhandled_events_from_journal import (
+from mathrace_interaction.utils.strip_comments_and_unhandled_events_from_journal import (
     strip_comments_and_unhandled_events_from_journal)
 
 RunEntrypointFixtureType: typing.TypeAlias = typing.Callable[[str, list[str]], tuple[str, str]]

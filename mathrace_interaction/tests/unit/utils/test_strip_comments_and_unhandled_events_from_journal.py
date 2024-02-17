@@ -3,7 +3,7 @@
 # This file is part of Turing @ DMF.
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
-"""Test mathrace_interaction.strip_comments_and_unhandled_events_from_journal."""
+"""Test mathrace_interaction.utils.strip_comments_and_unhandled_events_from_journal."""
 
 import io
 import random
@@ -13,7 +13,7 @@ import typing
 
 import pytest
 
-from mathrace_interaction.strip_comments_and_unhandled_events_from_journal import (
+from mathrace_interaction.utils.strip_comments_and_unhandled_events_from_journal import (
     strip_comments_and_unhandled_events_from_journal)
 
 RunEntrypointFixtureType: typing.TypeAlias = typing.Callable[[str, list[str]], tuple[str, str]]
@@ -98,7 +98,7 @@ def test_strip_comments_and_unhandled_events_from_journal_entrypoint(
         with open(input_journal_file.name, "w") as input_journal_stream:
             input_journal_stream.write(random_journal.read())
         stdout, stderr = run_entrypoint(
-            "mathrace_interaction.strip_comments_and_unhandled_events_from_journal", [
+            "mathrace_interaction.utils.strip_comments_and_unhandled_events_from_journal", [
                 input_file_option, input_journal_file.name, output_file_option, output_journal_file.name
             ]
         )
