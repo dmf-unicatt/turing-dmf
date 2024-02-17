@@ -15,8 +15,8 @@ import mockssh
 import paramiko
 import pytest
 
-from mathrace_interaction.turing_dict_type_alias import TuringDict
 from mathrace_interaction.utils.get_ssh_client import get_ssh_client
+from mathrace_interaction.utils.turing_dict_type_alias import TuringDict
 
 RuntimeErrorContainsFixtureType: typing.TypeAlias = typing.Callable[[typing.Callable[[], typing.Any], str], None]
 RunEntrypointFixtureType: typing.TypeAlias = typing.Callable[[str, list[str]], tuple[str, str]]

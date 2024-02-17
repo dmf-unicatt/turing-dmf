@@ -14,10 +14,10 @@ import typing
 
 import pytest
 
-from mathrace_interaction.turing_dict_type_alias import TuringDict
 from mathrace_interaction.utils.create_mock_ssh_server_fixture import (  # noqa: F401
     create_mock_ssh_server_fixture as ssh_server)
 from mathrace_interaction.utils.parametrize_journal_fixtures import parametrize_journal_fixtures
+from mathrace_interaction.utils.turing_dict_type_alias import TuringDict
 
 _journal_r5539 = """\
 --- 001 inizializzazione simulatore

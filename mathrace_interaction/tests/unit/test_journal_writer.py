@@ -16,7 +16,7 @@ import pytest
 from mathrace_interaction.journal_writer import journal_writer
 from mathrace_interaction.strip_comments_and_unhandled_events_from_journal import (
     strip_comments_and_unhandled_events_from_journal)
-from mathrace_interaction.turing_dict_type_alias import TuringDict
+from mathrace_interaction.utils.turing_dict_type_alias import TuringDict
 
 RuntimeErrorContainsFixtureType: typing.TypeAlias = typing.Callable[[typing.Callable[[], typing.Any], str], None]
 RunEntrypointFixtureType: typing.TypeAlias = typing.Callable[[str, list[str]], tuple[str, str]]

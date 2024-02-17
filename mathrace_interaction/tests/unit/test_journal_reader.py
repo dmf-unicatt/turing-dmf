@@ -14,9 +14,9 @@ import typing
 import pytest
 
 from mathrace_interaction.journal_reader import journal_reader
-from mathrace_interaction.turing_dict_type_alias import TuringDict
 from mathrace_interaction.utils.strip_mathrace_only_attributes_from_imported_turing import (
     strip_mathrace_only_attributes_from_imported_turing)
+from mathrace_interaction.utils.turing_dict_type_alias import TuringDict
 
 RuntimeErrorContainsFixtureType: typing.TypeAlias = typing.Callable[[typing.Callable[[], typing.Any], str], None]
 RunEntrypointFixtureType: typing.TypeAlias = typing.Callable[[str, list[str]], tuple[str, str]]

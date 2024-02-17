@@ -8,7 +8,7 @@
 import argparse
 import json
 
-from mathrace_interaction.turing_dict_type_alias import TuringDict
+from mathrace_interaction.utils.turing_dict_type_alias import TuringDict
 
 
 def strip_mathrace_only_attributes_from_imported_turing(imported_dict: TuringDict) -> None:

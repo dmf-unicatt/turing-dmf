@@ -16,7 +16,7 @@ import typing
 from mathrace_interaction.journal_reader import (
     JournalReaderR5539, JournalReaderR11167, JournalReaderR17505, JournalReaderR17548, JournalReaderR20642)
 from mathrace_interaction.list_journal_versions import list_journal_versions
-from mathrace_interaction.turing_dict_type_alias import TuringDict
+from mathrace_interaction.utils.turing_dict_type_alias import TuringDict
 
 
 class AbstractJournalWriter(abc.ABC):
