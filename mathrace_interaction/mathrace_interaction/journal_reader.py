@@ -13,6 +13,7 @@ import sys
 import types
 import typing
 
+from mathrace_interaction.utils.convert_timestamp_to_number_of_seconds import convert_timestamp_to_number_of_seconds
 from mathrace_interaction.utils.determine_journal_version import determine_journal_version
 from mathrace_interaction.utils.strip_mathrace_only_attributes_from_imported_turing import (
     strip_mathrace_only_attributes_from_imported_turing)
@@ -971,33 +972,29 @@ class JournalReaderR20644(JournalReaderR20642):
     def _process_jolly_selection_event(self, timestamp_str: str, event_content: str, turing_dict: TuringDict) -> None:
         """Process a jolly selection event, preprocessing the timestamp."""
         return super()._process_jolly_selection_event(
-            self._convert_timestamp_to_number_of_seconds(timestamp_str), event_content, turing_dict)
+            str(convert_timestamp_to_number_of_seconds(timestamp_str)), event_content, turing_dict)
 
     def _process_answer_submission_event(
         self, timestamp_str: str, event_content: str, turing_dict: TuringDict
     ) -> None:
         """Process an answer submission event, preprocessing the timestamp."""
         return super()._process_answer_submission_event(
-            self._convert_timestamp_to_number_of_seconds(timestamp_str), event_content, turing_dict)
+            str(convert_timestamp_to_number_of_seconds(timestamp_str)), event_content, turing_dict)
 
     def _process_jolly_timeout_event(self, timestamp_str: str, event_content: str, turing_dict: TuringDict) -> None:
         """Process a jolly timeout event, preprocessing the timestamp."""
         return super()._process_jolly_timeout_event(
-            self._convert_timestamp_to_number_of_seconds(timestamp_str), event_content, turing_dict)
+            str(convert_timestamp_to_number_of_seconds(timestamp_str)), event_content, turing_dict)
 
     def _process_timer_update_event(self, timestamp_str: str, event_content: str, turing_dict: TuringDict) -> None:
         """Process a timer update event, preprocessing the timestamp."""
         return super()._process_timer_update_event(
-            self._convert_timestamp_to_number_of_seconds(timestamp_str), event_content, turing_dict)
+            str(convert_timestamp_to_number_of_seconds(timestamp_str)), event_content, turing_dict)
 
     def _process_manual_bonus_event(self, timestamp_str: str, event_content: str, turing_dict: TuringDict) -> None:
         """Process a manual bonus event, preprocessing the timestamp."""
         return super()._process_manual_bonus_event(
-            self._convert_timestamp_to_number_of_seconds(timestamp_str), event_content, turing_dict)
-
-    def _convert_timestamp_to_number_of_seconds(self, timestamp_str: str) -> str:
-        """Convert a timestamp of the form hh:mm:ss.msec to an integer number of seconds."""
-        return str(int(sum(x * float(t) for x, t in zip([1, 60, 3600], reversed(timestamp_str.split(":"))))))
+            str(convert_timestamp_to_number_of_seconds(timestamp_str)), event_content, turing_dict)
 
 class JournalReaderR25013(JournalReaderR20644):
     """

@@ -9,6 +9,7 @@ API reference
    mathrace_interaction.journal_version_converter
    mathrace_interaction.journal_writer
    mathrace_interaction.utils
+   mathrace_interaction.utils.convert_timestamp_to_number_of_seconds
    mathrace_interaction.utils.create_mock_ssh_server_fixture
    mathrace_interaction.utils.determine_journal_version
    mathrace_interaction.utils.get_journals_in_directory
