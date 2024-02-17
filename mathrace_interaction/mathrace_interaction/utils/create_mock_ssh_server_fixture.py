@@ -7,6 +7,7 @@
 
 import pathlib
 import tempfile
+import typing
 
 import Cryptodome.PublicKey.RSA
 import mockssh
@@ -14,7 +15,7 @@ import pytest
 
 
 @pytest.fixture(scope="session")
-def create_mock_ssh_server_fixture() -> mockssh.Server:  # type: ignore[no-any-unimported]
+def create_mock_ssh_server_fixture() -> typing.Generator[mockssh.Server, None, None]:
     """Create a mock ssh server."""
     with tempfile.TemporaryDirectory() as home_ssh_directory:
         # Generate RSA public key and private key

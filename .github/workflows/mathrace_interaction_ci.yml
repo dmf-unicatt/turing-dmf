@@ -21,7 +21,9 @@ jobs:
       matrix:
         include:
           - name: without-turing
-            setup_container: ""
+            setup_container: |
+              mkdir -p /usr/local/lib/python3.11/dist-packages/mockssh
+              touch /usr/local/lib/python3.11/dist-packages/mockssh/py.typed
           - name: with-turing
             setup_container: |
               export DEBIAN_FRONTEND="noninteractive"

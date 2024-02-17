@@ -51,7 +51,7 @@ lint = [
 ]
 tests = [
     "coverage[toml]",
-    "mock-ssh-server",
+    "mock-ssh-server @ git+https://github.com/carletes/mock-ssh-server.git",
     "pycryptodomex",
     "pytest"
 ]
@@ -72,12 +72,6 @@ show_error_codes = true
 strict = true
 warn_return_any = true
 warn_unused_ignores = true
-
-[[tool.mypy.overrides]]
-module = [
-    "mockssh"
-]
-ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 

@@ -94,7 +94,7 @@ def test_run_entrypoint_with_base64_wrong_flag(
         "stderr option --wrong-flag2 not recognized")
 
 
-def test_ssh_server_users(ssh_server: mockssh.Server) -> None:  # type: ignore[no-any-unimported]
+def test_ssh_server_users(ssh_server: mockssh.Server) -> None:
     """Test the mockssh.Server fixture by listing the available users."""
     assert list(ssh_server.users) == ["user"]
 
@@ -105,7 +105,7 @@ def test_ssh_server_users(ssh_server: mockssh.Server) -> None:  # type: ignore[n
     lambda ssh_server: get_ssh_client(
         ssh_server.host, "user", port=ssh_server.port, key_filename=ssh_server._users["user"][0])
 ])
-def test_ssh_server_create_file(  # type: ignore[no-any-unimported]
+def test_ssh_server_create_file(
     ssh_server: mockssh.Server, get_client: typing.Callable[[mockssh.Server], paramiko.SSHClient]
 ) -> None:
     """Test the mockssh.Server fixture by creating a file."""

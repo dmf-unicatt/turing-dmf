@@ -55,7 +55,8 @@ COPY mathrace_interaction mathrace_interaction
 RUN apt install -y -qq python3-paramiko python3-pycryptodome
 
 RUN cd /root/mathrace_interaction && \
-    python3 -m pip install --break-system-packages .[tests]
+    python3 -m pip install --break-system-packages .[tests] && \
+    touch /usr/local/lib/python3.11/dist-packages/mockssh/py.typed
 
 # Part 3: set up entrypoint that:
 # * creates and initialize databases on first run,
