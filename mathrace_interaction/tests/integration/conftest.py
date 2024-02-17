@@ -10,8 +10,8 @@ import pathlib
 import pytest
 
 from mathrace_interaction.determine_journal_version import determine_journal_version
-from mathrace_interaction.test_utils.get_journals_in_directory import get_journals_in_directory
-from mathrace_interaction.test_utils.parametrize_journal_fixtures import parametrize_journal_fixtures
+from mathrace_interaction.utils.get_journals_in_directory import get_journals_in_directory
+from mathrace_interaction.utils.parametrize_journal_fixtures import parametrize_journal_fixtures
 
 _data_dir = pathlib.Path(__file__).parent.parent.parent / "data"
 

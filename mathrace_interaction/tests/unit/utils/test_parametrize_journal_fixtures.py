@@ -3,7 +3,7 @@
 # This file is part of Turing @ DMF.
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
-"""Test mathrace_interaction.test_utils.parametrize_journal_fixtures."""
+"""Test mathrace_interaction.utils.parametrize_journal_fixtures."""
 
 import sys
 import typing

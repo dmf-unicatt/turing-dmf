@@ -3,13 +3,13 @@
 # This file is part of Turing @ DMF.
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
-"""Test mathrace_interaction.test_utils.get_journals_in_directory."""
+"""Test mathrace_interaction.utils.get_journals_in_directory."""
 
 import pathlib
 import tempfile
 import typing
 
-from mathrace_interaction.test_utils.get_journals_in_directory import get_journals_in_directory
+from mathrace_interaction.utils.get_journals_in_directory import get_journals_in_directory
 
 RuntimeErrorContainsFixtureType: typing.TypeAlias = typing.Callable[[typing.Callable[[], typing.Any], str], None]
 

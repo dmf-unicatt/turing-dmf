@@ -14,8 +14,8 @@ import typing
 
 import pytest
 
-from mathrace_interaction.test_utils.parametrize_journal_fixtures import parametrize_journal_fixtures
 from mathrace_interaction.turing_dict_type_alias import TuringDict
+from mathrace_interaction.utils.parametrize_journal_fixtures import parametrize_journal_fixtures
 
 _journal_r5539 = """\
 --- 001 inizializzazione simulatore
