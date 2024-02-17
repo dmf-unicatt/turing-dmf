@@ -13,12 +13,12 @@ API reference
    mathrace_interaction.utils.create_mock_ssh_server_fixture
    mathrace_interaction.utils.determine_journal_version
    mathrace_interaction.utils.get_journals_in_directory
-   mathrace_interaction.utils.get_ssh_client
    mathrace_interaction.utils.journal_event_filterer
    mathrace_interaction.utils.journal_event_filterer_by_id
    mathrace_interaction.utils.journal_event_filterer_by_timestamp
    mathrace_interaction.utils.list_journal_versions
    mathrace_interaction.utils.parametrize_journal_fixtures
+   mathrace_interaction.utils.ssh_client
    mathrace_interaction.utils.strip_comments_and_unhandled_events_from_journal
    mathrace_interaction.utils.strip_mathrace_only_attributes_from_imported_turing
    mathrace_interaction.utils.turing_dict_type_alias
