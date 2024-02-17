@@ -15,6 +15,7 @@ API reference
    mathrace_interaction.utils.get_journals_in_directory
    mathrace_interaction.utils.get_ssh_client
    mathrace_interaction.utils.journal_event_filterer
+   mathrace_interaction.utils.journal_event_filterer_by_id
    mathrace_interaction.utils.journal_event_filterer_by_timestamp
    mathrace_interaction.utils.list_journal_versions
    mathrace_interaction.utils.parametrize_journal_fixtures
