@@ -9,8 +9,8 @@ import argparse
 import sys
 import typing
 
-from mathrace_interaction.determine_journal_version import determine_journal_version
 from mathrace_interaction.journal_reader import AbstractJournalReader
+from mathrace_interaction.utils.determine_journal_version import determine_journal_version
 
 
 def strip_comments_and_unhandled_events_from_journal(journal_stream: typing.TextIO) -> str:

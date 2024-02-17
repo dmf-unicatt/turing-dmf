@@ -3,11 +3,11 @@
 # This file is part of Turing @ DMF.
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
-"""Test mathrace_interaction.determine_journal_version on journals in data directory."""
+"""Test mathrace_interaction.utils.determine_journal_version on journals in data directory."""
 
 import typing
 
-from mathrace_interaction.determine_journal_version import determine_journal_version
+from mathrace_interaction.utils.determine_journal_version import determine_journal_version
 
 
 def test_determine_journal_version_on_data(journal: typing.TextIO, journal_version: str) -> None:

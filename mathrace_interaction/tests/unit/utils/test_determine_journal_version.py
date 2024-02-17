@@ -3,7 +3,7 @@
 # This file is part of Turing @ DMF.
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
-"""Test mathrace_interaction.determine_journal_version."""
+"""Test mathrace_interaction.utils.determine_journal_version."""
 
 import io
 import tempfile
@@ -11,7 +11,7 @@ import typing
 
 import pytest
 
-from mathrace_interaction.determine_journal_version import determine_journal_version
+from mathrace_interaction.utils.determine_journal_version import determine_journal_version
 
 RuntimeErrorContainsFixtureType: typing.TypeAlias = typing.Callable[[typing.Callable[[], typing.Any], str], None]
 RunEntrypointFixtureType: typing.TypeAlias = typing.Callable[[str, list[str]], tuple[str, str]]
@@ -31,7 +31,7 @@ def test_determine_journal_version_entrypoint(
         with open(journal_file.name, "w") as journal_stream:
             journal_stream.write(journal.read())
         stdout, stderr = run_entrypoint(
-            "mathrace_interaction.determine_journal_version", [input_file_option, journal_file.name])
+            "mathrace_interaction.utils.determine_journal_version", [input_file_option, journal_file.name])
         assert stdout == journal_version
         assert stderr == ""
         # The same journal stream is shared on the parametrization on input_file_option: since the stream was consumed

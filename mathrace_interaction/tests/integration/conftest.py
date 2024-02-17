@@ -9,7 +9,7 @@ import pathlib
 
 import pytest
 
-from mathrace_interaction.determine_journal_version import determine_journal_version
+from mathrace_interaction.utils.determine_journal_version import determine_journal_version
 from mathrace_interaction.utils.get_journals_in_directory import get_journals_in_directory
 from mathrace_interaction.utils.parametrize_journal_fixtures import parametrize_journal_fixtures
 
