@@ -457,6 +457,27 @@ def test_journal_reader_answer_submission_before_timer_offset(
         "Cannot convert 30 to date and time because of empty timestamp offset")
 
 
+def test_journal_reader_live_race(race_date: datetime.datetime) -> None:
+    """Test journal reader on a live race, i.e. a journal in which the race end event is missing."""
+    live_journal = io.StringIO("""\
+--- 001 inizializzazione simulatore
+--- 003 10 7 70 10 6 4 1 1 10 2 -- squadre: 10 quesiti: 7
+0 002 inizio gara
+60 022 aggiorna punteggio esercizi, orologio: 1
+80 010 1 2 squadra 1 sceglie 2 come jolly
+90 011 2 3 1 squadra 2, quesito 3: giusto
+100 010 2 3 squadra 2 sceglie 3 come jolly
+--- 999 fine simulatore
+""")
+    with journal_reader(live_journal) as journal_stream:
+        dict_with_timer_offset = journal_stream.read("live_journal", race_date)
+    assert len(dict_with_timer_offset["eventi"]) == 3
+    assert dict_with_timer_offset["eventi"][0]["orario"] == (race_date + datetime.timedelta(seconds=80)).isoformat()
+    assert dict_with_timer_offset["eventi"][1]["orario"] == (race_date + datetime.timedelta(seconds=90)).isoformat()
+    assert dict_with_timer_offset["eventi"][2]["orario"] == (race_date + datetime.timedelta(seconds=100)).isoformat()
+
+
+
 def test_journal_reader_missing_protocol_numbers(
     race_date: datetime.datetime, runtime_error_contains: RuntimeErrorContainsFixtureType
 ) -> None:

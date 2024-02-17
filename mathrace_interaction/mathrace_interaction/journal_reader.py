@@ -420,11 +420,17 @@ class JournalReaderR5539(AbstractJournalReader):
         # Process the remaining race events until the race end one
         turing_dict["eventi"] = list()
         while True:
-            line = self._read_line()
-            try:
-                self._process_race_event_line(line, turing_dict)
-            except StopIteration:
+            line, before, _ = self._read_line_with_positions()
+            if line == "--- 999 fine simulatore":
+                # This file is from a race which is still running. We finished processing race events
+                # anyways, so reset the stream and break the loop
+                self._reset_stream_to_position(before)
                 break
+            else:
+                try:
+                    self._process_race_event_line(line, turing_dict)
+                except StopIteration:
+                    break
 
     def _process_race_event_line(self, line: str, turing_dict: TuringDict) -> None:
         """Process a race event line."""
