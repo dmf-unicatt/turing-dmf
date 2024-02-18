@@ -1,7 +1,7 @@
 # Turing @ DMF: containerization using Docker
 
 ## 1. Basic configuration
-1. Install `docker` following the instructions in the [official documentation](https://docs.docker.com/engine/install/debian/#install-using-the-repository).
+1. Install `docker` following the instructions in the official documentation: [Debian `amd64`](https://docs.docker.com/engine/install/debian/#install-using-the-repository), [Fedora `amd64`](https://docs.docker.com/engine/install/fedora/#install-using-the-repository), [Raspberry Pi `armhf`](https://docs.docker.com/engine/install/raspberry-pi-os/#install-using-the-repository), [Ubuntu `amd64`](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository).
 
 2. Pull the **Turing @ DMF** docker image
 ```
@@ -12,7 +12,7 @@ docker pull ghcr.io/dmf-unicatt/turing-dmf:latest
 ```
 docker run -p 80:80 ghcr.io/dmf-unicatt/turing-dmf:latest
 ```
-**Turing** will be available at `http://localhost`. Furthemore, the terminal will display the username and password of the administrator account, which can be subsequently changed through the web interface.
+**Turing** will be available at `http://localhost`. Furthemore, the terminal will display (towards the end of a long initialization message) the username and password of the administrator account, which can be subsequently changed through the web interface.
 
 
 ## 2. Advanced configuration
@@ -20,7 +20,9 @@ The basic configuration is useful for local testing, but should not be used in p
 
 ### 2.1. Set up the host server
 
-1. Clone the **Turing @ DMF** repository as follows:
+1. Install `docker` as in the basic configuration.
+
+2. Clone the **Turing @ DMF** repository as follows:
 ```
 git clone --recurse-submodules https://github.com/dmf-unicatt/turing-dmf.git
 ```
@@ -51,7 +53,7 @@ cd turing-dmf/docker
 ```
 ./start_container.sh
 ```
-The terminal will display the username and password of the administrator account, which can be subsequently changed through the web interface.
+The terminal will display (towards the end of a long initialization message) the username and password of the administrator account, which can be subsequently changed through the web interface.
 
 ### 2.3. Run the docker container
 
