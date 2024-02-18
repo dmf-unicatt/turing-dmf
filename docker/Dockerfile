@@ -9,9 +9,6 @@ FROM debian:12
 # also in the shell scripts stored in this directory.
 MAINTAINER Francesco Ballarin <francesco.ballarin@unicatt.it>
 
-ARG DJANGO_SECRET_KEY
-ARG POSTGRES_PASSWORD
-
 WORKDIR /root
 
 RUN apt update -y -q && \
@@ -24,30 +21,13 @@ COPY .git/modules/turing turing/.git
 
 RUN sed -i "/worktree =/d" turing/.git/config && patches/turing/apply_patches.sh
 
-RUN apt install -y -qq libpq-dev postgresql postgresql-client postgresql-contrib python3-psycopg2 python3-selenium && \
-    echo "$POSTGRES_PASSWORD\n$POSTGRES_PASSWORD" | passwd postgres
+RUN apt install -y -qq libpq-dev postgresql postgresql-client postgresql-contrib python3-psycopg2 python3-selenium
 
-# postgres has created a new user, which should be allow read-only access to /root
+# postgres has created a new user, which should be allowed read-only access to /root
 RUN chmod go+rx /root
 
 RUN python3 -m pip install --break-system-packages -r turing/requirements.txt && \
     python3 -m pip install --break-system-packages -r turing/requirements-dev.txt
-
-RUN cat <<EOF > /root/turing/Turing/settings.ini
-[settings]
-SECRET_KEY=$DJANGO_SECRET_KEY
-DEBUG=False
-DEV_MODE=False
-ALLOWED_HOSTS=*
-INTERNAL_IPS=127.0.0.1
-RDS_DB_NAME=turing-dmf-db
-RDS_USERNAME=postgres
-RDS_PASSWORD=$POSTGRES_PASSWORD
-RDS_HOSTNAME=localhost
-EOF
-
-RUN cd /root/turing && \
-    python3 manage.py collectstatic
 
 # Part 2: mathrace-interaction
 COPY mathrace_interaction mathrace_interaction

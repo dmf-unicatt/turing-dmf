@@ -8,6 +8,5 @@
 set -e
 
 chattr +i .container_id
-chattr +i .django_secret_key
-chattr +i .postgres_password
+chattr +i .network_id
 chattr +i .volume_id
