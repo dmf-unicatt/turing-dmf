@@ -12,7 +12,7 @@ docker pull ghcr.io/dmf-unicatt/turing-dmf:latest
 ```
 docker run -p 80:80 ghcr.io/dmf-unicatt/turing-dmf:latest
 ```
-**Turing** will be available at `http://localhost`. Furthemore, the terminal will display (towards the end of a long initialization message) the username and password of the administrator account, which can be subsequently changed through the web interface.
+**Turing** will be available at `http://localhost`. Furthermore, the terminal will display (towards the end of a long initialization message) the username and password of the administrator account, which can be subsequently changed through the web interface.
 
 
 ## 2. Advanced configuration
