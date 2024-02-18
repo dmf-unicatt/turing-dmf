@@ -26,8 +26,6 @@ class AbstractJournalWriter(abc.ABC):
     ----------
     _journal_stream
         The I/O stream that writes the journal to be read by mathrace or simdis, provided as input.
-    _journal_stream_context
-        The context of _journal_stream. Only valid after entering in this context, and before exiting from it.
     """
 
     # Race setup codes
@@ -42,11 +40,9 @@ class AbstractJournalWriter(abc.ABC):
 
     def __init__(self, journal_stream: typing.TextIO) -> None:
         self._journal_stream = journal_stream
-        self._journal_stream_context: typing.TextIO | None = None
 
     def __enter__(self) -> typing.Self:
         """Enter the journal I/O stream context."""
-        self._journal_stream_context = self._journal_stream.__enter__()
         return self
 
     def __exit__(
@@ -56,7 +52,6 @@ class AbstractJournalWriter(abc.ABC):
     ) -> None:
         """Exit the journal I/O stream context."""
         self._journal_stream.__exit__(exception_type, exception_value, traceback)
-        self._journal_stream_context = None
 
     def write(self, turing_dict: TuringDict) -> None:
         """
@@ -87,7 +82,7 @@ class AbstractJournalWriter(abc.ABC):
 
     def _write_line(self, line: str) -> None:
         """Write one line to the journal stream."""
-        stream = self._journal_stream_context
+        stream = self._journal_stream
         assert stream is not None
         print(line, file=stream)
 

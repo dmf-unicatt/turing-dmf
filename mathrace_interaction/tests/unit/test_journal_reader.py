@@ -68,7 +68,7 @@ def test_journal_reader_wrong_first_line(
 0 002 inizio gara
 """)
     runtime_error_contains(
-        lambda: mathrace_interaction.journal_reader(wrong_journal).__enter__().read("wrong_journal", race_date),
+        lambda: mathrace_interaction.journal_reader(wrong_journal).read("wrong_journal", race_date),
         "Invalid first line 0 002 inizio gara")
 
 
@@ -81,7 +81,7 @@ def test_journal_reader_missing_race_definition(
 0 002 inizio gara
 """)
     runtime_error_contains(
-        lambda: mathrace_interaction.journal_reader(wrong_journal).__enter__().read("wrong_journal", race_date),
+        lambda: mathrace_interaction.journal_reader(wrong_journal).read("wrong_journal", race_date),
         'Invalid line 0 002 inizio gara in race definition: it does not start with "--- "')
 
 
@@ -111,7 +111,7 @@ def test_journal_reader_wrong_race_definition_code(
 0 002 inizio gara
 """)
     runtime_error_contains(
-        lambda: mathrace_interaction.journal_reader(wrong_journal).__enter__().read("wrong_journal", race_date),
+        lambda: mathrace_interaction.journal_reader(wrong_journal).read("wrong_journal", race_date),
         'Invalid line --- 993 10 7 70 10 6 4 1 1 10 2 in race definition: it does not start with "--- 003"')
 
 
@@ -125,7 +125,7 @@ def test_journal_reader_wrong_race_definition_parts(
 0 002 inizio gara
 """)
     runtime_error_contains(
-        lambda: mathrace_interaction.journal_reader(wrong_journal).__enter__().read("wrong_journal", race_date),
+        lambda: mathrace_interaction.journal_reader(wrong_journal).read("wrong_journal", race_date),
         "Invalid line --- 003 10 7 70 10 6 4 1 1 10 2 00000 in race definition: it does not contain "
         "the expected number of parts")
 
@@ -140,7 +140,7 @@ def test_journal_reader_wrong_race_definition_initial_score(
 0 002 inizio gara
 """)
     runtime_error_contains(
-        lambda: mathrace_interaction.journal_reader(wrong_journal).__enter__().read("wrong_journal", race_date),
+        lambda: mathrace_interaction.journal_reader(wrong_journal).read("wrong_journal", race_date),
         "Invalid line --- 003 10 7 99970 10 6 4 1 1 10 2 in race definition: the expected score is 70, "
         "but the race definition contains 99970.")
 
@@ -155,7 +155,7 @@ def test_journal_reader_wrong_race_definition_bonus_cardinality(
 0 002 inizio gara
 """)
     runtime_error_contains(
-        lambda: mathrace_interaction.journal_reader(wrong_journal).__enter__().read("wrong_journal", race_date),
+        lambda: mathrace_interaction.journal_reader(wrong_journal).read("wrong_journal", race_date),
         "Invalid line --- 003 10 7 70 99910 6 4 1 1 10 2 in race definition: the expected bonus cardinality is 10, "
         "but the race definition contains 99910.")
 
@@ -170,7 +170,7 @@ def test_journal_reader_wrong_race_definition_supbonus_cardinality(
 0 002 inizio gara
 """)
     runtime_error_contains(
-        lambda: mathrace_interaction.journal_reader(wrong_journal).__enter__().read("wrong_journal", race_date),
+        lambda: mathrace_interaction.journal_reader(wrong_journal).read("wrong_journal", race_date),
         "Invalid line --- 003 10 7 70 10 9996 4 1 1 10 2 in race definition: the expected superbonus cardinality "
         "is 6, but the race definition contains 9996.")
 
@@ -185,7 +185,7 @@ def test_journal_reader_wrong_race_definition_alternative_k_blocco(
 0 002 inizio gara
 """)
     runtime_error_contains(
-        lambda: mathrace_interaction.journal_reader(wrong_journal).__enter__().read("wrong_journal", race_date),
+        lambda: mathrace_interaction.journal_reader(wrong_journal).read("wrong_journal", race_date),
         "Invalid line --- 003 10 7 70 10 6 4 9991 1 10 2 in race definition: the expected alternative k is 1, "
         "but the race definition contains 9991.")
 
@@ -200,7 +200,7 @@ def test_journal_reader_wrong_race_definition_race_type(
 0 002 inizio gara
 """)
     runtime_error_contains(
-        lambda: mathrace_interaction.journal_reader(wrong_journal).__enter__().read("wrong_journal", race_date),
+        lambda: mathrace_interaction.journal_reader(wrong_journal).read("wrong_journal", race_date),
         "Invalid line --- 003 10 7 70 10 6 4 1 9991 10 2 in race definition: the expected race type is 1, "
         "but the race definition contains 9991.")
 
@@ -241,7 +241,7 @@ def test_journal_reader_wrong_question_definition(
 {race_start_event}
 """)
     runtime_error_contains(
-        lambda: mathrace_interaction.journal_reader(wrong_journal).__enter__().read("wrong_journal", race_date),
+        lambda: mathrace_interaction.journal_reader(wrong_journal).read("wrong_journal", race_date),
         f"Invalid line --- 004 1 20{extra_text} in question definition: it does not contain the word quesito")
 
 
@@ -359,7 +359,7 @@ def test_journal_reader_wrong_race_event_code(
 --- 999 fine simulatore
 """)
     runtime_error_contains(
-        lambda: mathrace_interaction.journal_reader(wrong_journal).__enter__().read("wrong_journal", race_date),
+        lambda: mathrace_interaction.journal_reader(wrong_journal).read("wrong_journal", race_date),
         "Invalid line 300 123 wrong race event code in race events: unhandled event type 123")
 
 
@@ -375,7 +375,7 @@ def test_journal_reader_wrong_race_start_text(
 0 002 inizio gara
 """)
     runtime_error_contains(
-        lambda: mathrace_interaction.journal_reader(wrong_journal).__enter__().read("wrong_journal", race_date),
+        lambda: mathrace_interaction.journal_reader(wrong_journal).read("wrong_journal", race_date),
         "Invalid line 0 002 inizio gara testo aggiuntivo in race event: it does not contain the race start")
 
 
@@ -390,7 +390,7 @@ def test_journal_reader_wrong_timer_update_text(
 60 022 NON aggiorna punteggio esercizi, orologio: 1
 """)
     runtime_error_contains(
-        lambda: mathrace_interaction.journal_reader(wrong_journal).__enter__().read("wrong_journal", race_date),
+        lambda: mathrace_interaction.journal_reader(wrong_journal).read("wrong_journal", race_date),
         "Invalid event content NON aggiorna punteggio esercizi, orologio: 1 in timer update event")
 
 
@@ -450,7 +450,7 @@ def test_journal_reader_answer_submission_before_timer_offset(
 --- 999 fine simulatore
 """)
     runtime_error_contains(
-        lambda: mathrace_interaction.journal_reader(journal_with_timer_offset).__enter__().read(
+        lambda: mathrace_interaction.journal_reader(journal_with_timer_offset).read(
             "journal_with_timer_offset", race_date),
         "Cannot convert 30 to date and time because of empty timestamp offset")
 
@@ -489,7 +489,7 @@ def test_journal_reader_missing_protocol_numbers(
 62 120 2 3 PROT_AND_ANOTHER_STRING:2 squadra 2 sceglie 3 come jolly
 """)
     runtime_error_contains(
-        lambda: mathrace_interaction.journal_reader(wrong_journal).__enter__().read("wrong_journal", race_date),
+        lambda: mathrace_interaction.journal_reader(wrong_journal).read("wrong_journal", race_date),
         "Cannot determine protocol number from 2 3 PROT_AND_ANOTHER_STRING:2 squadra 2 sceglie 3 come jolly")
 
 
@@ -522,7 +522,7 @@ def test_journal_reader_wrong_alternative_race_definition_code(
 00:00:00.000 200 inizio gara
 """)
     runtime_error_contains(
-        lambda: mathrace_interaction.journal_reader(wrong_journal).__enter__().read("wrong_journal", race_date),
+        lambda: mathrace_interaction.journal_reader(wrong_journal).read("wrong_journal", race_date),
         "Invalid line --- 992 10+0:70 7:20 4.1;1 10-2 in race definition: it does not start "
         'with "--- 003" or "--- 002"')
 
@@ -537,7 +537,7 @@ def test_journal_reader_wrong_alternative_race_definition_parts(
 0 200 inizio gara
 """)
     runtime_error_contains(
-        lambda: mathrace_interaction.journal_reader(wrong_journal).__enter__().read("wrong_journal", race_date),
+        lambda: mathrace_interaction.journal_reader(wrong_journal).read("wrong_journal", race_date),
         "Invalid line --- 002 10+0:70 7:20 4.1;1 10-2 00000 in alternative race definition: it does not contain "
         "the expected number of parts")
 
@@ -615,7 +615,7 @@ def test_journal_reader_alternative_race_definition_num_teams_entry_with_wrong_i
 0 200 inizio gara
 """)
     runtime_error_contains(
-        lambda: mathrace_interaction.journal_reader(wrong_journal).__enter__().read("wrong_journal", race_date),
+        lambda: mathrace_interaction.journal_reader(wrong_journal).read("wrong_journal", race_date),
         "Invalid line --- 002 10:99970 7:20 4.1;1 10-2 in alternative race definition: the expected score is 70, "
         "but the race definition contains 99970.")
 
@@ -751,7 +751,7 @@ def test_journal_reader_alternative_race_definition_with_wrong_alternative_k_blo
 0 200 inizio gara
 """)
     runtime_error_contains(
-        lambda: mathrace_interaction.journal_reader(wrong_journal).__enter__().read("wrong_journal", race_date),
+        lambda: mathrace_interaction.journal_reader(wrong_journal).read("wrong_journal", race_date),
         "Invalid line --- 002 10+2:70 7:40 4.1;9991 10-2 in race definition: the expected alternative k is 1, "
         "but the race definition contains 9991.")
 
@@ -784,7 +784,7 @@ def test_journal_reader_alternative_race_definition_missing_deadline_score_incre
 0 200 inizio gara
 """)
     runtime_error_contains(
-        lambda: mathrace_interaction.journal_reader(wrong_journal).__enter__().read("wrong_journal", race_date),
+        lambda: mathrace_interaction.journal_reader(wrong_journal).read("wrong_journal", race_date),
         "Invalid line --- 002 10+2:70 7:40 4.1;1 10 in race definition: it does not contain the operator -")
 
 
@@ -856,7 +856,7 @@ def test_journal_reader_bonus_superbonus_lines_with_standard_race_definition_lar
 --- 999 fine simulatore
 """)
     runtime_error_contains(
-        lambda: mathrace_interaction.journal_reader(wrong_journal).__enter__().read("wrong_journal", race_date),
+        lambda: mathrace_interaction.journal_reader(wrong_journal).read("wrong_journal", race_date),
         "Invalid line 10 120 115 110 18 16 15 14 13 12 11 in race definition: not enough values to read")
 
 
@@ -970,7 +970,7 @@ def test_journal_reader_wrong_interplay_race_definition_with_team_definition(
 --- 999 fine simulatore
 """)
     runtime_error_contains(
-        lambda: mathrace_interaction.journal_reader(wrong_journal).__enter__().read("wrong_journal", race_date),
+        lambda: mathrace_interaction.journal_reader(wrong_journal).read("wrong_journal", race_date),
         "Must either initialize all teams or none, since only initializing some of them results in "
         "ambiguities in determining which teams are guests and which are not")
 
@@ -987,7 +987,7 @@ def test_journal_reader_wrong_question_definition_placeholder(
 0 200 inizio gara
 """)
     runtime_error_contains(
-        lambda: mathrace_interaction.journal_reader(wrong_journal).__enter__().read("wrong_journal", race_date),
+        lambda: mathrace_interaction.journal_reader(wrong_journal).read("wrong_journal", race_date),
         "Invalid line --- 004 2 20 9999 quesito 2 in question definition: it does not contain "
         "the expected placeholder")
 
@@ -1003,7 +1003,7 @@ def test_journal_reader_wrong_final_line(
 --- 999 fine simulatore con testo extra che non ci dovrebbe essere
 """)
     runtime_error_contains(
-        lambda: mathrace_interaction.journal_reader(wrong_journal).__enter__().read("wrong_journal", race_date),
+        lambda: mathrace_interaction.journal_reader(wrong_journal).read("wrong_journal", race_date),
         "Invalid final line --- 999 fine simulatore con testo extra che non ci dovrebbe essere")
 
 
@@ -1020,5 +1020,5 @@ def test_journal_reader_wrong_extra_line_after_final(
 610 011 9 3 1 squadra 9, quesito 3: giusto
 """)
     runtime_error_contains(
-        lambda: mathrace_interaction.journal_reader(wrong_journal).__enter__().read("wrong_journal", race_date),
+        lambda: mathrace_interaction.journal_reader(wrong_journal).read("wrong_journal", race_date),
         "Journal contains extra line 610 011 9 3 1 squadra 9, quesito 3: giusto after race end")
