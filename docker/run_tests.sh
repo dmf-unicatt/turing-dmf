@@ -69,5 +69,5 @@ if [[ "${EXEC_OR_RUN}" == "exec" ]]; then
         exit 1
     fi
 elif [[ "${EXEC_OR_RUN}" == "run" ]]; then
-    docker run --rm turing-dmf:latest /bin/bash -c "${DATABASE_SETUP} && ${RUN_TEST_COMMAND}"
+    docker run --rm ghcr.io/dmf-unicatt/turing-dmf:latest /bin/bash -c "${DATABASE_SETUP} && ${RUN_TEST_COMMAND}"
 fi

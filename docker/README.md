@@ -8,7 +8,7 @@ docker pull ghcr.io/dmf-unicatt/turing-dmf:latest
 ```
 3. Run a new docker container
 ```
-docker run -p 80:80 turing-dmf:latest
+docker run -p 80:80 ghcr.io/dmf-unicatt/turing-dmf:latest
 ```
 **Turing** will be available at `https://localhost`. Furthemore, the terminal will display the username and password of the administrator account, which can be subsequently changed through the web interface.
 
@@ -33,11 +33,11 @@ cd turing-dmf/docker
 ```
 ./create_volume.sh
 ```
-3. Create a `turing-dmf:latest` docker image based on the current **Turing @ DMF** repository:
+3. Create a `ghcr.io/dmf-unicatt/turing-dmf:latest` docker image based on the current **Turing @ DMF** repository:
 ```
 ./create_image.sh
 ```
-4. Create a docker container based on the current `turing-dmf:latest` docker image:
+4. Create a docker container based on the newly created `ghcr.io/dmf-unicatt/turing-dmf:latest` docker image:
 ```
 ./create_container.sh
 ```

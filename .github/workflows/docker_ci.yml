@@ -18,6 +18,9 @@ jobs:
       matrix:
         database-type: [PostgreSQL, SQLite3]
       fail-fast: false
+    permissions:
+      contents: read
+      packages: write
     defaults:
       run:
         working-directory: docker
@@ -27,7 +30,6 @@ jobs:
           submodules: true
       - name: Create image
         run: |
-          ./create_volume.sh
           ./create_image.sh
       - name: Run tests with docker run
         run: |
@@ -39,6 +41,7 @@ jobs:
       - name: Run tests with docker exec
         if: matrix.database-type != 'SQLite3'
         run: |
+          ./create_volume.sh
           ./create_container.sh
           ./start_container.sh
           ./run_tests.sh turing exec ${{ matrix.database-type }}
@@ -47,6 +50,11 @@ jobs:
           ./run_tests.sh mathrace_interaction/tests/integration exec ${{ matrix.database-type }}
           ./run_tests.sh mathrace_interaction/tests/performance exec ${{ matrix.database-type }}
           ./stop_container.sh
+      - name: Publish image to GitHub packages
+        if: matrix.database-type != 'SQLite3' && github.repository == 'dmf-unicatt/turing-dmf' && github.ref == 'refs/heads/main'
+        run: |
+          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          docker push ghcr.io/dmf-unicatt/turing-dmf:latest
 
   warn:
     runs-on: ubuntu-latest

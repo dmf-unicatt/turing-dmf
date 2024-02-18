@@ -11,4 +11,4 @@ set -e
 wget -q --spider https://www.google.com
 
 # Build image
-docker build --pull -t turing-dmf:latest -f Dockerfile ..
+docker build --pull -t ghcr.io/dmf-unicatt/turing-dmf:latest -f Dockerfile ..
