@@ -53,7 +53,7 @@ index 14c3d33..0e7cccd 100644
      ModificaConsegnaForm, ModificaJollyForm, UploadGaraForm
  from engine.formfields import IntegerMultiField
 +from mathrace_interaction.journal_reader import journal_reader
-+from mathrace_interaction.utils.strip_mathrace_only_attributes_from_imported_turing import (
++from mathrace_interaction.filter.strip_mathrace_only_attributes_from_imported_turing import (
 +    strip_mathrace_only_attributes_from_imported_turing)
 
 +import datetime
