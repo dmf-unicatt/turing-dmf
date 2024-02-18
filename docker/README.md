@@ -2,15 +2,17 @@
 
 ## 1. Basic configuration
 1. Install `docker` following the instructions in the [official documentation](https://docs.docker.com/engine/install/debian/#install-using-the-repository).
+
 2. Pull the **Turing @ DMF** docker image
 ```
 docker pull ghcr.io/dmf-unicatt/turing-dmf:latest
 ```
+
 3. Run a new docker container
 ```
 docker run -p 80:80 ghcr.io/dmf-unicatt/turing-dmf:latest
 ```
-**Turing** will be available at `https://localhost`. Furthemore, the terminal will display the username and password of the administrator account, which can be subsequently changed through the web interface.
+**Turing** will be available at `http://localhost`. Furthemore, the terminal will display the username and password of the administrator account, which can be subsequently changed through the web interface.
 
 
 ## 2. Advanced configuration
@@ -29,18 +31,22 @@ git clone --recurse-submodules https://github.com/dmf-unicatt/turing-dmf.git
 ```
 cd turing-dmf/docker
 ```
+
 2. Create a docker volume that will contain the database:
 ```
 ./create_volume.sh
 ```
+
 3. Create a `ghcr.io/dmf-unicatt/turing-dmf:latest` docker image based on the current **Turing @ DMF** repository:
 ```
 ./create_image.sh
 ```
+
 4. Create a docker container based on the newly created `ghcr.io/dmf-unicatt/turing-dmf:latest` docker image:
 ```
 ./create_container.sh
 ```
+
 5. Database is created upon the first run of the container with
 ```
 ./start_container.sh
@@ -53,19 +59,23 @@ The terminal will display the username and password of the administrator account
 ```
 cd turing-dmf/docker
 ```
+
 2. Start the container, including the `django` server:
 ```
 ./start_container.sh
 ```
-**Turing** will be available at `https://host-server`.
+**Turing** will be available at `http://host-server`.
+
 3. Attach a terminal to the running docker container
 ```
 ./attach_terminal.sh
 ```
+
 4. Explore the database volume with
 ```
 ./explore_volume.sh
 ```
+
 5. Stop the running docker container
 ```
 ./stop_container.sh
@@ -77,5 +87,7 @@ cd turing-dmf/docker
 ```
 ./prevent_accidental_deletion.sh
 ```
+
 2. If you want to create a new container, make sure to stop the old one (if it were running), and remove the file `.container_id`. Note that, to prevent data loss, this does not delete the old container itself, it only disables it from being used by the above scripts.
+
 3. If you want to create a new volume, remove the file `.volume_id`. Note that, to prevent data loss, this does not delete the old volume itself, it only disables it from being used by the above scripts.
