@@ -16,11 +16,8 @@ import mathrace_interaction.typing
 
 def test_journal_event_filterer_by_id(journal: io.StringIO) -> None:
     """Test journal_event_filterer_by_id."""
-    filtered_by_id = mathrace_interaction.filter.journal_event_filterer_by_id(journal, 7)
-    # Obtain an equivalent journal using a timestamp based filter at the same time when event 7 happens
-    journal.seek(0)
-    filtered_by_timestamp = mathrace_interaction.filter.journal_event_filterer_by_timestamp(journal, "450")
-    assert filtered_by_id == filtered_by_timestamp
+    assert mathrace_interaction.filter.journal_event_filterer_by_id(
+        journal, 7) == mathrace_interaction.filter.journal_event_filterer_by_timestamp(journal, "450")
 
 
 @pytest.mark.parametrize("input_file_option,id_upper_bound_option,output_file_option", [
@@ -43,11 +40,8 @@ def test_journal_event_filterer_by_id_entrypoint(
         assert stderr == ""
         with open(output_journal_file.name) as output_journal_stream:
             filtered_by_id = output_journal_stream.read()
-        # Obtain an equivalent journal using a timestamp based filter at the same time when event 7 happens
+        # Obtain an equivalent journal using a timestamp based filter at the same time when event 7 happens.
+        # The journal stream was consumed when preparing input_journal_file, so it must be reset.
         journal.seek(0)
         filtered_by_timestamp = mathrace_interaction.filter.journal_event_filterer_by_timestamp(journal, "450")
         assert filtered_by_id == filtered_by_timestamp
-        # The same journal stream is shared by the test and the expected_filtered_by_timestamp_journal fixture:
-        # since the stream was consumed reset it to the beginning before it gets used by the fixture on the next
-        # value of the parametrization
-        journal.seek(0)

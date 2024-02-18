@@ -58,7 +58,7 @@ def test_journal_writer_entrypoint(
             exported_journal = journal_stream.read()
         assert mathrace_interaction.filter.strip_comments_and_unhandled_events_from_journal(
             journal) == exported_journal.strip("\n")
-        # The same journal stream is shared on the parametrization on input_file_option: since the stream
+        # The same journal stream is shared on the parametrization on command line options: since the stream
         # was consumed reset it to the beginning before passing to the next parametrized item
         journal.seek(0)
 

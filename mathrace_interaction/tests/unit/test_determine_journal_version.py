@@ -32,8 +32,8 @@ def test_determine_journal_version_entrypoint(
             "mathrace_interaction.determine_journal_version", [input_file_option, journal_file.name])
         assert stdout == journal_version
         assert stderr == ""
-        # The same journal stream is shared on the parametrization on input_file_option: since the stream was consumed
-        # reset it to the beginning before passing to the next parametrized item
+        # The same journal stream is shared on the parametrization on command line options: since the stream
+        # was consumed reset it to the beginning before passing to the next parametrized item
         journal.seek(0)
 
 

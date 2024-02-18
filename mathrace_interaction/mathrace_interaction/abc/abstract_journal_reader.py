@@ -117,6 +117,10 @@ class AbstractJournalReader(abc.ABC):
         else:
             raise RuntimeError(f"Journal contains extra line {extra_line} after race end")
 
+        # The stream was fully consumed by this function: reset it back to the beginning in case
+        # the caller wants to use the same stream elsewhere.
+        self._journal_stream.seek(0)
+
         # Return the populated dictionary
         return turing_dict
 

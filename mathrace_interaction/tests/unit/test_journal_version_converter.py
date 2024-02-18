@@ -17,13 +17,10 @@ import mathrace_interaction.typing
 
 def test_journal_version_converter_identity(journal: io.StringIO, journal_version: str) -> None:
     """Test that journal_version_converter is the identity operator when applied on the current version."""
-    # The call to journal_version_converter consumes and closes the journal stream, which would then
-    # be unavailable for the subsequent call to strip_comments_and_unhandled_events_from_journal.
-    # It is simpler to create a two copies of journal, one for each call.
     converted_journal = mathrace_interaction.journal_version_converter(
-        io.StringIO(journal.getvalue()), journal_version).strip("\n")
+        journal, journal_version).strip("\n")
     expected_journal = mathrace_interaction.filter.strip_comments_and_unhandled_events_from_journal(
-        io.StringIO(journal.getvalue())).strip("\n")
+        journal).strip("\n")
     assert converted_journal == expected_journal
 
 
@@ -32,11 +29,11 @@ def test_journal_version_converter_other(
 ) -> None:
     """Test that journal_version_converter when applied on a different version."""
     converted_journal = mathrace_interaction.journal_version_converter(
-        io.StringIO(journal.getvalue()), other_journal_version).strip("\n")
+        journal, other_journal_version).strip("\n")
     expected_journal = mathrace_interaction.filter.strip_comments_and_unhandled_events_from_journal(
-        io.StringIO(other_journal.getvalue())).strip("\n")
+        other_journal).strip("\n")
     stripped_journal = mathrace_interaction.filter.strip_comments_and_unhandled_events_from_journal(
-        io.StringIO(journal.getvalue())).strip("\n")
+        journal).strip("\n")
     assert converted_journal == expected_journal
     if (
         journal_version == other_journal_version or
@@ -67,9 +64,6 @@ def test_journal_version_converter_entrypoint(
     with tempfile.NamedTemporaryFile() as input_journal_file, tempfile.NamedTemporaryFile() as output_journal_file:
         with open(input_journal_file.name, "w") as input_journal_stream:
             input_journal_stream.write(journal.read())
-            journal.seek(0)
-            expected_journal = mathrace_interaction.filter.strip_comments_and_unhandled_events_from_journal(
-                journal).strip("\n")
         stdout, stderr = run_entrypoint(
             "mathrace_interaction.journal_version_converter", [
                 input_file_option, input_journal_file.name, journal_version_option, journal_version,
@@ -80,7 +74,8 @@ def test_journal_version_converter_entrypoint(
         assert stderr == ""
         with open(output_journal_file.name) as output_journal_stream:
             stripped_journal = output_journal_stream.read().strip("\n")
-        assert expected_journal == stripped_journal
-        # The same journal stream is shared on the parametrization on input_file_option: since the stream
-        # was consumed reset it to the beginning before passing to the next parametrized item
+        # Obtain an equivalent journal by stripping all comments and unhandled events
+        # The journal stream was consumed when preparing input_journal_file, so it must be reset.
         journal.seek(0)
+        assert mathrace_interaction.filter.strip_comments_and_unhandled_events_from_journal(
+            journal).strip("\n") == stripped_journal

@@ -39,10 +39,6 @@ def test_journal_event_filterer_by_timestamp(
     """Test journal_event_filterer_by_timestamp."""
     assert mathrace_interaction.filter.journal_event_filterer_by_timestamp(
         journal, timestamp_upper_bound) == expected_filtered_by_timestamp_journal.read()
-    # The same journal stream is shared by the test and the expected_filtered_by_timestamp_journal fixture:
-    # since the stream was consumed reset it to the beginning before it gets used by the fixture on the next
-    # value of the parametrization
-    journal.seek(0)
 
 
 @pytest.mark.parametrize("input_file_option,timestamp_upper_bound_option,output_file_option", [

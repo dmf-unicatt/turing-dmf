@@ -885,8 +885,6 @@ def journal_reader(journal_stream: typing.TextIO) -> AbstractJournalReader:
     """
     # Determine the version of the mathrace journal
     version = determine_journal_version(journal_stream)
-    # The previous call has consumed the stream: reset it back to the beginning
-    journal_stream.seek(0)
     # Return an object of the class corresponding to the detected version
     journal_reader_class = getattr(sys.modules[__name__], f"JournalReader{version.capitalize()}")
     return journal_reader_class(journal_stream)  # type: ignore[no-any-return]

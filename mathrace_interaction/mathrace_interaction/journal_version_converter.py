@@ -36,8 +36,10 @@ def journal_version_converter(input_journal_stream: typing.TextIO, output_journa
     race_name = "journal_version_converter"
     race_date = datetime.datetime.now()
     # Convert the input journal into a turing dictionary
-    with journal_reader(input_journal_stream) as journal_reader_stream:
-        imported_dict = journal_reader_stream.read(race_name, race_date)
+    # We avoid using "with journal_reader(input_journal_stream) as journal_reader_stream" because
+    # otherwise this function would close the input journal stream
+    journal_reader_stream = journal_reader(input_journal_stream)
+    imported_dict = journal_reader_stream.read(race_name, race_date)
     # Process the stream, stripping any unnecessary line
     with (
         io.StringIO("") as output_journal_stream,

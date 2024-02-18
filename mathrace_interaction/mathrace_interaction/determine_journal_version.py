@@ -28,6 +28,10 @@ def determine_journal_version(journal_stream: typing.TextIO) -> str:
     """
     journal = [line.strip("\n") for line in journal_stream.readlines()]
 
+    # The stream was fully consumed by the previous line: reset it back to the beginning in case
+    # the caller wants to use the same stream elsewhere.
+    journal_stream.seek(0)
+
     # Raise an error on the trivial case in which the journal is empty
     if "".join(journal) == "":
         raise RuntimeError("The provided journal is empty")

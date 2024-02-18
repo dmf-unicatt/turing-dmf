@@ -37,8 +37,6 @@ def journal_event_filterer(
     """
     # Determine the version of the mathrace journal
     version = determine_journal_version(journal_stream)
-    # The previous call has consumed the stream: reset it back to the beginning
-    journal_stream.seek(0)
     # Determine the journal reader class corresponding to the detected version
     journal_reader_class = getattr(
         sys.modules["mathrace_interaction.journal_reader"], f"JournalReader{version.capitalize()}")
@@ -57,5 +55,8 @@ def journal_event_filterer(
             timestamp, event_type, _ = line.split(" ", maxsplit=2)
             if event_filter_function(timestamp, event_type, journal_reader_class):
                 output_lines.append(line)
+    # The stream was fully consumed by this function: reset it back to the beginning in case
+    # the caller wants to use the same stream elsewhere.
+    journal_stream.seek(0)
     # Combine into a single string and return
     return "\n".join(output_lines)
