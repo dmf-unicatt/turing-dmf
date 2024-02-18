@@ -7,17 +7,15 @@
 
 import datetime
 import io
-import os
-import subprocess
-import sys
-import typing
 
 import pytest
 
-from mathrace_interaction.utils.create_mock_ssh_server_fixture import (  # noqa: F401
-    create_mock_ssh_server_fixture as ssh_server)
-from mathrace_interaction.utils.parametrize_journal_fixtures import parametrize_journal_fixtures
-from mathrace_interaction.utils.turing_dict_type_alias import TuringDict
+import mathrace_interaction.test
+import mathrace_interaction.typing
+
+run_entrypoint = mathrace_interaction.test.run_entrypoint_fixture
+runtime_error_contains = mathrace_interaction.test.runtime_error_contains_fixture
+ssh_server = mathrace_interaction.test.ssh_server_fixture
 
 _journal_r5539 = """\
 --- 001 inizializzazione simulatore
@@ -436,7 +434,7 @@ _journals = {
 
 def pytest_generate_tests(metafunc: pytest.Metafunc) -> None:
     """Parametrize tests with journal fixture over journals corresponding to different versions."""
-    parametrize_journal_fixtures(
+    mathrace_interaction.test.parametrize_journal_fixtures(
         lambda: {journal_version: io.StringIO(journal) for (journal_version, journal) in _journals.items()},
         lambda: {journal_version: journal_version for journal_version in _journals},
         metafunc
@@ -456,7 +454,7 @@ def race_date() -> datetime.datetime:
 
 
 @pytest.fixture
-def turing_dict(race_name: str, race_date: datetime.datetime) -> TuringDict:
+def turing_dict(race_name: str, race_date: datetime.datetime) -> mathrace_interaction.typing.TuringDict:
     """Return the turing dict associated with the race represented by any journal in the journal fixture."""
     return {
         "nome": race_name,
@@ -536,45 +534,3 @@ def turing_dict(race_name: str, race_date: datetime.datetime) -> TuringDict:
 
         ]
     }
-
-@pytest.fixture
-def runtime_error_contains() -> typing.Callable[[typing.Callable[[], typing.Any], str], None]:
-    """Check that a RuntimeError is raised and contains the expected text."""
-    def _(call: typing.Callable[[], typing.Any], expected_error_text: str) -> None:
-        """Check that a RuntimeError is raised and contains the expected text (internal implementation)."""
-        with pytest.raises(RuntimeError) as excinfo:
-            call()
-        runtime_error_text = str(excinfo.value)
-        assert expected_error_text in runtime_error_text
-
-    return _
-
-
-@pytest.fixture
-def run_entrypoint() -> typing.Callable[[str, list[str]], tuple[str, str]]:
-    """Run a module entrypoint."""
-    def _(module: str, arguments: list[str]) -> tuple[str, str]:
-        """Run a module entrypoint (internal implementation)."""
-        library_name = "mathrace_interaction"
-        if "COVERAGE_RUN" not in os.environ or library_name not in module:
-            executable = sys.executable
-        else:
-            # Propagate coverage run to the subprocess. Note that a different COVERAGE_FILE is used, so it will
-            # be the caller's responsability to combine all files together when printing the coverage report.
-            dash_joined_arguments = "_".join(arguments)
-            printable_dash_joined_arguments = "".join(c for c in dash_joined_arguments if c.isalnum())
-            coverage_file = (
-                f'{os.path.join(os.getcwd(), os.environ.get("COVERAGE_FILE", ".coverage"))}'
-                f'_{module}_{printable_dash_joined_arguments}')
-            executable = (f"COVERAGE_FILE={coverage_file} {sys.executable} -m coverage run --source={library_name}")
-        run_module = subprocess.run(f'{executable} -m {module} {" ".join(arguments)}', shell=True, capture_output=True)
-        stdout = run_module.stdout.decode().strip()
-        stderr = run_module.stderr.decode().strip()
-        if run_module.returncode != 0:
-            raise RuntimeError(
-                f"Running {module} with arguments {arguments} failed with exit code {run_module.returncode}, "
-                f"stdout {stdout}, stderr {stderr}")
-        else:
-            return stdout, stderr
-
-    return _

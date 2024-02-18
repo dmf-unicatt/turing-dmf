@@ -9,12 +9,11 @@ import pathlib
 
 import pytest
 
-from mathrace_interaction.utils.get_journals_in_directory import get_journals_in_directory
-from mathrace_interaction.utils.parametrize_journal_fixtures import parametrize_journal_fixtures
+import mathrace_interaction.test
 
 _data_dir = pathlib.Path(__file__).parent.parent.parent / "data"
 
-_journals = get_journals_in_directory(_data_dir)
+_journals = mathrace_interaction.test.get_journals_in_directory(_data_dir)
 
 _journal_versions = {
     # r5539
@@ -101,7 +100,7 @@ _journal_versions = {
 
 def pytest_generate_tests(metafunc: pytest.Metafunc) -> None:
     """Parametrize tests with journal fixture over journals in the data directory."""
-    parametrize_journal_fixtures(
+    mathrace_interaction.test.parametrize_journal_fixtures(
         lambda: {journal_name: open(journal) for (journal_name, journal) in _journals.items()},
         lambda: _journal_versions,
         metafunc

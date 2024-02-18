@@ -9,16 +9,16 @@ import pathlib
 
 import pytest
 
-from mathrace_interaction.utils.determine_journal_version import determine_journal_version
-from mathrace_interaction.utils.get_journals_in_directory import get_journals_in_directory
-from mathrace_interaction.utils.parametrize_journal_fixtures import parametrize_journal_fixtures
+import mathrace_interaction
+import mathrace_interaction.test
 
 _data_dir = pathlib.Path(__file__).parent.parent.parent / "data"
 
-_journals = get_journals_in_directory(_data_dir)
+_journals = mathrace_interaction.test.get_journals_in_directory(_data_dir)
 
 _journal_versions = {
-    journal_name: determine_journal_version(open(journal)) for (journal_name, journal) in _journals.items()}
+    journal_name: mathrace_interaction.determine_journal_version(open(journal))
+    for (journal_name, journal) in _journals.items()}
 
 # Integration testing with chrome driver takes several seconds for each journal file.
 # To keep the total runtime of tests under control, run tests by default on a subset of the available files.
@@ -117,7 +117,7 @@ def pytest_generate_tests(metafunc: pytest.Metafunc) -> None:
         journal_names = [
             journal_name for (journal_name, is_basic_testing) in _journals_is_basic_testing.items()
             if is_basic_testing]
-    parametrize_journal_fixtures(
+    mathrace_interaction.test.parametrize_journal_fixtures(
         lambda: {journal_name: open(_journals[journal_name]) for journal_name in journal_names},
         lambda: {journal_name: _journal_versions[journal_name] for journal_name in journal_names},
         metafunc

@@ -7,15 +7,12 @@
 
 import io
 import tempfile
-import typing
 
 import pytest
 
-from mathrace_interaction.journal_version_converter import journal_version_converter
-from mathrace_interaction.utils.strip_comments_and_unhandled_events_from_journal import (
-    strip_comments_and_unhandled_events_from_journal)
-
-RunEntrypointFixtureType: typing.TypeAlias = typing.Callable[[str, list[str]], tuple[str, str]]
+import mathrace_interaction
+import mathrace_interaction.filter
+import mathrace_interaction.typing
 
 
 def test_journal_version_converter_identity(journal: io.StringIO, journal_version: str) -> None:
@@ -23,8 +20,10 @@ def test_journal_version_converter_identity(journal: io.StringIO, journal_versio
     # The call to journal_version_converter consumes and closes the journal stream, which would then
     # be unavailable for the subsequent call to strip_comments_and_unhandled_events_from_journal.
     # It is simpler to create a two copies of journal, one for each call.
-    converted_journal = journal_version_converter(io.StringIO(journal.getvalue()), journal_version).strip("\n")
-    expected_journal = strip_comments_and_unhandled_events_from_journal(io.StringIO(journal.getvalue())).strip("\n")
+    converted_journal = mathrace_interaction.journal_version_converter(
+        io.StringIO(journal.getvalue()), journal_version).strip("\n")
+    expected_journal = mathrace_interaction.filter.strip_comments_and_unhandled_events_from_journal(
+        io.StringIO(journal.getvalue())).strip("\n")
     assert converted_journal == expected_journal
 
 
@@ -32,11 +31,11 @@ def test_journal_version_converter_other(
     journal: io.StringIO, journal_version: str, other_journal: io.StringIO, other_journal_version: str
 ) -> None:
     """Test that journal_version_converter when applied on a different version."""
-    converted_journal = journal_version_converter(
+    converted_journal = mathrace_interaction.journal_version_converter(
         io.StringIO(journal.getvalue()), other_journal_version).strip("\n")
-    expected_journal = strip_comments_and_unhandled_events_from_journal(
+    expected_journal = mathrace_interaction.filter.strip_comments_and_unhandled_events_from_journal(
         io.StringIO(other_journal.getvalue())).strip("\n")
-    stripped_journal = strip_comments_and_unhandled_events_from_journal(
+    stripped_journal = mathrace_interaction.filter.strip_comments_and_unhandled_events_from_journal(
         io.StringIO(journal.getvalue())).strip("\n")
     assert converted_journal == expected_journal
     if (
@@ -61,7 +60,7 @@ def test_journal_version_converter_other(
     ]
 )
 def test_journal_version_converter_entrypoint(
-    run_entrypoint: RunEntrypointFixtureType, journal: io.StringIO, journal_version: str,
+    run_entrypoint: mathrace_interaction.typing.RunEntrypointFixtureType, journal: io.StringIO, journal_version: str,
     input_file_option: str, journal_version_option: str, output_file_option: str
 ) -> None:
     """Test running journal_version_converter as entrypoint."""
@@ -69,7 +68,8 @@ def test_journal_version_converter_entrypoint(
         with open(input_journal_file.name, "w") as input_journal_stream:
             input_journal_stream.write(journal.read())
             journal.seek(0)
-            expected_journal = strip_comments_and_unhandled_events_from_journal(journal).strip("\n")
+            expected_journal = mathrace_interaction.filter.strip_comments_and_unhandled_events_from_journal(
+                journal).strip("\n")
         stdout, stderr = run_entrypoint(
             "mathrace_interaction.journal_version_converter", [
                 input_file_option, input_journal_file.name, journal_version_option, journal_version,

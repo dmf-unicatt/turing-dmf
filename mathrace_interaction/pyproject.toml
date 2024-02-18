@@ -66,6 +66,7 @@ use_parentheses = true
 check_untyped_defs = true
 disallow_any_unimported = true
 disallow_untyped_defs = true
+implicit_reexport = true
 no_implicit_optional = true
 pretty = true
 show_error_codes = true
@@ -83,7 +84,7 @@ select = ["ANN", "D", "E", "F", "FLY", "ICN", "N", "Q", "RUF", "UP", "W"]
 ignore = ["ANN101"]
 
 [tool.ruff.lint.per-file-ignores]
-"mathrace_interaction/__init__.py" = ["F401"]
+"mathrace_interaction/**/__init__.py" = ["F401"]
 
 [tool.ruff.lint.pycodestyle]
 max-doc-length = 120
