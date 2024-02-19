@@ -461,76 +461,75 @@ def turing_dict(race_name: str, race_date: datetime.datetime) -> mathrace_intera
         "inizio": race_date.isoformat(),
         "durata": 10,
         "durata_blocco": 2,
-        "n_blocco": "4",
-        "k_blocco": "1",
+        "n_blocco": 4,
+        "k_blocco": 1,
         "cutoff": None,
         "fixed_bonus": "20,15,10,8,6,5,4,3,2,1",
         "super_mega_bonus": "100,60,40,30,20,10",
-        "num_problemi": "7",
+        "num_problemi": 7,
         "soluzioni": [
-            {"nome": f"Problema {p}", "problema": str(p), "punteggio": "20", "risposta": "1"} for p in range(1, 8)],
-        "squadre": [{"nome": f"Squadra {s}", "num": str(s), "ospite": False} for s in range(1, 11)],
+            {"nome": f"Problema {p}", "problema": p, "punteggio": 20, "risposta": 1} for p in range(1, 8)],
+        "squadre": [{"nome": f"Squadra {s}", "num": s, "ospite": False} for s in range(1, 11)],
         "eventi": [
             {
                 "subclass": "Jolly",
                 "orario": (race_date + datetime.timedelta(minutes=4, seconds=3)).isoformat(),
-                "squadra_id": "1",
-                "problema": "2"
+                "squadra_id": 1,
+                "problema": 2
             },
             {
                 "subclass": "Jolly",
                 "orario": (race_date + datetime.timedelta(minutes=4, seconds=11)).isoformat(),
-                "squadra_id": "2",
-                "problema": "3"
+                "squadra_id": 2,
+                "problema": 3
             },
             {
                 "subclass": "Jolly",
                 "orario": (race_date + datetime.timedelta(minutes=4, seconds=19)).isoformat(),
-                "squadra_id": "3",
-                "problema": "4"
+                "squadra_id": 3,
+                "problema": 4
             },
             {
                 "subclass": "Consegna",
                 "orario": (race_date + datetime.timedelta(minutes=5, seconds=30)).isoformat(),
-                "squadra_id": "5",
-                "problema": "5",
-                "risposta": "1"
+                "squadra_id": 5,
+                "problema": 5,
+                "risposta": 1
             },
             {
                 "subclass": "Consegna",
                 "orario": (race_date + datetime.timedelta(minutes=5, seconds=41)).isoformat(),
-                "squadra_id": "6",
-                "problema": "6",
-                "risposta": "0"
+                "squadra_id": 6,
+                "problema": 6,
+                "risposta": 0
             },
             {
                 "subclass": "Consegna",
                 "orario": (race_date + datetime.timedelta(minutes=7, seconds=15)).isoformat(),
-                "squadra_id": "2",
-                "problema": "3",
-                "risposta": "1"
+                "squadra_id": 2,
+                "problema": 3,
+                "risposta": 1
             },
             {
                 "subclass": "Consegna",
                 "orario": (race_date + datetime.timedelta(minutes=7, seconds=30)).isoformat(),
-                "squadra_id": "3",
-                "problema": "4",
-                "risposta": "0"
+                "squadra_id": 3,
+                "problema": 4,
+                "risposta": 0
             },
             {
                 "subclass": "Consegna",
                 "orario": (race_date + datetime.timedelta(minutes=8, seconds=30)).isoformat(),
-                "squadra_id": "8",
-                "problema": "2",
-                "risposta": "0"
+                "squadra_id": 8,
+                "problema": 2,
+                "risposta": 0
             },
             {
                 "subclass": "Consegna",
                 "orario": (race_date + datetime.timedelta(minutes=9, seconds=30)).isoformat(),
-                "squadra_id": "9",
-                "problema": "3",
-                "risposta": "1"
-            },
-
+                "squadra_id": 9,
+                "problema": 3,
+                "risposta": 1
+            }
         ]
     }

@@ -37,7 +37,7 @@ ENV DJANGO_SETTINGS_MODULE="Turing.settings" \
 # Part 2: mathrace-interaction
 COPY mathrace_interaction mathrace_interaction
 
-RUN apt install -y -qq python3-paramiko python3-pycryptodome && \
+RUN apt install -y -qq python3-jsondiff python3-paramiko python3-pycryptodome && \
     sed -i '1s/^/import warnings\nwarnings.filterwarnings("ignore", module="invoke.loader")\n/' /usr/lib/python3/dist-packages/invoke/loader.py
 
 RUN cd /root/mathrace_interaction && \

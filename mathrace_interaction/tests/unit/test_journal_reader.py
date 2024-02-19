@@ -656,12 +656,12 @@ def test_journal_reader_alternative_race_definition_num_questions_entry_without_
     with mathrace_interaction.journal_reader(journal_with_num_teams) as journal_stream:
         imported_dict = journal_stream.read("journal_with_num_teams", race_date)
     assert len(imported_dict["soluzioni"]) == 7
-    assert imported_dict["num_problemi"] == "7"
+    assert imported_dict["num_problemi"] == 7
     assert imported_dict["mathrace_only"]["num_questions_alternative"] == "7"
     assert imported_dict["mathrace_only"]["default_score"] == "20"
     assert imported_dict["mathrace_only"]["initial_score"] == "70"
-    assert imported_dict["soluzioni"][0]["punteggio"] == "30"
-    assert imported_dict["soluzioni"][1]["punteggio"] == "20"
+    assert imported_dict["soluzioni"][0]["punteggio"] == 30
+    assert imported_dict["soluzioni"][1]["punteggio"] == 20
 
 
 def test_journal_reader_alternative_race_definition_num_questions_entry_with_optional_argument(
@@ -679,12 +679,12 @@ def test_journal_reader_alternative_race_definition_num_questions_entry_with_opt
     with mathrace_interaction.journal_reader(journal_with_num_teams) as journal_stream:
         imported_dict = journal_stream.read("journal_with_num_teams", race_date)
     assert len(imported_dict["soluzioni"]) == 7
-    assert imported_dict["num_problemi"] == "7"
+    assert imported_dict["num_problemi"] == 7
     assert imported_dict["mathrace_only"]["num_questions_alternative"] == "7:40"
     assert imported_dict["mathrace_only"]["default_score"] == "40"
     assert imported_dict["mathrace_only"]["initial_score"] == "70"
-    assert imported_dict["soluzioni"][0]["punteggio"] == "30"
-    assert imported_dict["soluzioni"][1]["punteggio"] == "40"
+    assert imported_dict["soluzioni"][0]["punteggio"] == 30
+    assert imported_dict["soluzioni"][1]["punteggio"] == 40
 
 
 def test_journal_reader_alternative_race_definition_n_k_altk_blocco_entry_without_optional_arguments(
@@ -700,8 +700,8 @@ def test_journal_reader_alternative_race_definition_n_k_altk_blocco_entry_withou
 """)
     with mathrace_interaction.journal_reader(journal_with_n_k_altk_blocco) as journal_stream:
         imported_dict = journal_stream.read("journal_with_n_k_altk_blocco", race_date)
-    assert imported_dict["n_blocco"] == "4"
-    assert imported_dict["k_blocco"] == "1"
+    assert imported_dict["n_blocco"] == 4
+    assert imported_dict["k_blocco"] == 1
     assert imported_dict["mathrace_only"]["alternative_k_blocco"] == "1"
 
 
@@ -718,8 +718,8 @@ def test_journal_reader_alternative_race_definition_n_k_altk_blocco_entry_with_g
 """)
     with mathrace_interaction.journal_reader(journal_with_n_k_altk_blocco) as journal_stream:
         imported_dict = journal_stream.read("journal_with_n_k_altk_blocco", race_date)
-    assert imported_dict["n_blocco"] == "4"
-    assert imported_dict["k_blocco"] == "2"
+    assert imported_dict["n_blocco"] == 4
+    assert imported_dict["k_blocco"] == 2
     assert imported_dict["mathrace_only"]["alternative_k_blocco"] == "1"
 
 
@@ -736,8 +736,8 @@ def test_journal_reader_alternative_race_definition_n_k_altk_blocco_entry_with_i
 """)
     with mathrace_interaction.journal_reader(journal_with_n_k_altk_blocco) as journal_stream:
         imported_dict = journal_stream.read("journal_with_n_k_altk_blocco", race_date)
-    assert imported_dict["n_blocco"] == "4"
-    assert imported_dict["k_blocco"] == "1"
+    assert imported_dict["n_blocco"] == 4
+    assert imported_dict["k_blocco"] == 1
     assert imported_dict["mathrace_only"]["alternative_k_blocco"] == "1"
 
 
@@ -769,8 +769,8 @@ def test_journal_reader_alternative_race_definition_n_k_altk_blocco_entry_with_b
 """)
     with mathrace_interaction.journal_reader(journal_with_n_k_altk_blocco) as journal_stream:
         imported_dict = journal_stream.read("journal_with_n_k_altk_blocco", race_date)
-    assert imported_dict["n_blocco"] == "4"
-    assert imported_dict["k_blocco"] == "2"
+    assert imported_dict["n_blocco"] == 4
+    assert imported_dict["k_blocco"] == 2
     assert imported_dict["mathrace_only"]["alternative_k_blocco"] == "1"
 
 
@@ -906,12 +906,12 @@ def test_journal_reader_interplay_race_definition_with_team_definition(
 """)
     with mathrace_interaction.journal_reader(journal_with_guests) as journal_stream:
         imported_dict = journal_stream.read("journal_with_guests", race_date)
-    assert imported_dict["n_blocco"] == "4"
-    assert imported_dict["k_blocco"] == "1"
+    assert imported_dict["n_blocco"] == 4
+    assert imported_dict["k_blocco"] == 1
     assert len(imported_dict["squadre"]) == 10
     for s in range(10):
         assert imported_dict["squadre"][s]["nome"] == f"Squadra {chr(s + 97).capitalize()}"
-        assert imported_dict["squadre"][s]["num"] == f"{s + 1}"
+        assert imported_dict["squadre"][s]["num"] == s + 1
         assert imported_dict["squadre"][s]["ospite"] is (True if s in (1, 3) else False)
 
 
@@ -938,14 +938,14 @@ def test_journal_reader_interplay_race_definition_and_guests_without_team_defini
 """)
     with mathrace_interaction.journal_reader(journal_with_guests) as journal_stream:
         imported_dict = journal_stream.read("journal_with_guests", race_date)
-    assert imported_dict["n_blocco"] == "4"
-    assert imported_dict["k_blocco"] == "1"
+    assert imported_dict["n_blocco"] == 4
+    assert imported_dict["k_blocco"] == 1
     assert len(imported_dict["squadre"]) == 10
     assert sum(not imported_dict["squadre"][s]["ospite"] for s in range(10)) == num_nonguests
     assert sum(imported_dict["squadre"][s]["ospite"] for s in range(10)) == num_guests
     for s in range(10):
         assert imported_dict["squadre"][s]["nome"] == f"Squadra {s + 1}"
-        assert imported_dict["squadre"][s]["num"] == f"{s + 1}"
+        assert imported_dict["squadre"][s]["num"] == s + 1
         assert imported_dict["squadre"][s]["ospite"] is (True if s >= num_nonguests else False)
 
 

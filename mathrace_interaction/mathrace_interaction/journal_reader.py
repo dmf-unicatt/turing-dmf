@@ -117,14 +117,14 @@ class JournalReaderR5539(AbstractJournalReader):
         self, line: str, num_questions: str, turing_dict: TuringDict
     ) -> None:
         """Process the number of questions entry in the race definition line."""
-        turing_dict["num_problemi"] = num_questions
+        turing_dict["num_problemi"] = int(num_questions)
 
     def _process_race_definition_initial_score_entry(
         self, line: str, initial_score: str, turing_dict: TuringDict
     ) -> None:
         """Process the initial score entry in the race definition line."""
         turing_dict["mathrace_only"]["initial_score"] = initial_score
-        expected_score = int(turing_dict["num_problemi"]) * 10
+        expected_score = turing_dict["num_problemi"] * 10
         if int(initial_score) != expected_score:
             raise RuntimeError(
                 f"Invalid line {line} in race definition: the expected score is {expected_score}, "
@@ -136,6 +136,11 @@ class JournalReaderR5539(AbstractJournalReader):
     ) -> None:
         """Process the bonus cardinality entry in the race definition line."""
         turing_dict["mathrace_only"]["bonus_cardinality"] = bonus_cardinality
+        self._process_race_definition_bonus_default(line, turing_dict)
+
+    def _process_race_definition_bonus_default(self, line: str, turing_dict: TuringDict) -> None:
+        """Process default values for the bonus definition."""
+        bonus_cardinality = turing_dict["mathrace_only"]["bonus_cardinality"]
         if int(bonus_cardinality) != 10:
             raise RuntimeError(
                 f"Invalid line {line} in race definition: the expected bonus cardinality is 10, "
@@ -149,6 +154,11 @@ class JournalReaderR5539(AbstractJournalReader):
     ) -> None:
         """Process the superbonus cardinality entry in the race definition line."""
         turing_dict["mathrace_only"]["superbonus_cardinality"] = superbonus_cardinality
+        self._process_race_definition_superbonus_default(line, turing_dict)
+
+    def _process_race_definition_superbonus_default(self, line: str, turing_dict: TuringDict) -> None:
+        """Process default values for the superbonus definition."""
+        superbonus_cardinality = turing_dict["mathrace_only"]["superbonus_cardinality"]
         if int(superbonus_cardinality) != 6:
             raise RuntimeError(
                 f"Invalid line {line} in race definition: the expected superbonus cardinality is 6, "
@@ -161,8 +171,8 @@ class JournalReaderR5539(AbstractJournalReader):
         self, line: str, n_k_blocco: str, turing_dict: TuringDict
     ) -> None:
         """Process the value of n in the race definition line."""
-        turing_dict["n_blocco"] = n_k_blocco
-        turing_dict["k_blocco"] = "1"
+        turing_dict["n_blocco"] = int(n_k_blocco)
+        turing_dict["k_blocco"] = 1
 
     def _process_race_definition_alternative_k_blocco_entry(
         self, line: str, alternative_k_blocco: str, turing_dict: TuringDict
@@ -212,12 +222,12 @@ class JournalReaderR5539(AbstractJournalReader):
         if "default_score" not in turing_dict["mathrace_only"]:
             turing_dict["mathrace_only"]["default_score"] = "20"
         default_score = turing_dict["mathrace_only"]["default_score"]
-        questions: list[dict[str, str]] = list()
-        num_questions = int(turing_dict["num_problemi"])
+        questions: list[dict[str, int | str]] = list()
+        num_questions = turing_dict["num_problemi"]
         for q in range(num_questions):
             questions.append({
-                "problema": str(q + 1), "nome": f"Problema {q + 1}",
-                "risposta": str(int(True)), "punteggio": default_score
+                "problema": q + 1, "nome": f"Problema {q + 1}",
+                "risposta": int(True), "punteggio": int(default_score)
             })
         turing_dict["soluzioni"] = questions
         # Update the default initialization based on values read from file
@@ -238,8 +248,8 @@ class JournalReaderR5539(AbstractJournalReader):
         question_def, _ = question_def.split(" quesito")
         question_id_str, question_score = question_def.split(" ")
         question_id = int(question_id_str) - 1
-        assert turing_dict["soluzioni"][question_id]["problema"] == question_id_str
-        turing_dict["soluzioni"][question_id]["punteggio"] = question_score
+        assert turing_dict["soluzioni"][question_id]["problema"] == int(question_id_str)
+        turing_dict["soluzioni"][question_id]["punteggio"] = int(question_score)
 
     def _read_teams_definition_section(self, turing_dict: TuringDict) -> None:
         """Read the teams definition section."""
@@ -249,7 +259,7 @@ class JournalReaderR5539(AbstractJournalReader):
         """Initialize a default set of teams because this format does not really have a teams definition section."""
         num_teams = int(turing_dict["mathrace_only"]["num_teams"])
         turing_dict["squadre"] = [
-            {"nome": f"Squadra {t + 1}", "num": str(t + 1), "ospite": False} for t in range(num_teams)]
+            {"nome": f"Squadra {t + 1}", "num": t + 1, "ospite": False} for t in range(num_teams)]
 
     def _read_race_events_section(self, turing_dict: TuringDict) -> None:
         """Read all race events."""
@@ -313,7 +323,7 @@ class JournalReaderR5539(AbstractJournalReader):
         # Append to output dictionary
         turing_dict["eventi"].append({
             "subclass": "Jolly", "orario": event_datetime.isoformat(),
-            "squadra_id" : team_id, "problema" : question_id, "mathrace_id": event_mathrace_id
+            "squadra_id" : int(team_id), "problema" : int(question_id), "mathrace_id": int(event_mathrace_id)
         })
 
     def _process_answer_submission_event(
@@ -330,7 +340,8 @@ class JournalReaderR5539(AbstractJournalReader):
         # Append to output dictionary
         turing_dict["eventi"].append({
             "subclass": "Consegna", "orario": event_datetime.isoformat(),
-            "squadra_id" : team_id, "problema" : question_id, "risposta": answer, "mathrace_id": event_mathrace_id
+            "squadra_id" : int(team_id), "problema" : int(question_id), "risposta": int(answer),
+            "mathrace_id": int(event_mathrace_id)
         })
 
     def _process_jolly_timeout_event(self, timestamp_str: str, event_content: str, turing_dict: TuringDict) -> None:
@@ -493,8 +504,8 @@ class JournalReaderR17497(JournalReaderR11189):
         """Process the value of n and k in the race definition line."""
         if "." in n_k_blocco:
             n_blocco, k_blocco = n_k_blocco.split(".")
-            turing_dict["n_blocco"] = n_blocco
-            turing_dict["k_blocco"] = k_blocco
+            turing_dict["n_blocco"] = int(n_blocco)
+            turing_dict["k_blocco"] = int(k_blocco)
         else:
             super()._process_race_definition_n_k_blocco_entry(line, n_k_blocco, turing_dict)
 
@@ -519,7 +530,7 @@ class JournalReaderR17505(JournalReaderR17497):
         """Read the teams definition section."""
         # Assign an empty dictionary for each team
         num_teams = int(turing_dict["mathrace_only"]["num_teams"])
-        teams: list[dict[str, bool | str]] = [dict() for _ in range(num_teams)]
+        teams: list[dict[str, bool | int | str]] = [dict() for _ in range(num_teams)]
         # Initialize a team list based on the values read from file
         line, before, _ = self._read_line_with_positions()
         while line.startswith(f"--- {self.TEAM_DEFINITION}"):
@@ -527,7 +538,7 @@ class JournalReaderR17505(JournalReaderR17497):
             team_id_str, team_guest_status, team_name = team_def.split(" ", maxsplit=2)
             team_id = int(team_id_str) - 1
             teams[team_id]["nome"] = team_name
-            teams[team_id]["num"] = team_id_str
+            teams[team_id]["num"] = int(team_id_str)
             teams[team_id]["ospite"] = True if team_guest_status == "1" else False
             line, before, _ = self._read_line_with_positions()
         # The line that caused the while loop to break was not a team definition line, so we need to
@@ -654,7 +665,7 @@ class JournalReaderR17548(JournalReaderR17505):
             default_score = "20"
         # Store the results in the dictionary
         turing_dict["mathrace_only"]["num_questions_alternative"] = num_questions_alternative
-        turing_dict["num_problemi"] = num_questions
+        turing_dict["num_problemi"] = int(num_questions)
         turing_dict["mathrace_only"]["default_score"] = default_score
         # It is now possible to set the initial score, if it calculation was delayed when reading the first entry
         initial_score = turing_dict["mathrace_only"]["initial_score"]
@@ -683,8 +694,8 @@ class JournalReaderR17548(JournalReaderR17505):
             n_blocco = n_k_blocco
             k_blocco = "1"
         # Store n_blocco and k_blocco
-        turing_dict["n_blocco"] = n_blocco
-        turing_dict["k_blocco"] = k_blocco
+        turing_dict["n_blocco"] = int(n_blocco)
+        turing_dict["k_blocco"] = int(k_blocco)
         # Call parent implementation to store alternative_k_blocco, which also carries out consistency checks
         super()._process_race_definition_alternative_k_blocco_entry(line, alternative_k_blocco, turing_dict)
 
@@ -706,7 +717,7 @@ class JournalReaderR17548(JournalReaderR17505):
             num_teams_nonguests = int(turing_dict["mathrace_only"]["num_teams_nonguests"])
             num_teams_guests = int(turing_dict["mathrace_only"]["num_teams_guests"])
             turing_dict["squadre"] = [
-                {"nome": f"Squadra {t + 1}", "num": str(t + 1), "ospite": False if t < num_teams_nonguests else True}
+                {"nome": f"Squadra {t + 1}", "num": t + 1, "ospite": False if t < num_teams_nonguests else True}
                 for t in range(num_teams_nonguests + num_teams_guests)]
         else:
             # Standard race definition was used. Assume there are no guest teams, and call parent implementation.
@@ -736,15 +747,20 @@ class JournalReaderR20642(JournalReaderR17548):
         super()._read_race_definition_section(turing_dict)
 
         # Read next the bonus and superbonus definition, if available
-        for (code, mathrace_key, turing_key) in (
-            (self.BONUS_DEFINITION, "bonus_cardinality", "fixed_bonus"),
-            (self.SUPERBONUS_DEFINITION, "superbonus_cardinality", "super_mega_bonus")
+        for (code, mathrace_key, turing_key, default_call) in (
+            (self.BONUS_DEFINITION, "bonus_cardinality", "fixed_bonus", self._process_race_definition_bonus_default),
+            (
+                self.SUPERBONUS_DEFINITION, "superbonus_cardinality", "super_mega_bonus",
+                self._process_race_definition_superbonus_default
+            )
         ):
             line, before, _ = self._read_line_with_positions()
             if not line.startswith(f"--- {code}"):
                 # Bonus definition was not found: reset the stream to the previous line, because it has now read
                 # a line that belongs to the next section
                 self._reset_stream_to_position(before)
+                # Assign default values
+                default_call("not-really-used", turing_dict)
             else:
                 self._process_bonus_or_superbonus_definition_line(line, turing_dict, mathrace_key, turing_key)
 
@@ -869,8 +885,8 @@ class JournalReaderR25013(JournalReaderR20644):
             raise RuntimeError(
                 f"Invalid line {line} in question definition: it does not contain the expected placeholder")
         question_id = int(question_id_str) - 1
-        assert turing_dict["soluzioni"][question_id]["problema"] == question_id_str
-        turing_dict["soluzioni"][question_id]["punteggio"] = question_score
+        assert turing_dict["soluzioni"][question_id]["problema"] == int(question_id_str)
+        turing_dict["soluzioni"][question_id]["punteggio"] = int(question_score)
 
 
 def journal_reader(journal_stream: typing.TextIO) -> AbstractJournalReader:

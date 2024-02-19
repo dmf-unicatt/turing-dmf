@@ -29,6 +29,7 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules"
 ]
 dependencies = [
+    "jsondiff",
     "paramiko"
 ]
 
@@ -74,6 +75,14 @@ show_error_codes = true
 strict = true
 warn_return_any = true
 warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+module = [
+    "engine",
+    "engine.models",
+    "jsondiff"
+]
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 
