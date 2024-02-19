@@ -10,6 +10,7 @@ db.sqlite3
 */migrations/*
 
 # Test
+django.log
 geckodriver.log
 .coverage
 */htmlcov/*
