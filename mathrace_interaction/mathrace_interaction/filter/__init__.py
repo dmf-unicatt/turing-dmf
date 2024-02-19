@@ -10,6 +10,7 @@ import warnings
 from mathrace_interaction.filter.journal_event_filterer import journal_event_filterer
 from mathrace_interaction.filter.journal_event_filterer_by_id import journal_event_filterer_by_id
 from mathrace_interaction.filter.journal_event_filterer_by_timestamp import journal_event_filterer_by_timestamp
+from mathrace_interaction.filter.live_journal import LiveJournal
 from mathrace_interaction.filter.strip_comments_and_unhandled_events_from_journal import (
     strip_comments_and_unhandled_events_from_journal)
 from mathrace_interaction.filter.strip_mathrace_only_attributes_from_imported_turing import (

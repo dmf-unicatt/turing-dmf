@@ -28,7 +28,6 @@ def journal_event_filterer(
         A function that given the timestamp and the event code, returns True if the line must be kept,
         and False if the line must be discarded
 
-
     Returns
     -------
     :
