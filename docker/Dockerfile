@@ -29,6 +29,9 @@ RUN chmod go+rx /root
 RUN python3 -m pip install --break-system-packages -r turing/requirements.txt && \
     python3 -m pip install --break-system-packages -r turing/requirements-dev.txt
 
+ENV DJANGO_SETTINGS_MODULE="Turing.settings" \
+    PYTHONPATH=/root/turing
+
 # Part 2: mathrace-interaction
 COPY mathrace_interaction mathrace_interaction
 
