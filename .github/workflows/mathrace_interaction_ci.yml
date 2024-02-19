@@ -31,11 +31,14 @@ jobs:
               echo "set -e" >> docker/dockerfile.sh
               dkr2sh/dkr2sh.sed < docker/Dockerfile >> docker/dockerfile.sh
               sed -i "s/rsync/echo rsync/g" docker/dockerfile.sh
+              sed -i 's|sed -i "/worktree =/d" turing/.git/config|echo "Already a git repo"|g' docker/dockerfile.sh
               sed -i "s|/root|${PWD}|g" docker/dockerfile.sh
               sed -i "s|/root|${PWD}|g" docker/entrypoint.sh
               chmod +x docker/dockerfile.sh
               docker/dockerfile.sh
               docker/entrypoint.sh echo "Disabling server startup"
+              echo "DJANGO_SETTINGS_MODULE=Turing.settings" >> $GITHUB_ENV
+              echo "PYTHONPATH=${PWD}/turing" >> $GITHUB_ENV
       fail-fast: false
     container: debian:12
     name: test (${{ matrix.name }})
