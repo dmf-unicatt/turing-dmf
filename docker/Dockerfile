@@ -27,7 +27,9 @@ RUN apt install -y -qq libpq-dev postgresql postgresql-client postgresql-contrib
 RUN chmod go+rx /root
 
 RUN python3 -m pip install --break-system-packages -r turing/requirements.txt && \
-    python3 -m pip install --break-system-packages -r turing/requirements-dev.txt
+    python3 -m pip install --break-system-packages -r turing/requirements-dev.txt && \
+    sed -i '1s/^/import warnings\nwarnings.filterwarnings("ignore", module="django.http.request")\n/' /usr/local/lib/python3.11/dist-packages/django/http/request.py && \
+    sed -i '1s/^/import warnings\nwarnings.filterwarnings("ignore", module="django.utils.encoding")\n/' /usr/local/lib/python3.11/dist-packages/django/utils/encoding.py
 
 ENV DJANGO_SETTINGS_MODULE="Turing.settings" \
     PYTHONPATH=/root/turing
