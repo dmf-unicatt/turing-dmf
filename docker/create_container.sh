@@ -28,6 +28,6 @@ if [[ -f "${CONTAINER_ID_FILE}" ]]; then
 else
     # Start docker container on a fixed IP address. The corresponding mac address is generated following
     # https://maclookup.app/faq/how-do-i-identify-the-mac-address-of-a-docker-container-interface
-    CONTAINER_ID=$(docker create --net ${NETWORK_ID} --ip 10.200.1.23 --mac-address 02:42:0a:c8:01:17 -p 80:80 -v /tmp/shared:/tmp/shared -v ${VOLUME_ID}:/mnt -e DOCKERHOSTNAME=$(cat /etc/hostname) ghcr.io/dmf-unicatt/turing-dmf:latest)
+    CONTAINER_ID=$(docker create --net ${NETWORK_ID} --ip 10.200.1.23 --mac-address 02:42:0a:c8:01:17 -p 80:80 -v /tmp/shared-turing-dmf:/shared/host-tmp -v $(dirname ${PWD}):/shared/git-repo -v ${VOLUME_ID}:/mnt -e DOCKERHOSTNAME=$(cat /etc/hostname) ghcr.io/dmf-unicatt/turing-dmf:latest)
     echo ${CONTAINER_ID} > ${CONTAINER_ID_FILE}
 fi
