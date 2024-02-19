@@ -99,3 +99,18 @@ def test_journal_writer_wrong_version(
         runtime_error_contains(
             lambda: mathrace_interaction.journal_writer(exported_journal, "r0"),
             "r0 is not among the available versions")
+
+
+def test_journal_writer_wrong_k_blocco(
+    turing_dict: mathrace_interaction.typing.TuringDict,
+    runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
+) -> None:
+    """Test that journal_reader raises an error when k_blocco != 1, but the requested version does not support it."""
+    turing_dict["k_blocco"] = 2
+    with (
+        io.StringIO("") as exported_journal,
+        mathrace_interaction.journal_writer(exported_journal, "r5539") as journal_stream
+    ):
+        runtime_error_contains(
+            lambda: journal_stream.write(turing_dict),
+            "This version does not support a value of k_blocco different from one")

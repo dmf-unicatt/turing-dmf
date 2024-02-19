@@ -115,7 +115,10 @@ class JournalWriterR5539(AbstractJournalWriter):
 
     def _store_race_definition_n_k_blocco_entry(self, line: str, turing_dict: TuringDict) -> str:
         """Store the value of n in the race definition line."""
-        return f'{line} {turing_dict["n_blocco"]}'
+        if turing_dict["k_blocco"] == 1:
+            return f'{line} {turing_dict["n_blocco"]}'
+        else:
+            raise RuntimeError("This version does not support a value of k_blocco different from one")
 
     def _store_race_definition_alternative_k_blocco_entry(self, line: str, turing_dict: TuringDict) -> str:
         """
