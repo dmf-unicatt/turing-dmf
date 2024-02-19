@@ -11,13 +11,15 @@ set -e
 POSTGRES_VERSION=15
 
 # Data directories
-POSTGRES_CLUSTER_DATA_DIRECTORY=/mnt/postgres_data_directory
+POSTGRES_CLUSTER_DATA_DIRECTORY=/mnt/postgres_data
 SECRETS_DATA_DIRECTORY=/mnt/secrets
+TURING_DATA_DIRECTORY=/mnt/turing_data
 TURING_ROOT_DIRECTORY=/root/turing
 
 # Create data directories, if they do not exist
 mkdir -p ${POSTGRES_CLUSTER_DATA_DIRECTORY}
 mkdir -p ${SECRETS_DATA_DIRECTORY}
+mkdir -p ${TURING_DATA_DIRECTORY}
 
 # Generate a django secret key
 DJANGO_SECRET_KEY_FILE="${SECRETS_DATA_DIRECTORY}/.django_secret_key"
@@ -87,8 +89,11 @@ else
     echo "Reusing existing postgres database"
 fi
 
-# Prepare turing setting file
-cat <<EOF > ${TURING_ROOT_DIRECTORY}/Turing/settings.ini
+# Prepare turing settings file
+TURING_SETTINGS_INITIALIZED_FILE=${TURING_DATA_DIRECTORY}/.settings_initialized
+if [[ ! -f ${TURING_SETTINGS_INITIALIZED_FILE} ]]; then
+    echo "Initializing turing settings file"
+    cat <<EOF > ${TURING_DATA_DIRECTORY}/settings.ini
 [settings]
 SECRET_KEY=${DJANGO_SECRET_KEY}
 DEBUG=False
@@ -100,6 +105,16 @@ RDS_USERNAME=postgres
 RDS_PASSWORD=${POSTGRES_PASSWORD}
 RDS_HOSTNAME=localhost
 EOF
+    touch ${TURING_SETTINGS_INITIALIZED_FILE}
+else
+    echo "Reusing existing turing settings file"
+fi
+if [[ ! -f ${TURING_ROOT_DIRECTORY}/Turing/settings.ini ]]; then
+    echo "Creating link to turing settings file"
+    ln -s ${TURING_DATA_DIRECTORY}/settings.ini ${TURING_ROOT_DIRECTORY}/Turing/settings.ini
+else
+    echo "Not linking again turing settings file"
+fi
 
 # Ask turing to initialize the django database migrations, if not already done previously
 DJANGO_DATABASE_MIGRATIONS_FILE=${TURING_ROOT_DIRECTORY}/.django_database_migrations
