@@ -59,6 +59,7 @@ def generate_journal_fixture_test(fixture_names: str) -> type:
     """Check the number of elements in a parametrization added as a fixture by pytest_generate_tests."""
     fixture_prefix = fixture_names.replace(",", "_and_")
 
+    @pytest.mark.random_order(disabled=True)
     @pytest.mark.usefixtures(fixture_prefix + "_checker")
     class TestChecker:
         """

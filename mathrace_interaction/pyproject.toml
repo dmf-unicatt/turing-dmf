@@ -55,7 +55,8 @@ tests = [
     "mock-ssh-server @ git+https://github.com/carletes/mock-ssh-server.git",
     "pycryptodomex",
     "pytest",
-    "pytest-django"
+    "pytest-django",
+    "pytest-random-order"
 ]
 
 [tool.isort]
