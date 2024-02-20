@@ -11,6 +11,7 @@ from mathrace_interaction.filter.journal_event_filterer import journal_event_fil
 from mathrace_interaction.filter.journal_event_filterer_by_id import journal_event_filterer_by_id
 from mathrace_interaction.filter.journal_event_filterer_by_timestamp import journal_event_filterer_by_timestamp
 from mathrace_interaction.filter.live_journal import LiveJournal
+from mathrace_interaction.filter.reorder_lists_in_imported_turing import reorder_lists_in_imported_turing
 from mathrace_interaction.filter.strip_comments_and_unhandled_events_from_journal import (
     strip_comments_and_unhandled_events_from_journal)
 from mathrace_interaction.filter.strip_mathrace_only_attributes_from_imported_turing import (
@@ -18,7 +19,7 @@ from mathrace_interaction.filter.strip_mathrace_only_attributes_from_imported_tu
 
 # Silence warning when trying to run modules as entrypoint
 for entrypoint in (
-    "journal_event_filterer_by_id", "journal_event_filterer_by_timestamp",
+    "journal_event_filterer_by_id", "journal_event_filterer_by_timestamp", "reorder_lists_in_imported_turing",
     "strip_comments_and_unhandled_events_from_journal", "strip_mathrace_only_attributes_from_imported_turing"
 ):
     warnings.filterwarnings(
