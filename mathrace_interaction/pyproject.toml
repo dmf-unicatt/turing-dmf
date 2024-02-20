@@ -92,7 +92,7 @@ line-length = 120
 
 [tool.ruff.lint]
 select = ["ANN", "D", "E", "F", "FLY", "ICN", "N", "Q", "RUF", "UP", "W"]
-ignore = ["ANN101"]
+ignore = ["ANN101", "ANN102"]
 
 [tool.ruff.lint.per-file-ignores]
 "mathrace_interaction/**/__init__.py" = ["F401"]

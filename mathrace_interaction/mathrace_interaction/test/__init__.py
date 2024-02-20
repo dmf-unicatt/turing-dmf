@@ -6,6 +6,7 @@
 """mathrace_interaction.test module."""
 
 from mathrace_interaction.test.get_journals_in_directory import get_journals_in_directory
+# mathrace_interaction.test.mock_models was not imported on purpose
 from mathrace_interaction.test.parametrize_journal_fixtures import parametrize_journal_fixtures
 from mathrace_interaction.test.run_entrypoint_fixture import run_entrypoint_fixture
 from mathrace_interaction.test.runtime_error_contains_fixture import runtime_error_contains_fixture
