@@ -29,7 +29,7 @@ def test_live_journal_one_new_event_per_read(journal: io.StringIO) -> None:
     assert num_race_events == 11
     # Read the live journal
     num_reads = num_race_events + 1  # the first read will read a file with no race events
-    live_journal = mathrace_interaction.filter.LiveJournal(journal, num_reads)
+    live_journal = mathrace_interaction.filter.LiveJournal(io.StringIO(stripped_journal), num_reads)
     previous_read_without_end_line = ""
     for i in range(num_reads):
         current_read = live_journal.open().read()
@@ -63,8 +63,10 @@ def test_live_journal_one_new_event_per_read(journal: io.StringIO) -> None:
 
 def test_live_journal_one_new_event_every_two_reads(journal: io.StringIO) -> None:
     """Test live_journal in the case where the number of reads is equal to twice the number of handled race events."""
+    # Strip the journal of comments and unhandled events
+    stripped_journal = mathrace_interaction.filter.strip_comments_and_unhandled_events_from_journal(journal)
     num_race_events = 11
-    live_journal = mathrace_interaction.filter.LiveJournal(journal, 2 * num_race_events + 1)
+    live_journal = mathrace_interaction.filter.LiveJournal(io.StringIO(stripped_journal), 2 * num_race_events + 1)
     # Carry out the initial read outside of the for loop, since it pulls in the entire race setup
     # rather than race events.
     previous_read_without_end_line = strip_file_end_line(live_journal.open().read())
@@ -91,8 +93,9 @@ def test_live_journal_one_new_event_every_two_reads(journal: io.StringIO) -> Non
 @pytest.mark.parametrize("max_open_calls", [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
 def test_live_journal_several_new_events_every_read(journal: io.StringIO, max_open_calls: int) -> None:
     """Test live_journal in the case where the every read introduces several new events."""
+    stripped_journal = mathrace_interaction.filter.strip_comments_and_unhandled_events_from_journal(journal)
     num_race_events = 11
-    live_journal = mathrace_interaction.filter.LiveJournal(journal, max_open_calls)
+    live_journal = mathrace_interaction.filter.LiveJournal(io.StringIO(stripped_journal), max_open_calls)
     # Determine the range of expected new events for every read
     if max_open_calls > 1:
         num_new_events_per_read_int = num_race_events // (max_open_calls - 1)

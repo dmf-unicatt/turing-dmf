@@ -8,9 +8,6 @@
 import io
 import typing
 
-from mathrace_interaction.filter.strip_comments_and_unhandled_events_from_journal import (
-    strip_comments_and_unhandled_events_from_journal)
-
 
 class LiveJournal:
     """
@@ -36,14 +33,14 @@ class LiveJournal:
     """
 
     def __init__(self, journal_stream: typing.TextIO, max_open_calls: int) -> None:
-        # Read journal stream, stripping comments and unhandled events
-        journal = [
-            line.strip("\n") for line in strip_comments_and_unhandled_events_from_journal(journal_stream).split("\n")]
+        # Read journal stream
+        journal = [line.strip("\n") for line in journal_stream]
+        journal_stream.seek(0)
         # Determine the first line that does not start with ---, and the final line --- 999
         race_begin_line = None
         file_end_line = None
         for (line_counter, line) in enumerate(journal):
-            if not line.startswith("---") and race_begin_line is None:
+            if not line.startswith("---") and not line.startswith("#") and race_begin_line is None:
                 race_begin_line = line_counter
             elif line.startswith("--- 999"):
                 assert file_end_line is None
@@ -70,10 +67,14 @@ class LiveJournal:
             A stream into part of the journal, up to the line corresponding to the current value of
             the internal counter.
         """
-        if self._counter < len(self._up_to_line):
+        if self.can_read():
             up_to_line = self._journal[:self._up_to_line[self._counter]]
             up_to_line.append("--- 999 fine simulatore")
             self._counter += 1
             return io.StringIO("\n".join(up_to_line))
         else:
             raise RuntimeError("Journal was fully read already")
+
+    def can_read(self) -> bool:
+        """Return if the journal can still be read, or if was fully read already."""
+        return self._counter < len(self._up_to_line)
