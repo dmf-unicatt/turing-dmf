@@ -3,7 +3,7 @@ index e2c784f..c254ec0 100644
 --- a/Turing/settings.py
 +++ b/Turing/settings.py
 @@ -58,6 +58,7 @@ CRISPY_TEMPLATE_PACK = 'bootstrap4'
- 
+
  MIDDLEWARE = [
      'django.middleware.security.SecurityMiddleware',
 +    'whitenoise.middleware.WhiteNoiseMiddleware',
@@ -11,11 +11,11 @@ index e2c784f..c254ec0 100644
      'django.middleware.common.CommonMiddleware',
      'django.middleware.csrf.CsrfViewMiddleware',
 @@ -188,6 +189,7 @@ USE_TZ = True
- 
+
  STATIC_URL = '/static/'
  STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 +STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
- 
+
  # File uploads
  MEDIA_URL = "/media/"
 diff --git a/requirements.txt b/requirements.txt
@@ -27,3 +27,29 @@ index 217fb27..f5f9799 100644
  sqlparse==0.4.2
  typing_extensions==4.1.1
 +whitenoise==6.6.0
+diff --git a/requirements-dev.txt b/requirements-dev.txt
+index 2aadcba..2a5561d 100644
+--- a/requirements-dev.txt
++++ b/requirements-dev.txt
+@@ -13,3 +13,4 @@ selenium>=3.141.0
+ six>=1.15.0
+ sqlparse>=0.4.1
+ urllib3>=1.25.11
++whitenoise>=6.6.0
+diff --git a/Turing/settings.py b/Turing/settings.py
+index d933581..922486c 100644
+--- a/Turing/settings.py
++++ b/Turing/settings.py
+@@ -190,7 +190,11 @@ USE_TZ = True
+
+ STATIC_URL = '/static/'
+ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+-STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
++STORAGES = {
++    "staticfiles": {
++        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
++    },
++}
+
+ # File uploads
+ MEDIA_URL = "/media/"

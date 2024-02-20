@@ -12,3 +12,4 @@ This directory contains a few local patches. Most of them are related to changes
 7. `0007_durata_blocco.patch`: allow customization of the deadline time for question score periodic increase.
 8. `0008_default_n_k_blocco.patch`: add default values for `n_blocco` and `k_blocco`. **mathrace** only supports the case `k_blocco = 1`, and therefore we prefer to provide this value as the default to facilitate setting up **mathrace**-compatible races in **Turing @ DMF**.
 9. `0009_upload_journal.patch`: allow user to upload and import a **mathrace** journal.
+10. `0010_update_requirements.patch`: update versions in `requirements.txt`, after checking that tests still run correctly.

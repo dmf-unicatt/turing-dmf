@@ -40,4 +40,5 @@ else
     apply_patch 0007_durata_blocco.patch
     apply_patch 0008_default_n_k_blocco.patch
     apply_patch 0009_upload_journal.patch
+    apply_patch 0010_update_requirements.patch
 fi
