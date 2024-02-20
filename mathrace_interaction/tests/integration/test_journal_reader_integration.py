@@ -27,6 +27,7 @@ def test_journal_reader_integration(journal: typing.TextIO, journal_name: str) -
         turing_dict = journal_stream.read(journal_name, journal_date)
     mathrace_interaction.filter.strip_mathrace_only_attributes_from_imported_turing(turing_dict)
     mathrace_interaction.filter.reorder_lists_in_imported_turing(turing_dict)
+    mathrace_interaction.filter.strip_trailing_zero_bonus_superbonus_from_imported_turing(turing_dict)
     gara = engine.models.Gara.create_from_dict(turing_dict)
     diff = jsondiff.diff(gara.to_dict(), turing_dict, syntax="symmetric")
     assert diff == {}

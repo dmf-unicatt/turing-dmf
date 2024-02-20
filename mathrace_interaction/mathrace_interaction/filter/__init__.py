@@ -16,11 +16,14 @@ from mathrace_interaction.filter.strip_comments_and_unhandled_events_from_journa
     strip_comments_and_unhandled_events_from_journal)
 from mathrace_interaction.filter.strip_mathrace_only_attributes_from_imported_turing import (
     strip_mathrace_only_attributes_from_imported_turing)
+from mathrace_interaction.filter.strip_trailing_zero_bonus_superbonus_from_imported_turing import (
+    strip_trailing_zero_bonus_superbonus_from_imported_turing)
 
 # Silence warning when trying to run modules as entrypoint
 for entrypoint in (
     "journal_event_filterer_by_id", "journal_event_filterer_by_timestamp", "reorder_lists_in_imported_turing",
-    "strip_comments_and_unhandled_events_from_journal", "strip_mathrace_only_attributes_from_imported_turing"
+    "strip_comments_and_unhandled_events_from_journal", "strip_mathrace_only_attributes_from_imported_turing",
+    "strip_trailing_zero_bonus_superbonus_from_imported_turing"
 ):
     warnings.filterwarnings(
         "ignore", message=(
