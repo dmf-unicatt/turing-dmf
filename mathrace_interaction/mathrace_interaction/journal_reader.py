@@ -275,26 +275,30 @@ class JournalReaderR5539(AbstractJournalReader):
 
     def _read_race_events_section(self, turing_dict: TuringDict) -> None:
         """Read all race events."""
-        # Process the race start event first
-        line = self._read_line()
-        self._process_race_start_line(line, turing_dict)
         # Allocate a mathrace only storage for manual corrections and timestamp offset
         turing_dict["mathrace_only"]["manual_bonuses"] = list()
         turing_dict["mathrace_only"]["timestamp_offset"] = ""
         # Process the remaining race events until the race end one
         turing_dict["eventi"] = list()
-        while True:
-            line, before, _ = self._read_line_with_positions()
-            if line == "--- 999 fine simulatore":
-                # This file is from a race which is still running. We finished processing race events
-                # anyways, so reset the stream and break the loop
-                self._reset_stream_to_position(before)
-                break
-            else:
-                try:
-                    self._process_race_event_line(line, turing_dict)
-                except StopIteration:
+        # Process the race start event first
+        line, before, _ = self._read_line_with_positions()
+        if line.endswith(f"{self.RACE_START} inizio gara"):
+            while True:
+                line, before, _ = self._read_line_with_positions()
+                if line == "--- 999 fine simulatore":
+                    # This file is from a race which is still running. We finished processing race events
+                    # anyways, so reset the stream and break the loop
+                    self._reset_stream_to_position(before)
                     break
+                else:
+                    try:
+                        self._process_race_event_line(line, turing_dict)
+                    except StopIteration:
+                        break
+        else:
+            # This file is form a race which has not started yet. There are no race events to process,
+            # so reset the stream
+            self._reset_stream_to_position(before)
 
     def _process_race_event_line(self, line: str, turing_dict: TuringDict) -> None:
         """Process a race event line."""
@@ -317,11 +321,6 @@ class JournalReaderR5539(AbstractJournalReader):
             self._process_manual_bonus_event(timestamp_str, event_content, turing_dict)
         else:
             raise RuntimeError(f"Invalid line {line} in race events: unhandled event type {event_type}")
-
-    def _process_race_start_line(self, line: str, turing_dict: TuringDict) -> None:
-        """Ensure that the race start line is correctly formatted."""
-        if not line.endswith(f"{self.RACE_START} inizio gara"):
-            raise RuntimeError(f"Invalid line {line} in race event: it does not contain the race start")
 
     def _process_jolly_selection_event(self, timestamp_str: str, event_content: str, turing_dict: TuringDict) -> None:
         """Process a jolly selection event."""

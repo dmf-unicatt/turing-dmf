@@ -36,6 +36,15 @@ def determine_journal_version(journal_stream: typing.TextIO) -> str:
     if "".join(journal) == "":
         raise RuntimeError("The provided journal is empty")
 
+    # If the file has no race start event, than the only way we can differentiate from one format
+    # to the other is using race setup codes.
+    if (
+        not _has_line_matching_condition(journal, lambda line: "002 inizio gara" in line) and
+        not _has_line_matching_condition(journal, lambda line: "200 inizio gara" in line)
+    ):
+        if not all(line.startswith("---") or line.startswith("#") for line in journal):
+            raise RuntimeError("The file contains race events, but not race start was detected")
+
     # Since all versions after the fallback one use the event code 200 for the race start,
     # a journal containing the code 002 is a fallback journal. Note that the condition for checking
     # event code 002 operates on the entire line, since event code 002 certainly uses integer timestamps.
@@ -45,11 +54,6 @@ def determine_journal_version(journal_stream: typing.TextIO) -> str:
         if _has_line_matching_condition(journal, lambda line: "200 inizio gara" in line):
             raise RuntimeError("More than one race start event detected, with different event codes")
         return "r5539"
-
-    # Now that we have concluded that the race start event code is 200 (and not 002), raise an error
-    # if it is not found, since the fail is certainly invalid.
-    if not _has_line_matching_condition(journal, lambda line: "200 inizio gara" in line):
-        raise RuntimeError("No race start event detected")
 
     # List all non-fallback versions
     possible_versions = list_journal_versions()

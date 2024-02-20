@@ -371,12 +371,10 @@ def test_journal_reader_wrong_race_start_text(
 --- 001 inizializzazione simulatore
 --- 003 10 7 70 10 6 4 1 1 10 2 -- squadre: 10 quesiti: 7
 0 002 inizio gara testo aggiuntivo
-# an extra line with the correct text is added to ensure that determine_journal_version returns a version
-0 002 inizio gara
 """)
     runtime_error_contains(
         lambda: mathrace_interaction.journal_reader(wrong_journal).read("wrong_journal", race_date),
-        "Invalid line 0 002 inizio gara testo aggiuntivo in race event: it does not contain the race start")
+        "Invalid final line 0 002 inizio gara testo aggiuntivo")
 
 
 def test_journal_reader_wrong_timer_update_text(

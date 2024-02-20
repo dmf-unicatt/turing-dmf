@@ -69,4 +69,4 @@ def test_determine_journal_version_error_wrong_race_start_codes(
 """)
     runtime_error_contains(
         lambda: mathrace_interaction.determine_journal_version(wrong_journal),
-        "No race start event detected")
+        "The file contains race events, but not race start was detected")
