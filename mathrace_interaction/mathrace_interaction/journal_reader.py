@@ -331,6 +331,10 @@ class JournalReaderR5539(AbstractJournalReader):
         event_mathrace_id = self._determine_mathrace_event_id(event_content)
         # Process the event content
         team_id, question_id, _ = event_content.split(" ", maxsplit=2)
+        if int(team_id) <= 0:
+            raise RuntimeError(f"Invalid event content {event_content}: invalid team number {team_id}")
+        if int(question_id) <= 0:
+            raise RuntimeError(f"Invalid event content {event_content}: invalid question number {question_id}")
         # Append to output dictionary
         turing_dict["eventi"].append({
             "subclass": "Jolly", "orario": event_datetime.isoformat(),
@@ -349,6 +353,10 @@ class JournalReaderR5539(AbstractJournalReader):
         event_mathrace_id = self._determine_mathrace_event_id(event_content)
         # Process the event content
         team_id, question_id, answer, _ = event_content.split(" ", maxsplit=3)
+        if int(team_id) <= 0:
+            raise RuntimeError(f"Invalid event content {event_content}: invalid team number {team_id}")
+        if int(question_id) <= 0:
+            raise RuntimeError(f"Invalid event content {event_content}: invalid question number {question_id}")
         # Append to output dictionary
         turing_dict["eventi"].append({
             "subclass": "Consegna", "orario": event_datetime.isoformat(),

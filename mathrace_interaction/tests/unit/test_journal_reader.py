@@ -1080,3 +1080,28 @@ def test_journal_reader_without_date_entrypoint(
         assert len(imported_dict["squadre"]) == 10
         assert len(imported_dict["soluzioni"]) == 7
         assert len(imported_dict["eventi"]) == 0
+
+
+@pytest.mark.parametrize(
+    "race_event,expected_error", [
+        ("80 010 0 2 squadra 0 sceglie 2 come jolly", "invalid team number 0"),
+        ("90 011 0 3 1 squadra 0, quesito 3: giusto", "invalid team number 0"),
+        ("80 010 1 0 squadra 1 sceglie 0 come jolly", "invalid question number 0"),
+        ("90 011 2 0 1 squadra 2, quesito 0: giusto", "invalid question number 0")
+    ]
+)
+def test_journal_reader_invalid_team_id_or_question_id(
+    race_event: str, expected_error: str, race_date: datetime.datetime,
+    runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
+) -> None:
+    """Test that journal_reader raises an error when the team ID or question ID is not a positive number."""
+    wrong_journal = io.StringIO(f"""\
+--- 001 inizializzazione simulatore
+--- 003 10 7 70 10 6 4 1 1 10 2 -- squadre: 10 quesiti: 7
+0 002 inizio gara
+60 022 aggiorna punteggio esercizi, orologio: 1
+{race_event}
+""")
+    runtime_error_contains(
+        lambda: mathrace_interaction.journal_reader(wrong_journal).read("wrong_journal", race_date),
+        f'Invalid event content {" ".join(race_event.split(" ")[2:])}: {expected_error}')
