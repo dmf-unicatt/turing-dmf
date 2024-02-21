@@ -5,9 +5,12 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """pytest configuration file for integration tests."""
 
+import os
 import pathlib
+import typing
 
 import pytest
+import Turing
 
 import mathrace_interaction
 import mathrace_interaction.test
@@ -128,3 +131,30 @@ def pytest_generate_tests(metafunc: pytest.Metafunc) -> None:
 def data_dir() -> pathlib.Path:
     """Return the data directory of mathrace-interaction."""
     return _data_dir
+
+
+# pytest-django sets up a test database, but entrypoints are tested in a separate process,
+# and thus would use the production database. Manually overrided the database name as an environment variable.
+
+_run_entrypoint_internal = mathrace_interaction.test.run_entrypoint_fixture
+
+@pytest.fixture
+def run_entrypoint(
+    _run_entrypoint_internal: mathrace_interaction.typing.RunEntrypointFixtureType
+) -> typing.Generator[mathrace_interaction.typing.RunEntrypointFixtureType, None, None]:
+    """Customize DJANGO_SETTINGS_MODULE when running through entrypoints."""
+    test_database_settings = Turing.settings.DATABASES["default"]
+    test_database_engine = test_database_settings["ENGINE"]
+    assert test_database_engine in ("django.db.backends.postgresql_psycopg2", "django.db.backends.sqlite3")
+    if test_database_engine == "django.db.backends.postgresql_psycopg2":
+        # pytest-django has already prepended test_ to the production database name
+        test_database_name = test_database_settings["NAME"]
+        assert "RDS_DB_NAME" not in os.environ
+        os.environ["RDS_DB_NAME"] = test_database_name
+    elif test_database_engine == "django.db.backends.sqlite3":
+        # pytest-django has already prepared a temporary database, but there is no environment variable option
+        # associated to it we can change. Simply skip entrypoint tests with sqlite3.
+        pytest.skip(reason="Entrypoint tests are not compatible with sqlite3")
+    yield _run_entrypoint_internal
+    if test_database_engine == "django.db.backends.postgresql_psycopg2":
+        os.environ.pop("RDS_DB_NAME")

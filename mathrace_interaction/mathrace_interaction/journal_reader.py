@@ -925,10 +925,26 @@ if __name__ == "__main__":
     parser.add_argument("-i", "--input-file", type=str, required=True, help="Path of the input journal file")
     parser.add_argument("-n", "--race-name", type=str, required=True, help="Name of the race")
     parser.add_argument("-d", "--race-date", type=str, required=True, help="Date of the race in a ISO 8601 format")
-    parser.add_argument("-o", "--output-file", type=str, required=True, help="Path of the output json file")
+    output_group = parser.add_mutually_exclusive_group(required=True)
+    output_group.add_argument("-o", "--output-file", type=str, default=None, help="Path of the output json file")
+    output_group.add_argument("-u", "--upload", action="store_true", help="Upload to turing")
     args = parser.parse_args()
+
     with journal_reader(open(args.input_file)) as journal_stream:
         turing_dict = journal_stream.read(args.race_name, datetime.datetime.fromisoformat(args.race_date))
     strip_mathrace_only_attributes_from_imported_turing(turing_dict)
-    with open(args.output_file, "w") as json_stream:
-        json_stream.write(json.dumps(turing_dict, indent=4))
+
+    if args.upload:  # pragma: no cover
+        # This import requires turing to be available, and thus cannot be moved to the common section.
+        # We skip coverage testing of this part because we cannot cover this in unit tests, since they
+        # cannot interact with turing. Testing this entrypoint is delayed to integration testing.
+        import django
+        django.setup()
+
+        import engine.models
+        turing_race = engine.models.Gara.create_from_dict(turing_dict)
+        turing_race.save()
+        print(turing_race.pk)
+    else:
+        with open(args.output_file, "w") as json_stream:
+            json_stream.write(json.dumps(turing_dict, indent=4))

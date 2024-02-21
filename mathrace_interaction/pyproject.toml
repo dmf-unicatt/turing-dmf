@@ -82,7 +82,8 @@ module = [
     "django",
     "engine",
     "engine.models",
-    "jsondiff"
+    "jsondiff",
+    "Turing"
 ]
 ignore_missing_imports = true
 
