@@ -59,7 +59,7 @@ class AbstractJournalReader(abc.ABC):
         """Exit the journal I/O stream context."""
         self._journal_stream.__exit__(exception_type, exception_value, traceback)
 
-    def read(self, race_name: str, race_date: datetime.datetime) -> TuringDict:
+    def read(self, race_name: str, race_date: datetime.datetime | None) -> TuringDict:
         """
         Read the mathrace journal, and convert it into a dictionary compatible with turing.
 
@@ -83,7 +83,10 @@ class AbstractJournalReader(abc.ABC):
 
         # Set name and date
         turing_dict["nome"] = race_name
-        turing_dict["inizio"] = race_date.isoformat()
+        if race_date is not None:
+            turing_dict["inizio"] = race_date.isoformat()
+        else:
+            turing_dict["inizio"] = None
 
         # The first line must contain the initialization of the file
         first_line = self._read_line()
@@ -101,7 +104,19 @@ class AbstractJournalReader(abc.ABC):
         self._read_teams_definition_section(turing_dict)
 
         # The fifth section contains all race events
-        self._read_race_events_section(turing_dict)
+        if race_date is not None:
+            self._read_race_events_section(turing_dict)
+        else:
+            # Do not read in race events if the race does not have a date. Loop through them until the
+            # finalization line is found
+            line, before, _ = self._read_line_with_positions()
+            while not line.startswith("--- 999"):
+                line, before, _ = self._read_line_with_positions()
+            # The line that caused the while loop to break was actually the finalization line, so we need to
+            # reset the stream to the previous line
+            self._reset_stream_to_position(before)
+            # Set an empty event list
+            turing_dict["eventi"] = list()
 
         # The final line must contain the finalization of the file
         final_line = self._read_line()

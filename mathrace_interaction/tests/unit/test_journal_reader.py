@@ -1020,3 +1020,63 @@ def test_journal_reader_wrong_extra_line_after_final(
     runtime_error_contains(
         lambda: mathrace_interaction.journal_reader(wrong_journal).read("wrong_journal", race_date),
         "Journal contains extra line 610 011 9 3 1 squadra 9, quesito 3: giusto after race end")
+
+
+def test_journal_reader_without_date() -> None:
+    """Test that journal_reader skips events when date is not provided."""
+    journal_with_events = io.StringIO("""\
+--- 001 inizializzazione simulatore
+--- 003 10 7 70 10 6 4 1 1 10 2 -- squadre: 10 quesiti: 7
+0 002 inizio gara
+60 022 aggiorna punteggio esercizi, orologio: 1
+80 010 1 2 squadra 1 sceglie 2 come jolly
+90 011 2 3 1 squadra 2, quesito 3: giusto
+100 010 2 3 squadra 2 sceglie 3 come jolly
+600 029 termine gara
+--- 999 fine simulatore
+""")
+    with mathrace_interaction.journal_reader(journal_with_events) as journal_stream:
+        imported_dict = journal_stream.read("journal_with_events", None)
+    assert len(imported_dict["squadre"]) == 10
+    assert len(imported_dict["soluzioni"]) == 7
+    assert len(imported_dict["eventi"]) == 0
+
+
+@pytest.mark.parametrize(
+    "input_file_option,race_name_option,race_setup_only_option,output_file_option", [
+        ("-i", "-n", "-s", "-o"),
+        ("--input-file", "--race-name", "--race-setup-only", "--output-file")
+    ]
+)
+def test_journal_reader_without_date_entrypoint(
+    run_entrypoint: mathrace_interaction.typing.RunEntrypointFixtureType,
+    input_file_option: str, race_name_option: str, race_setup_only_option: str, output_file_option: str
+) -> None:
+    """Test running journal_reader as entrypoint when date is not provided."""
+    journal_with_events = io.StringIO("""\
+--- 001 inizializzazione simulatore
+--- 003 10 7 70 10 6 4 1 1 10 2 -- squadre: 10 quesiti: 7
+0 002 inizio gara
+60 022 aggiorna punteggio esercizi, orologio: 1
+80 010 1 2 squadra 1 sceglie 2 come jolly
+90 011 2 3 1 squadra 2, quesito 3: giusto
+100 010 2 3 squadra 2 sceglie 3 come jolly
+600 029 termine gara
+--- 999 fine simulatore
+""")
+    with tempfile.NamedTemporaryFile() as journal_file, tempfile.NamedTemporaryFile() as json_file:
+        with open(journal_file.name, "w") as journal_stream:
+            journal_stream.write(journal_with_events.read())
+        stdout, stderr = run_entrypoint(
+            "mathrace_interaction.journal_reader", [
+                input_file_option, journal_file.name, race_name_option, "journal_with_events",
+                race_setup_only_option, output_file_option, json_file.name
+            ]
+        )
+        assert stdout == ""
+        assert stderr == ""
+        with open(json_file.name) as json_stream:
+            imported_dict = json.load(json_stream)
+        assert len(imported_dict["squadre"]) == 10
+        assert len(imported_dict["soluzioni"]) == 7
+        assert len(imported_dict["eventi"]) == 0
