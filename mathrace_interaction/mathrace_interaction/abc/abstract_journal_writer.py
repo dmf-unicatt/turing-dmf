@@ -75,7 +75,13 @@ class AbstractJournalWriter(abc.ABC):
         self._write_teams_definition_section(turing_dict)
 
         # The fifth section contains all race events
-        self._write_race_events_section(turing_dict)
+        if turing_dict["inizio"] is not None:
+            self._write_race_events_section(turing_dict)
+        else:
+            # If the race start date is missing, it means that the race has not started yet.
+            # Hence, there must be no events yet.
+            if len(turing_dict["eventi"]) > 0:
+                raise RuntimeError(f"Race has not started, yet there are {len(turing_dict['eventi'])} events")
 
         # The final line contains the finalization of the file
         self._write_line("--- 999 fine simulatore")

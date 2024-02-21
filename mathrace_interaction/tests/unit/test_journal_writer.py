@@ -114,3 +114,34 @@ def test_journal_writer_wrong_k_blocco(
         runtime_error_contains(
             lambda: journal_stream.write(turing_dict),
             "This version does not support a value of k_blocco different from one")
+
+
+def test_journal_writer_not_started_yet_without_events(
+    turing_dict: mathrace_interaction.typing.TuringDict, journal: io.StringIO, journal_version: str
+) -> None:
+    """Test journal_writer when the race has not started yet."""
+    turing_dict["inizio"] = None
+    turing_dict["eventi"].clear()
+    with (
+        io.StringIO("") as exported_journal,
+        mathrace_interaction.journal_writer(exported_journal, journal_version) as journal_stream
+    ):
+        journal_stream.write(turing_dict)
+        assert (
+            "\n".join(line for line in journal.read().split("\n") if line.startswith("---"))
+            == exported_journal.getvalue().strip("\n")
+        )
+
+
+def test_journal_writer_not_started_yet_with_events(
+    turing_dict: mathrace_interaction.typing.TuringDict, journal: io.StringIO, journal_version: str,
+    runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
+) -> None:
+    """Test journal_writer raises an error when the race has not started yet, yet it contains events."""
+    turing_dict["inizio"] = None
+    with (
+        io.StringIO("") as exported_journal,
+        mathrace_interaction.journal_writer(exported_journal, journal_version) as journal_stream
+    ):
+        runtime_error_contains(
+            lambda: journal_stream.write(turing_dict), "Race has not started, yet there are 9 events")
