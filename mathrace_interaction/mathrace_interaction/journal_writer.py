@@ -548,11 +548,26 @@ def journal_writer(journal_stream: typing.TextIO, journal_version: str) -> Abstr
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-i", "--input-file", type=str, required=True, help="Path of the input json file")
+    input_group = parser.add_mutually_exclusive_group(required=True)
+    input_group.add_argument("-i", "--input-file", type=str, default=None, help="Path of the input json file")
+    input_group.add_argument(
+        "-d", "--download", type=int, default=None, help="Primary key of the turing race to download")
     parser.add_argument("-o", "--output-file", type=str, required=True, help="Path of the output journal file")
     parser.add_argument("-v", "--journal-version", type=str, required=True, help="Version of the output journal file")
     args = parser.parse_args()
-    with open(args.input_file) as json_stream:
-        turing_dict = json.load(json_stream)
+
+    if args.download is not None:  # pragma: no cover
+        # This import requires turing to be available, and thus cannot be moved to the common section.
+        # We skip coverage testing of this part because we cannot cover this in unit tests, since they
+        # cannot interact with turing. Testing this entrypoint is delayed to integration testing.
+        import django
+        django.setup()
+
+        import engine.models
+        turing_dict = engine.models.Gara.objects.get(pk=args.download).to_dict()
+    else:
+        with open(args.input_file) as json_stream:
+            turing_dict = json.load(json_stream)
+
     with journal_writer(open(args.output_file, "w"), args.journal_version) as journal_stream:
         journal_stream.write(turing_dict)
