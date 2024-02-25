@@ -10,14 +10,28 @@ set -e
 VOLUME_ID_FILE=".volume_id"
 VOLUME_ID=$(cat "${VOLUME_ID_FILE}")
 
-NETWORK_ID_FILE=".network_id"
-if [[ ! -f "${NETWORK_ID_FILE}" ]]; then
-    # Ensure that docker's network has been customized, otherwise the docker IP address conflicts
-    # with internal IPs on DMF network.
-    NETWORK_ID=$(docker network create --subnet=10.200.1.0/24 turing-dmf-network-$(date +%s))
-    echo ${NETWORK_ID} > ${NETWORK_ID_FILE}
+NETWORK_PROPERTIES_DIRECTORY=".network_properties"
+if [[ -d "${NETWORK_PROPERTIES_DIRECTORY}" ]]; then
+    for NETWORK_PROPERTY_FILE in "subnet" "ip" "mac-address" "port"; do
+        if [[ ! -f "${NETWORK_PROPERTIES_DIRECTORY}/${NETWORK_PROPERTY_FILE}" ]]; then
+            echo "The file ${NETWORK_PROPERTIES_DIRECTORY}/${NETWORK_PROPERTY_FILE} is missing"
+            exit 1
+        fi
+    done
+    NETWORK_ID_FILE=".network_id"
+    if [[ ! -f "${NETWORK_ID_FILE}" ]]; then
+        NETWORK_SUBNET=$(cat "${NETWORK_PROPERTIES_DIRECTORY}/subnet")
+        NETWORK_ID=$(docker network create --subnet=${NETWORK_SUBNET} turing-dmf-network-$(date +%s))
+        echo ${NETWORK_ID} > ${NETWORK_ID_FILE}
+    else
+        NETWORK_ID=$(cat "${NETWORK_ID_FILE}")
+    fi
+    NETWORK_IP=$(cat "${NETWORK_PROPERTIES_DIRECTORY}/ip")
+    NETWORK_MAC_ADDRESS=$(cat "${NETWORK_PROPERTIES_DIRECTORY}/mac-address")
+    NETWORK_PORT=$(cat "${NETWORK_PROPERTIES_DIRECTORY}/port")
+    NETWORK_PROPERTIES="--net ${NETWORK_ID} --ip ${NETWORK_IP} --mac-address ${NETWORK_MAC_ADDRESS} -p ${NETWORK_PORT}:80"
 else
-    NETWORK_ID=$(cat "${NETWORK_ID_FILE}")
+    NETWORK_PROPERTIES="-p 80:80"
 fi
 
 CONTAINER_ID_FILE=".container_id"
@@ -26,8 +40,6 @@ if [[ -f "${CONTAINER_ID_FILE}" ]]; then
     echo "If you want to start it, please run ./start.sh"
     exit 1
 else
-    # Start docker container on a fixed IP address. The corresponding mac address is generated following
-    # https://maclookup.app/faq/how-do-i-identify-the-mac-address-of-a-docker-container-interface
-    CONTAINER_ID=$(docker create --net ${NETWORK_ID} --ip 10.200.1.23 --mac-address 02:42:0a:c8:01:17 -p 80:80 -v /tmp/shared-turing-dmf:/shared/host-tmp -v $(dirname ${PWD}):/shared/git-repo -v ${VOLUME_ID}:/mnt -e DOCKERHOSTNAME=$(cat /etc/hostname) ghcr.io/dmf-unicatt/turing-dmf:latest)
+    CONTAINER_ID=$(docker create ${NETWORK_PROPERTIES} -v /tmp/shared-turing-dmf:/shared/host-tmp -v $(dirname ${PWD}):/shared/git-repo -v ${VOLUME_ID}:/mnt -e DOCKERHOSTNAME=$(cat /etc/hostname) ghcr.io/dmf-unicatt/turing-dmf:latest)
     echo ${CONTAINER_ID} > ${CONTAINER_ID_FILE}
 fi
