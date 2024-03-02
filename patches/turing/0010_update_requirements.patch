@@ -1,5 +1,5 @@
 diff --git a/Turing/settings.py b/Turing/settings.py
-index c254ec0..d933581 100644
+index 05ee41c..cf56525 100644
 --- a/Turing/settings.py
 +++ b/Turing/settings.py
 @@ -48,6 +48,7 @@ INSTALLED_APPS = [
@@ -11,19 +11,29 @@ index c254ec0..d933581 100644
  ]
  
 diff --git a/requirements-dev.txt b/requirements-dev.txt
-index 2a5561d..b5f4f6a 100644
+index 1f595b0..832ca60 100644
 --- a/requirements-dev.txt
 +++ b/requirements-dev.txt
-@@ -1,7 +1,8 @@
- asgiref>=3.3.0
- coverage>=5.3
-+crispy-bootstrap4>=2023.1
- Django>=3.1.3
--django-crispy-forms>=1.9.2
-+django-crispy-forms>=2.0
- django-debug-toolbar>=3.1.1
- django-debug-toolbar-force>=0.1.8
- django-nine>=0.2.3
+@@ -1,16 +1,6 @@
+-asgiref==3.5.0
+-coverage==5.3
+-Django==3.2.12
+-django-crispy-forms==1.14.0
++-r requirements.txt
++coverage==7.4.3
+ django-debug-toolbar==3.1.1
+ django-debug-toolbar-force==0.1.8
+ django-nine==0.2.3
+-django-simple-history==3.0.0
+-python-dateutil==2.8.2
+-python-decouple==3.6
+-pytz==2021.3
+-selenium==3.141.0
+-six==1.16.0
+-sqlparse==0.4.2
+-urllib3==1.25.11
+-whitenoise==6.6.0
++selenium==4.8.3
 diff --git a/requirements.txt b/requirements.txt
 index f5f9799..9588043 100644
 --- a/requirements.txt
