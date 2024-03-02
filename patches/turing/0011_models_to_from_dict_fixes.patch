@@ -1,8 +1,8 @@
 diff --git a/engine/models.py b/engine/models.py
-index 16c16d6..aaa2563 100644
+index 15a703e..e9cd601 100644
 --- a/engine/models.py
 +++ b/engine/models.py
-@@ -286,7 +286,8 @@ class Gara(models.Model):
+@@ -303,7 +303,8 @@ class Gara(models.Model):
              if k in data:
                  setattr(this, k, data[k])
  
@@ -12,7 +12,7 @@ index 16c16d6..aaa2563 100644
          this.durata = timedelta(minutes=data['durata'])
          this.durata_blocco = timedelta(minutes=data['durata_blocco'])
          this.num_problemi = len(data['soluzioni'])
-@@ -299,29 +300,44 @@ class Gara(models.Model):
+@@ -316,29 +317,44 @@ class Gara(models.Model):
              Soluzione(gara=this, **soluzione).save()
  
          for evento in data['eventi']:
@@ -67,7 +67,7 @@ index 16c16d6..aaa2563 100644
          })
          return d
  
-@@ -437,8 +453,10 @@ class Evento(KnowsChild):
+@@ -454,8 +470,10 @@ class Evento(KnowsChild):
          d = {}
          c = self.as_child()
          for k, v in c.__dict__.items():
