@@ -12,7 +12,7 @@ VOLUME_ID=$(cat "${VOLUME_ID_FILE}")
 
 NETWORK_PROPERTIES_DIRECTORY=".network_properties"
 if [[ -d "${NETWORK_PROPERTIES_DIRECTORY}" ]]; then
-    for NETWORK_PROPERTY_FILE in "subnet" "ip" "mac-address" "port"; do
+    for NETWORK_PROPERTY_FILE in "driver" "subnet" "opt" "ip" "mac-address" "port"; do
         if [[ ! -f "${NETWORK_PROPERTIES_DIRECTORY}/${NETWORK_PROPERTY_FILE}" ]]; then
             echo "The file ${NETWORK_PROPERTIES_DIRECTORY}/${NETWORK_PROPERTY_FILE} is missing"
             exit 1
@@ -20,8 +20,10 @@ if [[ -d "${NETWORK_PROPERTIES_DIRECTORY}" ]]; then
     done
     NETWORK_ID_FILE=".network_id"
     if [[ ! -f "${NETWORK_ID_FILE}" ]]; then
+        NETWORK_DRIVER=$(cat "${NETWORK_PROPERTIES_DIRECTORY}/driver")
         NETWORK_SUBNET=$(cat "${NETWORK_PROPERTIES_DIRECTORY}/subnet")
-        NETWORK_ID=$(docker network create --subnet=${NETWORK_SUBNET} turing-dmf-network-$(date +%s))
+        NETWORK_OPT=$(cat "${NETWORK_PROPERTIES_DIRECTORY}/opt")
+        NETWORK_ID=$(docker network create --driver=${NETWORK_DRIVER} --subnet=${NETWORK_SUBNET} --opt="${NETWORK_OPT}" turing-dmf-network-$(date +%s))
         echo ${NETWORK_ID} > ${NETWORK_ID_FILE}
     else
         NETWORK_ID=$(cat "${NETWORK_ID_FILE}")
