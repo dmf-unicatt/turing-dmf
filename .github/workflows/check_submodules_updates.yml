@@ -1,0 +1,37 @@
+name: Check submodules for updates
+
+on:
+  schedule:
+    - cron: "0 0 * * MON"
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Set git config
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+      - name: Update submodules
+        run: |
+          git submodule update --remote
+      - name: Fail if submodules were updated
+        run: |
+          if [[ "$(git diff --name-only | wc -l)" -gt 0 ]]; then
+            echo "git submodules were updated"
+            exit 1
+          fi
+
+  warn:
+    runs-on: ubuntu-latest
+    if: github.repository == 'dmf-unicatt/turing-dmf' && github.ref == 'refs/heads/main' && github.event_name == 'schedule'
+    steps:
+      - name: Warn if scheduled workflow is about to be disabled
+        uses: fem-on-colab/warn-workflow-about-to-be-disabled-action@main
+        with:
+          workflow-filename: check_submodules_updates.yml
+          days-elapsed: 50
