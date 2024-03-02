@@ -132,18 +132,21 @@ Go to `http://turing-host/admin/engine/gara/${LIVE_TURING_PRIMARY_KEY}/change/` 
 #### Step 1: determine where `mathrace` will write the journal file
 
 ```
-LIVE_JOURNAL_FILE="/tmp/live.journal"
+LIVE_JOURNAL_FILE="/var/tmp/journal.log"
 LIVE_JOURNAL_HOST=""  # or the name of a SSH host
 LIVE_JOURNAL_HOST_USER=""  # or the name of a user who can connect via SSH to ${LIVE_JOURNAL_HOST} without typing any password
 ```
 
 #### Step 2: start the race on `mathrace` and on `turing`
 
-- `mathrace` will be the main race server, and will start the race.
+- `mathrace` will be the main race server, and will start the race with
+```
+./utils/attendi_inizio_gara.sh --tra 1  # race start in 1 minute
+```
 - Simultaneously, go to the `turing` web interface and start race `${LIVE_TURING_PRIMARY_KEY}`.
 
 #### Step 3: send live updates from `mathrace` to `turing`
 
 ```
-python3 -m mathrace_interaction.live_journal_to_live_turing -i "${LIVE_JOURNAL_FILE}" -h "${LIVE_JOURNAL_HOST}" -u "${LIVE_JOURNAL_HOST_USER}" -t "${LIVE_TURING_PRIMARY_KEY}" -s 1.5 -o "${HOME}/live_${LIVE_TURING_PRIMARY_KEY}"
+python3 -m mathrace_interaction.live_journal_to_live_turing -i "${LIVE_JOURNAL_FILE}" -h "${LIVE_JOURNAL_HOST}" -u "${LIVE_JOURNAL_HOST_USER}" -t "${LIVE_TURING_PRIMARY_KEY}" -s 10 -o "${HOME}/live_${LIVE_TURING_PRIMARY_KEY}"
 ```
