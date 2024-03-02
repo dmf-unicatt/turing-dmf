@@ -3,12 +3,12 @@ index 3dfef66..2f3636d 100644
 --- a/engine/templates/about.html
 +++ b/engine/templates/about.html
 @@ -24,4 +24,8 @@
- 
+
  <p>Il team di sviluppatori è composto da Riccardo Zanotto, Matteo Migliorini, Federico Poloni, Matteo Protopapa e Matteo Rossi.</p>
- 
+
 +<h2>Versione personalizzata</h2>
 +
-+<p>Questa installazione è basata su <a href="https://github.com/dmf-unicatt/turing-dmf" target="_blank">Turing @ DMF</a>, una versione personalizzata di Turing per le esigenze specifiche del <a href="https://www.dmf.unicatt.it/" target="_blank">Dipartimento di Matematica e Fisica</a>, <a href="https://www.unicatt.it/" target="_blank">Università Cattolica del Sacro Cuore</a>. Il contatto locale è il <a href="https://www.francescoballarin.it/" target="_blank">Dr. Francesco Ballarin</a>.</p>
++<p>Questa installazione è basata su <a href="https://github.com/dmf-unicatt/turing-dmf" target="_blank">Turing @ DMF</a>, una versione personalizzata di Turing per le esigenze specifiche del <a href="https://www.dmf.unicatt.it/" target="_blank">Dipartimento di Matematica e Fisica</a>, <a href="https://www.unicatt.it/" target="_blank">Università Cattolica del Sacro Cuore</a>. Il contatto locale è il <a href="https://www.francescoballarin.it/" target="_blank">Prof. Francesco Ballarin</a>.</p>
 +
  {% endblock %}
 diff --git a/engine/templates/baseheader.html b/engine/templates/baseheader.html

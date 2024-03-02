@@ -9,6 +9,6 @@ This repository contains **Turing @ DMF**, the customized version of [**Turing**
 2. [Interaction with **mathrace** in-house implementation](mathrace_interaction/README.md)
 3. [Local patches for compatibility with **mathrace** in-house implementation](patches/turing/README.md)
 
-**Turing @ DMF** is currently developed and maintained at [Università Cattolica del Sacro Cuore](https://www.unicatt.it/) by [Dr. Francesco Ballarin](https://www.francescoballarin.it).
+**Turing @ DMF** is currently developed and maintained at [Università Cattolica del Sacro Cuore](https://www.unicatt.it/) by [Prof. Francesco Ballarin](https://www.francescoballarin.it).
 
 Like **Turing**, **Turing @ DMF** is freely available under the AGPL-3.0-or-later license.
