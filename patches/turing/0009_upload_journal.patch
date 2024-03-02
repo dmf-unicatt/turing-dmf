@@ -1,5 +1,5 @@
 diff --git a/engine/forms.py b/engine/forms.py
-index 00eb66c..e91dc37 100644
+index 3a7c02a..ddb1066 100644
 --- a/engine/forms.py
 +++ b/engine/forms.py
 @@ -1,6 +1,8 @@
@@ -9,11 +9,11 @@ index 00eb66c..e91dc37 100644
  from django.contrib.auth.forms import UserCreationForm
 +from django.utils import timezone
  from crispy_forms.helper import FormHelper
-
+ 
  from engine.models import Squadra, Soluzione, Jolly, Consegna
-@@ -121,4 +123,12 @@ class ModificaJollyForm(forms.Form):
-
-
+@@ -125,4 +127,12 @@ class ModificaJollyForm(forms.Form):
+ 
+ 
  class UploadGaraForm(forms.Form):
 -    gara = forms.FileField(label="Gara", help_text="Scegli il file JSON contente la gara da importare")
 +    gara = forms.FileField(
@@ -41,11 +41,11 @@ index de5b066..443a8e3 100644
 +        {{ form.data_gara|as_crispy_field }}
 +        </div>
 +    </div>
-
+ 
      <button type="submit" class="btn btn-primary">Carica</button>
  </form>
 diff --git a/engine/views.py b/engine/views.py
-index 14c3d33..0e7cccd 100644
+index 2f68324..e372dc9 100644
 --- a/engine/views.py
 +++ b/engine/views.py
 @@ -14,7 +14,12 @@ from engine.models import User, Gara, Soluzione, Squadra, Evento, Consegna, Joll
@@ -55,14 +55,14 @@ index 14c3d33..0e7cccd 100644
 +from mathrace_interaction.journal_reader import journal_reader
 +from mathrace_interaction.filter.strip_mathrace_only_attributes_from_imported_turing import (
 +    strip_mathrace_only_attributes_from_imported_turing)
-
+ 
 +import datetime
 +import io
  import json
  import time
  import logging
 @@ -245,7 +250,14 @@ class UploadGaraView(PermissionRequiredMixin, SuccessMessageMixin, FormView):
-
+ 
      def form_valid(self, form):
          gara_file = self.request.FILES['gara']
 -        gara_json = json.load(gara_file)
@@ -76,4 +76,4 @@ index 14c3d33..0e7cccd 100644
 +            strip_mathrace_only_attributes_from_imported_turing(gara_json)
          self.gara = Gara.create_from_dict(gara_json)
          return super().form_valid(form)
-
+ 
