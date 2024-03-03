@@ -158,7 +158,7 @@ def same_version_comparison(journal: typing.TextIO, journal_name: str, exported_
         "2022/qualificazione_velletri.journal", "2022/qualificazione_vicenza.journal", "2022/disfida.journal",
         "2023/qualificazione_femminile_1.journal", "2023/qualificazione_femminile_2.journal",
         "2023/qualificazione_femminile_3.journal", "2023/disfida_new_format.journal",
-        "2024/february_9_short_run.journal"
+        "2024/february_9_short_run.journal", "2024/disfida.journal"
     ):
         stripped_journal = strip_race_setup_code_lines(stripped_journal, "011")
         exported_journal = strip_race_setup_code_lines(exported_journal, "011")
@@ -238,6 +238,7 @@ def test_journal_version_converter_same_turing_dictionary(
             "2022/qualificazione_reggio_emilia.journal", "2022/qualificazione_roma.journal",
             "2022/qualificazione_torino.journal", "2022/qualificazione_trieste.journal",
             "2022/qualificazione_velletri.journal", "2022/qualificazione_vicenza.journal", "2022/disfida.journal",
+            "2024/disfida.journal"
         ) and target_version in ("r5539", "r11167", "r11184", "r11189", "r17497", "r17505", "r17548")
     ):
         pytest.skip("This version does not support customizing bonus and superbonus values")

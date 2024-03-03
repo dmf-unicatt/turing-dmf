@@ -40,6 +40,7 @@ _journals_is_basic_testing = {
     "2022/disfida.journal": True,
     "2023/disfida_legacy_format.journal": True,
     "2023/disfida_new_format.journal": True,
+    "2024/disfida.journal": True,
     # kangourou: different total duration, score keeps increasing to the end of the race
     "2014/kangourou.journal": True,
     "2015/kangourou.journal": True,

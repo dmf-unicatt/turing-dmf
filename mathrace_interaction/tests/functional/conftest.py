@@ -95,6 +95,7 @@ _journal_versions = {
     # r25013
     "2023/disfida_new_format.journal": "r25013",
     "2024/february_9_short_run.journal": "r25013",
+    "2024/disfida.journal": "r25013",
 }
 
 
