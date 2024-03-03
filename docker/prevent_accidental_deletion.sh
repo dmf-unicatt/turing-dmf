@@ -9,5 +9,5 @@ set -e
 
 chattr +i .container_id
 chattr +i .network_id
-chattr +i .network_properties/*
+chattr +i .network_properties*/*
 chattr +i .volume_id
