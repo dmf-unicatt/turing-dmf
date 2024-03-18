@@ -102,7 +102,7 @@ python3 -m mathrace_interaction.filter.journal_event_filterer_by_timestamp -i da
 python3 -m mathrace_interaction.filter.journal_event_filterer_by_timestamp -i data/2023/disfida_new_format.journal -t "00:10:00" -o /tmp/mathrace-filtered-by-time-2023.journal
 ```
 
-## Live journal conversion
+## Live `mathrace` journal to live `turing`
 
 The script `mathrace_interaction/live_journal_to_live_turing.py` transfers race events from a live `mathrace` session to a live `turing` one.
 
