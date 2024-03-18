@@ -13,11 +13,12 @@ from mathrace_interaction.journal_version_converter import journal_version_conve
 from mathrace_interaction.journal_writer import journal_writer
 from mathrace_interaction.list_journal_versions import list_journal_versions
 from mathrace_interaction.live_journal_to_live_turing import live_journal_to_live_turing
+from mathrace_interaction.live_turing_to_live_journal import live_turing_to_live_journal
 
 # Silence warning when trying to run modules as entrypoint
 for entrypoint in (
     "determine_journal_version", "journal_reader", "journal_version_converter", "journal_writer",
-    "list_journal_versions", "live_journal_to_live_turing"
+    "list_journal_versions", "live_journal_to_live_turing", "live_turing_to_live_journal"
 ):
     warnings.filterwarnings(
         "ignore", message=(

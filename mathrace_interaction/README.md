@@ -150,3 +150,47 @@ LIVE_JOURNAL_HOST_USER=""  # or the name of a user who can connect via SSH to ${
 ```
 python3 -m mathrace_interaction.live_journal_to_live_turing -i "${LIVE_JOURNAL_FILE}" -h "${LIVE_JOURNAL_HOST}" -u "${LIVE_JOURNAL_HOST_USER}" -t "${LIVE_TURING_PRIMARY_KEY}" -s 10 -o "${HOME}/live_${LIVE_TURING_PRIMARY_KEY}"
 ```
+
+## Live `turing` to live `mathrace` journal
+
+The script `mathrace_interaction/live_turing_to_live_journal.py` transfers race events from a live `turing` session to a live `mathrace` journal.
+
+### Before the race
+
+#### Step 1: set up turing race
+
+Set up the race through the turing web interface, and make a note of the value of the race id as `${LIVE_TURING_PRIMARY_KEY}`.
+
+#### Step 2: set up SSH server on docker container
+
+The docker image does not contain a ssh server by default for security reasons:
+
+- Run `apt install openssh-server`.
+- Make sure that `/root/.ssh/authorized_keys` in the docker container contains the key of a host user.
+
+#### Step 3: install `rsync` on docker container and docker host
+
+- Install `rsync` on the docker container by running `apt install rsync`.
+- Install `rsync` on the docker host, e.g. by running `sudo apt install rsync` if the host is a debian machine.
+
+### At the beginning of the race
+
+#### Step 1: send live updates from `turing`
+
+```
+python3 -m mathrace_interaction.live_turing_to_live_journal -t "${LIVE_TURING_PRIMARY_KEY}" -s 10 -v r25013 -o "${HOME}/live_${LIVE_TURING_PRIMARY_KEY}"
+```
+
+#### Step 2: start SSH server
+
+- Start the SSH server with `service ssh start`,
+- Determine the container IP with `ifconfig`, and store it in `${TURING_DOCKER_IP}`.
+
+#### Step 3: sync from docker container to docker host
+
+```
+while true; do
+    rsync -arvz root@${TURING_DOCKER_IP}:/root/live_${LIVE_TURING_PRIMARY_KEY}/ /tmp/live_${LIVE_TURING_PRIMARY_KEY}
+    sleep 5
+done
+```
