@@ -15,9 +15,11 @@ import typing
 
 import jsondiff
 
+from mathrace_interaction.determine_journal_version import determine_journal_version
 from mathrace_interaction.filter import LiveJournal, strip_mathrace_only_attributes_from_imported_turing
 from mathrace_interaction.journal_reader import journal_reader
 from mathrace_interaction.live_journal_to_live_turing import _clean_up_turing_dictionary, live_journal_to_live_turing
+from mathrace_interaction.live_turing_to_live_journal import live_turing_to_live_journal
 from mathrace_interaction.typing import TuringDict
 
 
@@ -106,6 +108,7 @@ class LiveConversionTester(abc.ABC):
                     with journal_reader(
                         open(output_subdirectory_path["journal"] / f"{t}.journal")
                     ) as journal_to_turing:
+                        journal_to_turing.strict_timestamp_race_events = False  # type: ignore[attr-defined]
                         turing_dict = journal_to_turing.read(self._race_name, self._race_date)
                         _clean_up_turing_dictionary(turing_dict)
                     if (output_subdirectory_path["journal"] / f"{t}.journal.needs_to_clear_events").exists():
@@ -167,4 +170,84 @@ class LiveJournalToLiveTuringTester(LiveConversionTester):
             print("\tTerminating because race ended")
             return True
         else:
+            return False
+
+
+class LiveTuringToLiveJournalTester(LiveConversionTester):
+    """Tester for mathrace_interaction.live_turing_to_live_journal."""
+
+    def __init__(
+        self, journal_stream: typing.TextIO, race_name: str, race_date: datetime.datetime,
+        num_reads: int, turing_models: types.ModuleType
+    ) -> None:
+        super().__init__(journal_stream, race_name, race_date, num_reads, turing_models)
+        self._previous_turing_dict: TuringDict = {"eventi": []}
+        self._previous_failure = False
+        self._journal_version = determine_journal_version(self._journal_stream)
+        self._journal_stream.seek(0)
+        self._turing_race_id = -1
+
+    def _run(self, turing_race_id: int, output_directory_path: pathlib.Path) -> None:
+        """Run a single iteration of the test session."""
+        if self._turing_race_id < 0:
+            self._turing_race_id = turing_race_id
+        else:
+            assert turing_race_id == self._turing_race_id
+        if self._time_counter == 0:
+            self._time_counter += 1
+        live_turing_to_live_journal(
+            self._turing_models, turing_race_id, self._journal_version, 0.0, output_directory_path,
+            self._update_turing_and_termination_condition)
+
+    def _update_turing_and_termination_condition(self, time_counter: int) -> bool:
+        """Termination condition for live_turing_to_live_journal."""
+        if time_counter == self._num_reads:
+            print("\tTerminating because race ended")
+            return True
+        elif time_counter == self._time_counter_failure and not self._previous_failure:
+            print(f"\tTerminating because of mock failure at {self._time_counter_failure}")
+            self._previous_failure = True
+            return True
+        else:
+            with journal_reader(self._open()) as journal_to_turing:
+                turing_dict = journal_to_turing.read(self._race_name, self._race_date)
+            # Communicate new events to the live turing instance
+            Gara = getattr(self._turing_models, "Gara")  # noqa: N806
+            Squadra = getattr(self._turing_models, "Squadra")  # noqa: N806
+            Consegna = getattr(self._turing_models, "Consegna")  # noqa: N806
+            Jolly = getattr(self._turing_models, "Jolly")  # noqa: N806
+            assert self._turing_race_id >= 0
+            turing_race = Gara.objects.get(pk=self._turing_race_id)
+            for event_dict in turing_dict["eventi"]:
+                if event_dict in self._previous_turing_dict["eventi"]:
+                    continue
+                else:
+                    print("\tFound new event", event_dict)
+                assert "subclass" in event_dict
+                event_dict_copy = dict(event_dict)
+                # Convert datetime string representation into date time object
+                event_dict_copy["orario"] = datetime.datetime.fromisoformat(event_dict["orario"])
+                # The team ID is local to the race, and needs to be converted into the primary key
+                # in the database
+                event_dict_copy["squadra"] = Squadra.objects.get(gara=turing_race, num=event_dict["squadra_id"])
+                del event_dict_copy["squadra_id"]
+                # Drop fields associated to conversion from mathrace
+                if "mathrace_id" in event_dict_copy:
+                    del event_dict_copy["mathrace_id"]
+                # Create an object of the event subclass
+                event_subclass = event_dict_copy.pop("subclass")
+                assert event_subclass in ("Consegna", "Jolly"), f"Invalid event subclass {event_subclass}"
+                if event_subclass == "Consegna":
+                    event_obj = Consegna(gara=turing_race, **event_dict_copy)
+                elif event_subclass == "Jolly":
+                    event_obj = Jolly(gara=turing_race, **event_dict_copy)
+                event_obj.save()
+                # Django requires to explicitly set the datetime field after saving, see Gara.create_from_dict
+                event_obj.orario = event_dict_copy["orario"]
+                event_obj.save()
+                assert event_obj.orario == event_dict_copy["orario"]
+            # Prepare for next time iteration
+            self._previous_turing_dict = turing_dict
+            self._previous_failure = False
+            # Do not terminate
             return False
