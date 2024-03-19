@@ -9,6 +9,7 @@ import argparse
 import datetime
 import json
 import pathlib
+import shutil
 import time
 import types
 import typing
@@ -203,6 +204,9 @@ def _convert_and_backup_input_file(
         race_ended = ("termine gara" in journal_file.read())
         journal_file.seek(0)
         (live_journal_files_directory / f"{time_counter}.journal").write_text(journal_file.read())
+        shutil.copy(
+            live_journal_files_directory / f"{time_counter}.journal",
+            live_journal_files_directory / "latest.journal")
         journal_file.seek(0)
         with journal_reader(journal_file) as journal_to_turing:
             turing_dict = journal_to_turing.read(race_name, race_date)
@@ -213,6 +217,9 @@ def _convert_and_backup_input_file(
             (live_journal_files_directory / f"{time_counter}.journal.needs_to_clear_events").touch()
         with open(live_turing_json_files_directory / f"{time_counter}.json", "w") as turing_json_file:
             turing_json_file.write(json.dumps(turing_dict, indent=4))
+        shutil.copy(
+            live_turing_json_files_directory / f"{time_counter}.json",
+            live_turing_json_files_directory / "latest.json")
     return turing_dict, race_ended
 
 

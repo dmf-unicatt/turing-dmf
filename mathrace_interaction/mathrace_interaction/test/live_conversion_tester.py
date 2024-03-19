@@ -97,8 +97,9 @@ class LiveConversionTester(abc.ABC):
                 # Ensure that the expected journal and json files have been written at every intermediate time
                 for extension in ("journal", "json"):
                     written_files = [f for f in output_subdirectory_path[extension].glob(f"*.{extension}")]
-                    assert len(written_files) == time_counter
-                    assert {f.name for f in written_files} == {f"{t}.{extension}" for t in range(time_counter)}
+                    assert len(written_files) == time_counter + 1  # + 1 because of latest file
+                    assert {f.name for f in written_files} == {
+                        f"{t}.{extension}" for t in range(time_counter)}.union({f"latest.{extension}"})
                 # Ensure that the json file contains the turing dictionary associated to the corresponding journal
                 # for every intermediate file
                 for t in range(time_counter):
