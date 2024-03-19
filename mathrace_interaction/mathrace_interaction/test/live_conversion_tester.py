@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """Tester for mathrace_interaction.live_journal_to_live_turing.LiveJournal."""
 
+import abc
 import datetime
 import json
 import pathlib
@@ -20,9 +21,9 @@ from mathrace_interaction.live_journal_to_live_turing import _clean_up_turing_di
 from mathrace_interaction.typing import TuringDict
 
 
-class LiveJournalToLiveTuringTester:
+class LiveConversionTester(abc.ABC):
     """
-    Tester for mathrace_interaction.live_journal_to_live_turing.
+    Abstract tester for live conversion.
 
     Parameters
     ----------
@@ -46,6 +47,8 @@ class LiveJournalToLiveTuringTester:
         Name of the race, provided as input.
     _race_date
         Date of the race, provided as input.
+    _num_reads
+        Maximum number of reads from the live journal, provided as input.
     _live_journal
         LiveJournal instance built from the input arguments journal_stream and num_reads.
     _turing_models
@@ -62,6 +65,7 @@ class LiveJournalToLiveTuringTester:
         self._journal_stream = journal_stream
         self._race_name = race_name
         self._race_date = race_date
+        self._num_reads = num_reads
         self._turing_models = turing_models
         # Construct live journal and a failure in the middle of the run
         self._live_journal = LiveJournal(journal_stream, num_reads)
@@ -88,9 +92,7 @@ class LiveJournalToLiveTuringTester:
                 "json": output_directory_path / "live_turing_json_files"
             }
             while self._live_journal.can_read():
-                live_journal_to_live_turing(
-                    self._open, self._turing_models, turing_race.pk, 0.0, output_directory_path,
-                    self._termination_condition)
+                self._run(turing_race.pk, output_directory_path)
                 time_counter = self._time_counter
                 # Ensure that the expected journal and json files have been written at every intermediate time
                 for extension in ("journal", "json"):
@@ -135,10 +137,25 @@ class LiveJournalToLiveTuringTester:
         _clean_up_turing_dictionary(turing_race_dict)
         return turing_race_dict  # type: ignore[no-any-return]
 
+    @abc.abstractmethod
+    def _run(self, turing_race_id: int, output_directory_path: pathlib.Path) -> None:
+        """Run a single iteration of the test session."""
+        pass  # pragma: no cover
+
     def _open(self) -> typing.TextIO:
         """Open a journal file, or fail."""
         self._time_counter += 1
         return self._live_journal.open()
+
+
+class LiveJournalToLiveTuringTester(LiveConversionTester):
+    """Tester for mathrace_interaction.live_journal_to_live_turing."""
+
+    def _run(self, turing_race_id: int, output_directory_path: pathlib.Path) -> None:
+        """Run a single iteration of the test session."""
+        live_journal_to_live_turing(
+            self._open, self._turing_models, turing_race_id, 0.0, output_directory_path,
+            self._termination_condition)
 
     def _termination_condition(self, time_counter: int, race_ended: bool) -> bool:
         """Termination condition for live_journal_to_live_turing."""

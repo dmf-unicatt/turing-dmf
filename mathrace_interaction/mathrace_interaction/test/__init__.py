@@ -6,7 +6,7 @@
 """mathrace_interaction.test module."""
 
 from mathrace_interaction.test.get_journals_in_directory import get_journals_in_directory
-from mathrace_interaction.test.live_journal_to_live_turing_tester import LiveJournalToLiveTuringTester
+from mathrace_interaction.test.live_conversion_tester import LiveJournalToLiveTuringTester
 # mathrace_interaction.test.mock_models was not imported on purpose
 from mathrace_interaction.test.parametrize_journal_fixtures import parametrize_journal_fixtures
 from mathrace_interaction.test.run_entrypoint_fixture import run_entrypoint_fixture
