@@ -14,3 +14,4 @@ This directory contains a few local patches. Most of them are related to changes
 9. `0009_upload_journal.patch`: allow user to upload and import a **mathrace** journal.
 10. `0010_update_requirements.patch`: update versions in `requirements.txt`, after checking that tests still run correctly.
 11. `0011_models_to_from_dict_fixes.patch`: fixes to `Gara.create_from_dictionary` and `Gara.to_dict`, so that the latter returns a fully serialized object, and the former does not change the input dictionary.
+12. `0012_display_protocol_numbers.patch`: display the protocol number (primary key in the database) when adding a new answer or jolly selection through the web interface.

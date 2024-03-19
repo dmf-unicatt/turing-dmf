@@ -42,4 +42,5 @@ else
     apply_patch 0009_upload_journal.patch
     apply_patch 0010_update_requirements.patch
     apply_patch 0011_models_to_from_dict_fixes.patch
+    apply_patch 0012_display_protocol_numbers.patch
 fi
