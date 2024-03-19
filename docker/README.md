@@ -87,7 +87,7 @@ cd turing-dmf/docker
 
 1. The above scripts internally use three hidden files `.container_id`, `.network_id` and `.volume_id` to store the result of running the above commands. You may protect those files from accidental deletion by running
 ```
-./prevent_accidental_deletion.sh
+sudo ./prevent_accidental_deletion.sh
 ```
 
 2. If you want to create a new container, make sure to stop the old one (if it were running), and remove the file `.container_id`. Note that, to prevent data loss, this does not delete the old container itself, it only disables it from being used by the above scripts.

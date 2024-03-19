@@ -5,8 +5,6 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-set -e
-
 chattr +i .container_id
 chattr +i .network_id
 chattr +i .network_properties*/*
