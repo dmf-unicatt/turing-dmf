@@ -25,7 +25,7 @@ class Squadra:
     objects = SquadraObjects()  # :SquadraObjects: list of all objects of type Squadra
 
     def __init__(self, **kwargs: typing.Any) -> None:  # noqa: ANN401
-        self.gara: "Gara" | None = None
+        self.gara: Gara | None = None
         self.nome: str | None = None
         self.num: int | None = None
         self.ospite: bool | None = None
@@ -54,7 +54,7 @@ class Soluzione:
     """A mock turing Soluzione class."""
 
     def __init__(self, **kwargs: typing.Any) -> None:  # noqa: ANN401
-        self.gara: "Gara" | None = None
+        self.gara: Gara | None = None
         self.problema: int | None = None
         self.nome: str | None = None
         self.risposta: int | None = None
@@ -85,7 +85,7 @@ class Evento(abc.ABC):
     """A mock turing Evento class."""
 
     def __init__(self, **kwargs: typing.Any) -> None:  # noqa: ANN401
-        self.gara: "Gara" | None = None
+        self.gara: Gara | None = None
         self.orario: datetime.datetime | None = None
         self.squadra: Squadra | None = None
         self.problema: int | None = None
