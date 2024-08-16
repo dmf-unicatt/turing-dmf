@@ -45,4 +45,5 @@ else
     apply_patch 0012_events_str_local_time_zone.patch
     apply_patch 0013_display_protocol_numbers.patch
     apply_patch 0014_manual_bonus.patch
+    apply_patch 0015_classification_time_from_server_and_querystring.patch
 fi
