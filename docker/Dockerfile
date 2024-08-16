@@ -7,7 +7,6 @@
 FROM debian:12
 # If upgrading the version number from 12 to the next debian release, make sure to do the same
 # also in the shell scripts stored in this directory.
-MAINTAINER Francesco Ballarin <francesco.ballarin@unicatt.it>
 
 WORKDIR /root
 
