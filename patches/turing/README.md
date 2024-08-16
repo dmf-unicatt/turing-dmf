@@ -14,4 +14,5 @@ This directory contains a few local patches. Most of them are related to changes
 9. `0009_upload_journal.patch`: allow user to upload and import a **mathrace** journal. Furthermore, be explicit in allowing or disallowing race events that will end up being in the future.
 10. `0010_update_requirements.patch`: update versions in `requirements.txt`, after checking that tests still run correctly.
 11. `0011_models_to_from_dict_fixes.patch`: fixes to `Gara.create_from_dictionary` and `Gara.to_dict`, so that the latter returns a fully serialized object, and the former does not change the input dictionary.
-12. `0012_display_protocol_numbers.patch`: display the protocol number (primary key in the database) when adding a new answer or jolly selection through the web interface.
+12. `0012_events_str_local_time_zone.patch`: change `str` representation of race events (`Evento` and `Jolly`) to ensure that the local time zone is respected, otherwise the representation of the date may be confusing to the administrator in the django admin webpage.
+13. `0013_display_protocol_numbers.patch`: display the protocol number (primary key in the database) and the insertion date when adding a new answer or jolly selection through the web interface.

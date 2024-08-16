@@ -1,0 +1,36 @@
+diff --git a/engine/models.py b/engine/models.py
+index 9cbf887..5300f34 100644
+--- a/engine/models.py
++++ b/engine/models.py
+@@ -13,6 +13,13 @@ from dateutil.parser import parse
+ import logging
+ logger = logging.getLogger(__name__)
+ 
++from django.conf import settings
++import pytz
++TIME_ZONE_SETTING = getattr(settings, "TIME_ZONE", None)
++assert TIME_ZONE_SETTING is not None
++assert isinstance(TIME_ZONE_SETTING, str)
++TIME_ZONE_SETTING = pytz.timezone(TIME_ZONE_SETTING)
++
+ 
+ def get_file_path(instance, filename):  # pragma: no cover
+     ext = filename.split('.')[-1]
+@@ -523,7 +530,7 @@ class Consegna(Evento):
+ 
+     def __str__(self):
+         return "Risposta {} al problema {} della squadra {} nella gara {} @ {}".format(
+-            self.risposta, self.problema, self.squadra.get_id_nome(), self.gara, self.orario)
++            self.risposta, self.problema, self.squadra.get_id_nome(), self.gara, self.orario.astimezone(TIME_ZONE_SETTING))
+ 
+     def get_valore(self):
+         return self.risposta
+@@ -556,7 +563,7 @@ class Jolly(Evento):
+         verbose_name_plural = "jolly"
+ 
+     def __str__(self):
+-        return "Jolly sul problema {} della squadra {} nella gara {} @ {}".format(self.problema, self.squadra, self.gara, self.orario)
++        return "Jolly sul problema {} della squadra {} nella gara {} @ {}".format(self.problema, self.squadra, self.gara, self.orario.astimezone(TIME_ZONE_SETTING))
+ 
+     def get_valore(self):
+         return "J"
