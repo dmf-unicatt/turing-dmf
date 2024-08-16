@@ -42,6 +42,6 @@ if [[ -f "${CONTAINER_ID_FILE}" ]]; then
     echo "If you want to start it, please run ./start_container.sh"
     exit 1
 else
-    CONTAINER_ID=$(docker create ${NETWORK_PROPERTIES} -v /tmp/shared-turing-dmf:/shared/host-tmp -v $(dirname ${PWD}):/shared/git-repo -v ${VOLUME_ID}:/mnt -e DOCKERHOSTNAME=$(cat /etc/hostname) ghcr.io/dmf-unicatt/turing-dmf:latest)
+    CONTAINER_ID=$(docker create ${NETWORK_PROPERTIES} -v /tmp/shared-turing-dmf:/shared/host-tmp -v $(dirname ${PWD}):/shared/git-repo -v ${VOLUME_ID}:/mnt -e DOCKERHOSTNAME=$(cat /etc/hostname) -e TZ=$(cat /etc/timezone) ghcr.io/dmf-unicatt/turing-dmf:latest)
     echo ${CONTAINER_ID} > ${CONTAINER_ID_FILE}
 fi
