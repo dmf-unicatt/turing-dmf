@@ -275,8 +275,7 @@ class JournalReaderR5539(AbstractJournalReader):
 
     def _read_race_events_section(self, turing_dict: TuringDict) -> None:
         """Read all race events."""
-        # Allocate a mathrace only storage for manual corrections and timestamp offset
-        turing_dict["mathrace_only"]["manual_bonuses"] = list()
+        # Allocate a mathrace only storage for timestamp offset
         turing_dict["mathrace_only"]["timestamp_offset"] = ""
         # Process the remaining race events until the race end one
         turing_dict["eventi"] = list()
@@ -400,10 +399,19 @@ class JournalReaderR5539(AbstractJournalReader):
 
     def _process_manual_bonus_event(self, timestamp_str: str, event_content: str, turing_dict: TuringDict) -> None:
         """Process a manual bonus event."""
-        event_datetime = self._convert_timestamp_to_datetime(
-            timestamp_str, self.strict_timestamp_race_events, turing_dict)
-        turing_dict["mathrace_only"]["manual_bonuses"].append({
-            "orario": event_datetime.isoformat(), "motivazione": event_content})
+        # Allow manual bonus to be assigned even before the offset is computed, since setting it with
+        # a slightly wrong timestamp does not affect the overall score of the race
+        event_datetime = self._convert_timestamp_to_datetime(timestamp_str, False, turing_dict)
+        # Process the event content
+        team_id, bonus_points, _ = event_content.split(" ", maxsplit=2)
+        if int(team_id) <= 0:
+            raise RuntimeError(f"Invalid event content {event_content}: invalid team number {team_id}")
+        # Append to output dictionary. Note that manual bonus events do not have a mathrace event ID,
+        # hence it is not stored here.
+        turing_dict["eventi"].append({
+            "subclass": "Bonus", "orario": event_datetime.isoformat(),
+            "squadra_id" : int(team_id), "punteggio" : int(bonus_points)
+        })
 
     def _convert_timestamp_to_datetime(
         self, timestamp_str: str, strict: bool, turing_dict: TuringDict

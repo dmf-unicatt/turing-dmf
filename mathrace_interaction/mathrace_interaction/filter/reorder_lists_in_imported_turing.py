@@ -26,7 +26,7 @@ def reorder_lists_in_imported_turing(imported_dict: TuringDict) -> None:
         The turing dictionary representing the race, imported from a mathrace journal.
     """
     imported_dict["eventi"] = list(sorted(imported_dict["eventi"], key=lambda e: (
-        e["orario"], e["subclass"], e["squadra_id"], e["problema"])))
+        e["orario"], e["subclass"], e["squadra_id"], e["problema"] if "problema" in e else None)))
     imported_dict["soluzioni"] = list(sorted(imported_dict["soluzioni"], key=lambda e: e["problema"]))
     imported_dict["squadre"] = list(sorted(imported_dict["squadre"], key=lambda e: e["num"]))
 

@@ -39,7 +39,7 @@ class LiveConversionTester(abc.ABC):
     num_reads
         Maximum number of reads from the live journal.
     turing_models
-        The python module containing the turing models Gara, Consegna and Jolly.
+        The python module containing the turing models Gara, Consegna, Jolly and Bonus.
 
     Attributes
     ----------
@@ -54,7 +54,7 @@ class LiveConversionTester(abc.ABC):
     _live_journal
         LiveJournal instance built from the input arguments journal_stream and num_reads.
     _turing_models
-        The python module containing the turing models Gara, Consegna and Jolly, provided as input.
+        The python module containing the turing models Gara, Consegna, Jolly and Bonus, provided as input.
     _time_counter
         Time counter as in LiveJournal
     """
@@ -216,6 +216,7 @@ class LiveTuringToLiveJournalTester(LiveConversionTester):
             Squadra = getattr(self._turing_models, "Squadra")  # noqa: N806
             Consegna = getattr(self._turing_models, "Consegna")  # noqa: N806
             Jolly = getattr(self._turing_models, "Jolly")  # noqa: N806
+            Bonus = getattr(self._turing_models, "Bonus")  # noqa: N806
             assert self._turing_race_id >= 0
             turing_race = Gara.objects.get(pk=self._turing_race_id)
             for event_dict in turing_dict["eventi"]:
@@ -236,11 +237,13 @@ class LiveTuringToLiveJournalTester(LiveConversionTester):
                     del event_dict_copy["mathrace_id"]
                 # Create an object of the event subclass
                 event_subclass = event_dict_copy.pop("subclass")
-                assert event_subclass in ("Consegna", "Jolly"), f"Invalid event subclass {event_subclass}"
+                assert event_subclass in ("Consegna", "Jolly", "Bonus"), f"Invalid event subclass {event_subclass}"
                 if event_subclass == "Consegna":
                     event_obj = Consegna(gara=turing_race, **event_dict_copy)
                 elif event_subclass == "Jolly":
                     event_obj = Jolly(gara=turing_race, **event_dict_copy)
+                elif event_subclass == "Bonus":
+                    event_obj = Bonus(gara=turing_race, **event_dict_copy)
                 event_obj.save()
                 # Django requires to explicitly set the datetime field after saving, see Gara.create_from_dict
                 event_obj.orario = event_dict_copy["orario"]

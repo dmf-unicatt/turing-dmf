@@ -88,8 +88,7 @@ class Evento(abc.ABC):
         self.gara: Gara | None = None
         self.orario: datetime.datetime | None = None
         self.squadra: Squadra | None = None
-        self.problema: int | None = None
-        for key in ("gara", "squadra", "problema"):
+        for key in ("gara", "squadra"):
             if key in kwargs:
                 setattr(self, key, kwargs[key])
         assert "squadra_id" not in kwargs
@@ -123,9 +122,11 @@ class Consegna(Evento):
 
     def __init__(self, **kwargs: typing.Any) -> None:  # noqa: ANN401
         super().__init__(**kwargs)
+        self.problema: int | None = None
         self.risposta: int | None = None
-        if "risposta" in kwargs:
-            setattr(self, "risposta", kwargs["risposta"])
+        for key in ("problema", "risposta"):
+            if key in kwargs:
+                setattr(self, key, kwargs[key])
 
     def to_dict(self) -> TuringDict:
         """Convert to a dictionary."""
@@ -143,6 +144,12 @@ class Consegna(Evento):
 class Jolly(Evento):
     """A mock turing Jolly class."""
 
+    def __init__(self, **kwargs: typing.Any) -> None:  # noqa: ANN401
+        super().__init__(**kwargs)
+        self.problema: int | None = None
+        if "problema" in kwargs:
+            setattr(self, "problema", kwargs["problema"])
+
     def to_dict(self) -> TuringDict:
         """Convert to a dictionary."""
         for key in ("orario", "squadra", "problema"):
@@ -151,6 +158,27 @@ class Jolly(Evento):
             "subclass": "Jolly",
             "orario": self.orario.isoformat(),  # type: ignore[union-attr]
             "problema": self.problema,
+            "squadra_id": self.squadra.num  # type: ignore[union-attr]
+        }
+
+
+class Bonus(Evento):
+    """A mock turing Bonus class."""
+
+    def __init__(self, **kwargs: typing.Any) -> None:  # noqa: ANN401
+        super().__init__(**kwargs)
+        self.punteggio: int | None = None
+        if "punteggio" in kwargs:
+            setattr(self, "punteggio", kwargs["punteggio"])
+
+    def to_dict(self) -> TuringDict:
+        """Convert to a dictionary."""
+        for key in ("orario", "squadra", "punteggio"):
+            assert getattr(self, key) is not None, f"{key} is still set to None"
+        return {
+            "subclass": "Bonus",
+            "orario": self.orario.isoformat(),  # type: ignore[union-attr]
+            "punteggio": self.punteggio,
             "squadra_id": self.squadra.num  # type: ignore[union-attr]
         }
 
@@ -259,6 +287,8 @@ class Gara:
                 e_class = Consegna
             elif e_data["subclass"] == "Jolly":
                 e_class = Jolly
+            elif e_data["subclass"] == "Bonus":
+                e_class = Bonus
             else:  # pragma: no cover
                 raise RuntimeError("Invalid event")
 

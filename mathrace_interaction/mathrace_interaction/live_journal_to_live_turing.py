@@ -37,7 +37,7 @@ def live_journal_to_live_turing(
     open_input_file
         A function that opens the input file, and returns a stream.
     turing_models
-        The python module containing the turing models Gara, Consegna and Jolly.
+        The python module containing the turing models Gara, Consegna, Jolly and Bonus.
     turing_race_id
         The ID of the turing race to follow.
     sleep
@@ -53,6 +53,7 @@ def live_journal_to_live_turing(
     Squadra = getattr(turing_models, "Squadra")  # noqa: N806
     Consegna = getattr(turing_models, "Consegna")  # noqa: N806
     Jolly = getattr(turing_models, "Jolly")  # noqa: N806
+    Bonus = getattr(turing_models, "Bonus")  # noqa: N806
 
     # Get the turing race from its ID
     turing_race = Gara.objects.get(pk=turing_race_id)
@@ -152,11 +153,13 @@ def live_journal_to_live_turing(
                 del event_dict_copy["squadra_id"]
                 # Create an object of the event subclass
                 event_subclass = event_dict_copy.pop("subclass")
-                assert event_subclass in ("Consegna", "Jolly"), f"Invalid event subclass {event_subclass}"
+                assert event_subclass in ("Consegna", "Jolly", "Bonus"), f"Invalid event subclass {event_subclass}"
                 if event_subclass == "Consegna":
                     event_obj = Consegna(gara=turing_race, **event_dict_copy)
                 elif event_subclass == "Jolly":
                     event_obj = Jolly(gara=turing_race, **event_dict_copy)
+                elif event_subclass == "Bonus":
+                    event_obj = Bonus(gara=turing_race, **event_dict_copy)
                 event_obj.save()
                 # Django requires to explicitly set the datetime field after saving, see Gara.create_from_dict
                 event_obj.orario = event_dict_copy["orario"]

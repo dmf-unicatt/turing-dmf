@@ -26,7 +26,7 @@ def test_live_journal_one_new_event_per_read(journal: io.StringIO) -> None:
     num_race_setup_lines = sum([line.startswith("---") for line in stripped_journal.split("\n")])
     num_race_setup_lines -= 1  # discard the line with setup code 999
     num_race_events = sum([not line.startswith("---") for line in stripped_journal.split("\n")])
-    assert num_race_events == 11
+    assert num_race_events == 12
     # Read the live journal
     num_reads = num_race_events + 1  # the first read will read a file with no race events
     live_journal = mathrace_interaction.filter.LiveJournal(io.StringIO(stripped_journal), num_reads)
@@ -65,7 +65,7 @@ def test_live_journal_one_new_event_every_two_reads(journal: io.StringIO) -> Non
     """Test live_journal in the case where the number of reads is equal to twice the number of handled race events."""
     # Strip the journal of comments and unhandled events
     stripped_journal = mathrace_interaction.filter.strip_comments_and_unhandled_events_from_journal(journal)
-    num_race_events = 11
+    num_race_events = 12
     live_journal = mathrace_interaction.filter.LiveJournal(io.StringIO(stripped_journal), 2 * num_race_events + 1)
     # Carry out the initial read outside of the for loop, since it pulls in the entire race setup
     # rather than race events.
@@ -90,11 +90,11 @@ def test_live_journal_one_new_event_every_two_reads(journal: io.StringIO) -> Non
     assert strip_file_end_line(mathrace_interaction.filter.strip_comments_and_unhandled_events_from_journal(
         journal)) == previous_read_without_end_line
 
-@pytest.mark.parametrize("max_open_calls", [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
+@pytest.mark.parametrize("max_open_calls", [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13])
 def test_live_journal_several_new_events_every_read(journal: io.StringIO, max_open_calls: int) -> None:
     """Test live_journal in the case where the every read introduces several new events."""
     stripped_journal = mathrace_interaction.filter.strip_comments_and_unhandled_events_from_journal(journal)
-    num_race_events = 11
+    num_race_events = 12
     live_journal = mathrace_interaction.filter.LiveJournal(io.StringIO(stripped_journal), max_open_calls)
     # Determine the range of expected new events for every read
     if max_open_calls > 1:

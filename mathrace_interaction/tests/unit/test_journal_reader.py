@@ -303,11 +303,8 @@ def test_journal_reader_race_event_manual_bonus(
 """)
     with mathrace_interaction.journal_reader(journal_with_manual_bonus) as journal_stream:
         dict_with_manual_bonus = journal_stream.read("journal_with_manual_bonus", race_date)
-    assert len(dict_with_manual_bonus["mathrace_only"]["manual_bonuses"]) == 1
-    assert dict_with_manual_bonus["mathrace_only"]["manual_bonuses"][0]["orario"] == (
-        race_date + datetime.timedelta(minutes=5)).isoformat()
-    assert dict_with_manual_bonus["mathrace_only"]["manual_bonuses"][0]["motivazione"] == (
-        "2 10 squadra 2 bonus 10 motivazione: errore inserimento dati")
+    assert len(dict_with_manual_bonus["eventi"]) == 1
+    assert dict_with_manual_bonus["eventi"][0]["orario"] == (race_date + datetime.timedelta(minutes=5)).isoformat()
 
 
 @pytest.mark.parametrize(
@@ -1087,7 +1084,8 @@ def test_journal_reader_without_date_entrypoint(
         ("80 010 0 2 squadra 0 sceglie 2 come jolly", "invalid team number 0"),
         ("90 011 0 3 1 squadra 0, quesito 3: giusto", "invalid team number 0"),
         ("80 010 1 0 squadra 1 sceglie 0 come jolly", "invalid question number 0"),
-        ("90 011 2 0 1 squadra 2, quesito 0: giusto", "invalid question number 0")
+        ("90 011 2 0 1 squadra 2, quesito 0: giusto", "invalid question number 0"),
+        ("80 091 0 43 squadra 0 bonus 43", "invalid team number 0")
     ]
 )
 def test_journal_reader_invalid_team_id_or_question_id(

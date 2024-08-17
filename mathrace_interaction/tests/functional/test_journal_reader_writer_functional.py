@@ -68,6 +68,21 @@ def strip_protocol_numbers(journal_content: str) -> str:
             line_before_prot, line_after_prot = line.split("PROT:")
             _, line_after_prot = line_after_prot.split("squadra")
             output_lines.append(f"{line_before_prot} squadra {line_after_prot}")
+        else:
+            output_lines.append(line)
+    return "\n".join(output_lines)
+
+
+def strip_manual_bonus_reason(journal_content: str) -> str:
+    """Strip reason explaining why manual bonus was added."""
+    input_lines = [line for line in journal_content.split("\n")]
+    output_lines = []
+    for line in input_lines:
+        if "motivazione:" in line:
+            line_before_reason, _ = line.split(" motivazione:")
+            output_lines.append(line_before_reason)
+        else:
+            output_lines.append(line)
     return "\n".join(output_lines)
 
 
@@ -78,6 +93,9 @@ def same_version_comparison(journal: typing.TextIO, journal_name: str, exported_
     # different conventions on setting the grace period for answer submission after race end
     stripped_journal = strip_race_end_line(stripped_journal)
     exported_journal = strip_race_end_line(exported_journal)
+    # We do not store the reason for manual bonus, hence it must be removed from the input journal in order
+    # to be able to carry out a comparison
+    stripped_journal = strip_manual_bonus_reason(stripped_journal)
     # Some journals have an expected timestamp offset due to the TIMER_UPDATE not happening on the minute
     if journal_name == "2013/disfida.journal":
         timer_offset = 24
@@ -114,7 +132,8 @@ def same_version_comparison(journal: typing.TextIO, journal_name: str, exported_
         exported_journal = strip_race_setup_code_lines(exported_journal, "004")
         exported_journal = strip_race_setup_code_lines(exported_journal, "005")
     elif journal_name in (
-        "2020/disfida.journal", "2022/cesenatico_finale.journal", "2022/cesenatico_finale_femminile.journal",
+        "2020/disfida.journal", "2022/cesenatico_finale.journal",
+        "2022/cesenatico_finale_femminile.journal", "2022/cesenatico_pubblico.journal",
         "2022/cesenatico_semifinale_A.journal", "2022/cesenatico_semifinale_B.journal",
         "2022/cesenatico_semifinale_C.journal", "2022/cesenatico_semifinale_D.journal",
         "2022/qualificazione_arezzo_cagliari_taranto_trento.journal",
@@ -135,14 +154,16 @@ def same_version_comparison(journal: typing.TextIO, journal_name: str, exported_
         stripped_journal = strip_race_setup_code_lines(stripped_journal, "003")
         exported_journal = strip_race_setup_code_lines(exported_journal, "002")
         if journal_name not in (
-            "2022/cesenatico_finale.journal", "2023/qualificazione_femminile_1.journal",
-            "2023/qualificazione_femminile_2.journal", "2023/qualificazione_femminile_3.journal"
+            "2022/cesenatico_finale.journal", "2022/cesenatico_pubblico.journal",
+            "2023/qualificazione_femminile_1.journal", "2023/qualificazione_femminile_2.journal",
+            "2023/qualificazione_femminile_3.journal"
         ):
             exported_journal = strip_race_setup_code_lines(exported_journal, "005")
     # Some journals report in a slightly different format the bonus and superbonus entries.
     # This typically happens when setting a large superbonus cardinality and adding zeros at the end
     if journal_name in (
-        "2020/disfida.journal", "2022/cesenatico_finale.journal", "2022/cesenatico_finale_femminile.journal",
+        "2020/disfida.journal", "2022/cesenatico_finale.journal",
+        "2022/cesenatico_finale_femminile.journal", "2022/cesenatico_pubblico.journal",
         "2022/cesenatico_semifinale_A.journal", "2022/cesenatico_semifinale_B.journal",
         "2022/cesenatico_semifinale_C.journal", "2022/cesenatico_semifinale_D.journal",
         "2022/qualificazione_arezzo_cagliari_taranto_trento.journal",

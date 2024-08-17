@@ -144,4 +144,4 @@ def test_journal_writer_not_started_yet_with_events(
         mathrace_interaction.journal_writer(exported_journal, journal_version) as journal_stream
     ):
         runtime_error_contains(
-            lambda: journal_stream.write(turing_dict), "Race has not started, yet there are 9 events")
+            lambda: journal_stream.write(turing_dict), "Race has not started, yet there are 10 events")

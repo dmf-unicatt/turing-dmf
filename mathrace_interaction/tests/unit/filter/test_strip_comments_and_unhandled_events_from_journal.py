@@ -31,7 +31,6 @@ def random_journal(journal: io.StringIO, journal_version: str) -> io.StringIO:
         "# a comment",
         f"timestamp {journal_reader_class.JOLLY_TIMEOUT} timeout jolly",
         f"timestamp {journal_reader_class.TIMER_UPDATE} aggiorna punteggio esercizi, orologio: timestamp",
-        f"timestamp {journal_reader_class.MANUAL_BONUS} 2 10 squadra 2 bonus 10 motivazione: errore inserimento dati",
         f"timestamp {journal_reader_class.RACE_SUSPENDED} gara sospesa",
         f"timestamp {journal_reader_class.RACE_RESUMED} gara ripresa"
     ]

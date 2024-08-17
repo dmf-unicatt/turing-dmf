@@ -45,6 +45,7 @@ _journal_r5539 = """\
 450 011 3 4 0 squadra 3, quesito 4: sbagliato
 480 022 aggiorna punteggio esercizi, orologio: 8
 510 011 8 2 0 squadra 8, quesito 2: sbagliato
+520 091 7 43 squadra 7 bonus 43
 540 022 aggiorna punteggio esercizi, orologio: 9
 570 011 9 3 1 squadra 9, quesito 3: giusto
 600 022 aggiorna punteggio esercizi, orologio: 10
@@ -80,6 +81,7 @@ _journal_r11167 = """\
 450 110 3 4 0 squadra 3, quesito 4: sbagliato
 480 101 aggiorna punteggio esercizi, orologio: 8
 510 110 8 2 0 squadra 8, quesito 2: sbagliato
+520 130 7 43 squadra 7 bonus 43
 540 101 aggiorna punteggio esercizi, orologio: 9
 570 110 9 3 1 squadra 9, quesito 3: giusto
 600 101 aggiorna punteggio esercizi, orologio: 10
@@ -115,6 +117,7 @@ _journal_r11184 = """\
 450 110 3 4 0 PROT:7 squadra 3, quesito 4: sbagliato
 480 101 aggiorna punteggio esercizi, orologio: 8
 510 110 8 2 0 PROT:8 squadra 8, quesito 2: sbagliato
+520 130 7 43 squadra 7 bonus 43
 540 101 aggiorna punteggio esercizi, orologio: 9
 570 110 9 3 1 PROT:9 squadra 9, quesito 3: giusto
 600 101 aggiorna punteggio esercizi, orologio: 10
@@ -150,6 +153,7 @@ _journal_r11189 = """\
 450 110 3 4 0 PROT:7 squadra 3, quesito 4: sbagliato
 480 101 aggiorna punteggio esercizi, orologio: 8
 510 110 8 2 0 PROT:8 squadra 8, quesito 2: sbagliato
+520 130 7 43 squadra 7 bonus 43
 540 101 aggiorna punteggio esercizi, orologio: 9
 570 110 9 3 1 PROT:9 squadra 9, quesito 3: giusto
 600 101 aggiorna punteggio esercizi, orologio: 10
@@ -187,6 +191,7 @@ _journal_r17497 = """\
 450 110 3 4 0 PROT:7 squadra 3, quesito 4: sbagliato
 480 101 aggiorna punteggio esercizi, orologio: 8
 510 110 8 2 0 PROT:8 squadra 8, quesito 2: sbagliato
+520 130 7 43 squadra 7 bonus 43
 540 101 aggiorna punteggio esercizi, orologio: 9
 570 110 9 3 1 PROT:9 squadra 9, quesito 3: giusto
 600 101 aggiorna punteggio esercizi, orologio: 10
@@ -232,6 +237,7 @@ _journal_r17505 = """\
 450 110 3 4 0 PROT:7 squadra 3, quesito 4: sbagliato
 480 101 aggiorna punteggio esercizi, orologio: 8
 510 110 8 2 0 PROT:8 squadra 8, quesito 2: sbagliato
+520 130 7 43 squadra 7 bonus 43
 540 101 aggiorna punteggio esercizi, orologio: 9
 570 110 9 3 1 PROT:9 squadra 9, quesito 3: giusto
 600 101 aggiorna punteggio esercizi, orologio: 10
@@ -277,6 +283,7 @@ _journal_r17548 = """\
 450 110 3 4 0 PROT:7 squadra 3, quesito 4: sbagliato
 480 101 aggiorna punteggio esercizi, orologio: 8
 510 110 8 2 0 PROT:8 squadra 8, quesito 2: sbagliato
+520 130 7 43 squadra 7 bonus 43
 540 101 aggiorna punteggio esercizi, orologio: 9
 570 110 9 3 1 PROT:9 squadra 9, quesito 3: giusto
 600 101 aggiorna punteggio esercizi, orologio: 10
@@ -324,6 +331,7 @@ _journal_r20642 = """\
 450 110 3 4 0 PROT:7 squadra 3, quesito 4: sbagliato
 480 101 aggiorna punteggio esercizi, orologio: 8
 510 110 8 2 0 PROT:8 squadra 8, quesito 2: sbagliato
+520 130 7 43 squadra 7 bonus 43
 540 101 aggiorna punteggio esercizi, orologio: 9
 570 110 9 3 1 PROT:9 squadra 9, quesito 3: giusto
 600 101 aggiorna punteggio esercizi, orologio: 10
@@ -371,6 +379,7 @@ _journal_r20644 = """\
 00:07:30.000 110 3 4 0 PROT:7 squadra 3, quesito 4: sbagliato
 00:08:00.000 101 aggiorna punteggio esercizi, orologio: 8
 00:08:30.000 110 8 2 0 PROT:8 squadra 8, quesito 2: sbagliato
+00:08:40.000 130 7 43 squadra 7 bonus 43
 00:09:00.000 101 aggiorna punteggio esercizi, orologio: 9
 00:09:30.000 110 9 3 1 PROT:9 squadra 9, quesito 3: giusto
 00:10:00.000 101 aggiorna punteggio esercizi, orologio: 10
@@ -418,6 +427,7 @@ _journal_r25013 = """\
 00:07:30.000 110 3 4 0 PROT:7 squadra 3, quesito 4: sbagliato
 00:08:00.000 101 aggiorna punteggio esercizi, orologio: 8
 00:08:30.000 110 8 2 0 PROT:8 squadra 8, quesito 2: sbagliato
+00:08:40.000 130 7 43 squadra 7 bonus 43
 00:09:00.000 101 aggiorna punteggio esercizi, orologio: 9
 00:09:30.000 110 9 3 1 PROT:9 squadra 9, quesito 3: giusto
 00:10:00.000 101 aggiorna punteggio esercizi, orologio: 10
@@ -523,6 +533,12 @@ def turing_dict(race_name: str, race_date: datetime.datetime) -> mathrace_intera
                 "squadra_id": 8,
                 "problema": 2,
                 "risposta": 0
+            },
+            {
+                "subclass": "Bonus",
+                "orario": (race_date + datetime.timedelta(minutes=8, seconds=40)).isoformat(),
+                "squadra_id": 7,
+                "punteggio": 43
             },
             {
                 "subclass": "Consegna",

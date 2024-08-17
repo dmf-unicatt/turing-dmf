@@ -33,8 +33,8 @@ def strip_comments_and_unhandled_events_from_journal(journal_stream: typing.Text
 def _is_handled_event(timestamp: str, event_type: str, journal_reader_class: type[AbstractJournalReader]) -> bool:
     """Determine if a line is associated to an handled event."""
     blacklist = [
-        journal_reader_class.JOLLY_TIMEOUT, journal_reader_class.TIMER_UPDATE, journal_reader_class.MANUAL_BONUS,
-        journal_reader_class.RACE_SUSPENDED, journal_reader_class.RACE_RESUMED,
+        journal_reader_class.JOLLY_TIMEOUT, journal_reader_class.TIMER_UPDATE,
+        journal_reader_class.RACE_SUSPENDED, journal_reader_class.RACE_RESUMED
     ]
     if hasattr(journal_reader_class, "TIMER_UPDATE_OTHER_TIMER"):
         blacklist.append(journal_reader_class.TIMER_UPDATE_OTHER_TIMER)

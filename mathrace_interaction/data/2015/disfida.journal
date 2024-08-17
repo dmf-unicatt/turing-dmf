@@ -558,7 +558,7 @@
 4848 110 18 13 0 PROT:449 squadra 18, quesito 13: sbagliato
 4852 101 aggiorna punteggio esercizi, orologio: 81
 4852 110 27 22 0 PROT:450 squadra 27, quesito 22: sbagliato
-4858 130 1 44 squadra 1 bonus 44 motivazione: conflitto di ordine con scelta jolly
+# 4858 130 1 44 squadra 1 bonus 44 motivazione: conflitto di ordine con scelta jolly
 4866 110 17 11 1 PROT:451 squadra 17, quesito 11: giusto
 4872 110 20 10 0 PROT:452 squadra 20, quesito 10: sbagliato
 4873 110 10 19 1 PROT:453 squadra 10, quesito 19: giusto
