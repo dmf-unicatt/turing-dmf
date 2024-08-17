@@ -16,3 +16,4 @@ This directory contains a few local patches. Most of them are related to changes
 11. `0011_models_to_from_dict_fixes.patch`: fixes to `Gara.create_from_dictionary` and `Gara.to_dict`, so that the latter returns a fully serialized object, and the former does not change the input dictionary.
 12. `0012_events_str_local_time_zone.patch`: change `str` representation of race events (`Evento` and `Jolly`) to ensure that the local time zone is respected, otherwise the representation of the date may be confusing to the administrator in the django admin webpage.
 13. `0013_display_protocol_numbers.patch`: display the protocol number (primary key in the database) and the insertion date when adding a new answer or jolly selection through the web interface.
+14. `0014_manual_bonus.patch`: add feature to assign (positive or negative) bonus to a team. As a side effect, for simplicity of the implementation of the new feature the commentary has been disabled.

@@ -44,4 +44,5 @@ else
     apply_patch 0011_models_to_from_dict_fixes.patch
     apply_patch 0012_events_str_local_time_zone.patch
     apply_patch 0013_display_protocol_numbers.patch
+    apply_patch 0014_manual_bonus.patch
 fi

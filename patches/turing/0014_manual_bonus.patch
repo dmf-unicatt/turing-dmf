@@ -1,0 +1,1549 @@
+diff --git a/engine/forms.py b/engine/forms.py
+index 3cae582..7713ff6 100644
+--- a/engine/forms.py
++++ b/engine/forms.py
+@@ -5,7 +5,7 @@ from django.contrib.auth.forms import UserCreationForm
+ from django.utils import timezone
+ from crispy_forms.helper import FormHelper
+ 
+-from engine.models import Squadra, Soluzione, Jolly, Consegna
++from engine.models import Squadra, Soluzione, Jolly, Consegna, Bonus
+ from dateutil.parser import parse
+ from mathrace_interaction.journal_reader import journal_reader
+ from mathrace_interaction.filter.strip_mathrace_only_attributes_from_imported_turing import (
+@@ -84,31 +84,80 @@ class SquadraChoiceField(forms.ModelChoiceField):
+         return obj.get_id_nome()
+ 
+ 
+-class InserimentoForm(forms.Form):
+-    problema = forms.IntegerField(min_value=1)
+-    risposta = forms.IntegerField(min_value=0, max_value=9999, required=False)
+-    jolly = forms.BooleanField(required=False)
++class QueryForm(forms.Form):
++    id_evento = forms.IntegerField(required=False, label="Id")
++    num_squadra = SquadraChoiceField(required=False, queryset=None, to_field_name="num")
++    problema = forms.CharField(required=False, help_text='Usare "B" per cercare i bonus')
++    risposta = forms.CharField(required=False, help_text='Usare "J" per cercare i jolly, "G" per cercare risposte giuste, "S" per cercare risposte sbagliate')
++
++    def __init__(self, *args, **kwargs):
++        self.gara = kwargs.pop('gara', None)
++        querystring_id_evento = kwargs.pop('querystring_id_evento', '')
++        querystring_num_squadra = kwargs.pop('querystring_num_squadra', '')
++        querystring_problema = kwargs.pop('querystring_problema', '')
++        querystring_risposta = kwargs.pop('querystring_risposta', '')
++        super(QueryForm, self).__init__(*args, **kwargs)
++        if self.gara:
++            self.fields['num_squadra'].queryset = self.gara.squadre.all()
++            self.fields['num_squadra'].widget.attrs.update({'autofocus': ''})
++        self.fields['id_evento'].initial = querystring_id_evento
++        self.fields['num_squadra'].initial = querystring_num_squadra
++        self.fields['problema'].initial = querystring_problema
++        self.fields['risposta'].initial = querystring_risposta
++
++
++class SquadraChoiceUserSubsetForm(forms.Form):
+     squadra = SquadraChoiceField(required=True, queryset=None)
+ 
+     def __init__(self, *args, **kwargs):
+         self.gara = kwargs.pop('gara', None)
+         self.user = kwargs.pop('user', None)
+-        super(InserimentoForm, self).__init__(*args, **kwargs)
++        super().__init__(*args, **kwargs)
+         if self.gara:
+             self.fields['squadra'].queryset = self.gara.get_squadre_inseribili(self.user)
+             self.fields['squadra'].empty_label = None
+             self.fields['squadra'].widget.attrs.update({'autofocus': ''})
+ 
++
++class InserimentoForm(SquadraChoiceUserSubsetForm):
++    problema = forms.IntegerField(min_value=1, required=False, help_text='Problema di cui si inserisce la risposta o il jolly. Lasciare vuoto se "Bonus manuale" è spuntato')
++    risposta = forms.IntegerField(required=False, help_text='Valore della risposta. Se "Jolly" è spuntato lasciare vuoto; se "Bonus manuale" è spuntato, inserire il valore del bonus')
++    jolly = forms.BooleanField(required=False)
++    bonus = forms.BooleanField(required=False, label="Bonus manuale")
++
+     def clean(self):
+         cleaned_data = super().clean()
+         if self.errors:
+             return cleaned_data
+ 
+-        if bool(cleaned_data['jolly']) != bool(cleaned_data['risposta'] is None):
+-            raise forms.ValidationError('Inserire la risposta o il jolly, ma non entrambi')
+-
+-        if bool(cleaned_data['jolly']) and Jolly.objects.filter(squadra = cleaned_data['squadra']).exists():
+-            raise forms.ValidationError('Ė già stato inserito un jolly per la squadra')
++        is_jolly = bool(cleaned_data['jolly'])
++        is_bonus = bool(cleaned_data['bonus'])
++
++        has_problema = bool(cleaned_data['problema'] is not None)
++        has_risposta = bool(cleaned_data['risposta'] is not None)
++
++        if is_jolly and is_bonus:
++            raise forms.ValidationError('Inserire il bonus o il jolly, ma non entrambi')
++        if is_jolly:
++            if not has_problema:
++                raise forms.ValidationError('Inserire il problema')
++            if has_risposta:
++                raise forms.ValidationError('Inserire la risposta o il jolly, ma non entrambi')
++        elif is_bonus:
++            if not has_risposta:
++                raise forms.ValidationError('Inserire il valore numerico del punteggio del bonus')
++            if has_problema:
++                raise forms.ValidationError('Non inserire il problema quando si aggiunge un bonus')
++        else:
++            if not has_problema:
++                raise forms.ValidationError('Inserire il problema')
++            if not has_risposta:
++                raise forms.ValidationError('Inserire il valore numerico della risposta')
++            risposta = int(cleaned_data['risposta'])
++            if risposta < 0:
++                raise forms.ValidationError('La risposta deve essere non negativa')
++            if risposta > 9999:
++                raise forms.ValidationError('La risposta deve essere inferiore o uguale a 9999')
+ 
+         obj = self.get_instance()
+         obj.clean()
+@@ -118,19 +167,26 @@ class InserimentoForm(forms.Form):
+         if self.cleaned_data.get('jolly'):
+             return Jolly(gara=self.gara, squadra=self.cleaned_data.get('squadra'),
+                          problema=self.cleaned_data.get('problema'))
++        elif self.cleaned_data.get('bonus'):
++            return Bonus(gara=self.gara, squadra=self.cleaned_data.get('squadra'),
++                         punteggio=self.cleaned_data.get('risposta'))
+         else:
+             return Consegna(gara=self.gara, squadra=self.cleaned_data.get('squadra'),
+                             problema=self.cleaned_data.get('problema'),
+                             risposta=self.cleaned_data.get('risposta'))
+ 
+ 
+-class ModificaConsegnaForm(forms.Form):
++class ModificaConsegnaForm(SquadraChoiceUserSubsetForm):
+     problema = forms.IntegerField(min_value=1, max_value=50)
+     risposta = forms.IntegerField(min_value=0, max_value=9999)
+ 
+ 
+-class ModificaJollyForm(forms.Form):
+-    jolly = forms.IntegerField(min_value=1, max_value=50)
++class ModificaJollyForm(SquadraChoiceUserSubsetForm):
++    problema = forms.IntegerField(min_value=1, max_value=50)
++
++
++class ModificaBonusForm(SquadraChoiceUserSubsetForm):
++    risposta = forms.IntegerField()
+ 
+ 
+ class UploadGaraForm(forms.Form):
+diff --git a/engine/models.py b/engine/models.py
+index 45c8b8b..ed8f6d7 100644
+--- a/engine/models.py
++++ b/engine/models.py
+@@ -13,6 +13,7 @@ from dateutil.parser import parse
+ import logging
+ logger = logging.getLogger(__name__)
+ 
++from string import Template
+ from django.conf import settings
+ import pytz
+ TIME_ZONE_SETTING = getattr(settings, "TIME_ZONE", None)
+@@ -21,6 +22,20 @@ assert isinstance(TIME_ZONE_SETTING, str)
+ TIME_ZONE_SETTING = pytz.timezone(TIME_ZONE_SETTING)
+ 
+ 
++class DeltaTemplate(Template):
++    delimiter = "%"
++
++def strfdelta(tdelta, fmt):
++    d = {"D": tdelta.days}
++    hours, rem = divmod(tdelta.seconds, 3600)
++    minutes, seconds = divmod(rem, 60)
++    d["H"] = '{:02d}'.format(hours)
++    d["M"] = '{:02d}'.format(minutes)
++    d["S"] = '{:02d}'.format(seconds)
++    t = DeltaTemplate(fmt)
++    return t.substitute(**d)
++
++
+ def get_file_path(instance, filename):  # pragma: no cover
+     ext = filename.split('.')[-1]
+     filename = "%s.%s" % (uuid.uuid4(), ext)
+@@ -157,33 +172,54 @@ class Gara(models.Model):
+     def finished(self):
+         return (self.inizio is not None) and (timezone.now() > self.get_ora_fine())
+ 
+-    def get_all_eventi(self, user, squadra, problema, risposta):
++    def get_all_eventi(self, user, id_evento, num_squadra, problema, risposta):
+         """Restituisce tutti gli eventi all'amministratore."""
+-        qs = self.eventi.all().select_related("consegna__squadra", "jolly__squadra")
++        qs = self.eventi.all().select_related("consegna__squadra", "jolly__squadra", "bonus__squadra")
+ 
+         if user.can_administrate(self):
+ 
+             res = [x.as_child() for x in qs]
+-            if squadra:
+-                res = [x for x in res if x.squadra.nome == squadra]
++            for x in res:
++                x.timestamp = strfdelta(x.orario - self.inizio, "%H:%M:%S")
++                if hasattr(x, "problema") and hasattr(x, "risposta"):
++                    x.giusta = (x.risposta == self.soluzioni.get(problema=x.problema).risposta)
++                else:
++                    x.giusta = None
++            if id_evento:
++                res = [x for x in res if x.pk == int(id_evento)]
++            if num_squadra:
++                res = [x for x in res if x.squadra.num == int(num_squadra)]
+             if problema:
+-                res = [x for x in res if x.problema == int(problema)]
++                if problema == "B":
++                    res = [x for x in res if isinstance(x, Bonus)]
++                else:
++                    assert problema.isdigit()
++                    res = [x for x in res if hasattr(x, "problema") and x.problema == int(problema)]
+             if risposta:
+-                res = [x for x in res if x.risposta == int(risposta)]
++                if risposta == "J":
++                    res = [x for x in res if isinstance(x, Jolly)]
++                else:
++                    if risposta == "G":
++                        res = [x for x in res if hasattr(x, "risposta") and x.giusta]
++                    elif risposta == "S":
++                        res = [x for x in res if hasattr(x, "risposta") and not x.giusta]
++                    else:
++                        assert risposta.isdigit()
++                        res = [x for x in res if hasattr(x, "risposta") and x.risposta == int(risposta)]
+ 
+             return res
+         raise PermissionDenied("L'utente non può chiedere gli eventi della gara.")
+ 
+-    def get_eventi(self, user):
++    def get_eventi_recenti(self, user, limit):
+         """Restituisce gli eventi visualizzabili dall'utente."""
+-        qs = self.eventi.all().select_related("consegna__squadra", "jolly__squadra")
++        qs = self.eventi.all().select_related("consegna__squadra", "jolly__squadra", "bonus__squadra")
+ 
+         if user.can_administrate(self):
+-            return [(True, x.as_child()) for x in qs[:20]]
++            return [(True, x.as_child()) for x in qs[:limit]]
+         if user.is_inseritore(self):
+-            return [(x.creatore == self, x.as_child()) for x in qs[:20]]
++            return [(x.creatore == user, x.as_child()) for x in qs[:limit]]
+         if user.is_consegnatore(self):
+-            return [(False, x.as_child()) for x in qs.filter(creatore=user)]
++            return [(False, x.as_child()) for x in qs.filter(creatore=user)[:limit]]
+         raise PermissionDenied("L'utente non può chiedere gli eventi della gara.")
+ 
+     def get_squadre_inseribili(self, user):
+@@ -242,6 +278,20 @@ class Gara(models.Model):
+             res.append(tmp)
+         return res
+ 
++    def get_bonus(self, last=None):
++        res = []
++        qs = Bonus.objects.filter(gara=self).select_related('squadra')
++        if last is not None:
++            qs = qs.filter(pk__gt=last)
++        for c in qs.order_by('orario'):
++            tmp = {}
++            tmp["id"] = c.pk
++            tmp["squadra"] = c.squadra.num
++            tmp["punteggio"] = c.punteggio
++            tmp["orario"] = c.orario
++            res.append(tmp)
++        return res
++
+     def get_squadre(self):
+         res = {}
+         for s in self.squadre.all():
+@@ -258,6 +308,7 @@ class Gara(models.Model):
+         - Ultima modifica di gara
+         - Ultima modifica o eliminazione di un jolly
+         - Ultima modifica o eliminazione di una consegna
++        - Ultima modifica o eliminazione di un bonus
+         - Ultima modifica di un problema
+         """
+         lu = self.history.latest().history_date
+@@ -272,6 +323,13 @@ class Gara(models.Model):
+             lu = max(lu, obj.history_date)
+         except:
+             pass
++
++        try:
++            obj = Bonus.history.filter(gara=self).exclude(history_type='+').latest()
++            lu = max(lu, obj.history_date)
++        except:
++            pass
++
+         try:
+             obj = Soluzione.history.filter(gara=self).exclude(history_type='+').latest()
+             lu = max(lu, obj.history_date)
+@@ -360,7 +418,7 @@ class Gara(models.Model):
+             # Non si può usare order_by perché la classe padre Evento contiene solo orario e subclass
+             # 'eventi': [e.to_dict() for e in self.eventi.all().order_by('orario', 'subclass', 'squadra_id', 'problema')],
+             'eventi': list(sorted([e.to_dict() for e in self.eventi.all()], key=lambda e: (
+-                e["orario"], e["subclass"], e["squadra_id"], e["problema"]))),
++                e["orario"], e["subclass"], e["squadra_id"], e["problema"] if "problema" in e else None))),
+             'soluzioni': [s.to_dict() for s in self.soluzioni.all().order_by('problema')],
+             'squadre': [s.to_dict() for s in self.squadre.all().order_by('num')],
+         })
+@@ -478,7 +536,7 @@ class Evento(KnowsChild):
+         d = {}
+         c = self.as_child()
+         for k, v in c.__dict__.items():
+-            if k in {'subclass', 'problema', 'risposta'}:
++            if k in {'subclass', 'problema', 'risposta', 'punteggio'}:
+                 d[k] = v
+             if k == 'orario':
+                 d[k] = v.isoformat()
+@@ -580,6 +638,56 @@ class Jolly(Evento):
+             if self.creatore == self.squadra.consegnatore:
+                 return (False, "Non puoi inserire un jolly dopo 10 minuti")
+ 
++        qs = self.gara.eventi.all()
++        events = [x.as_child() for x in qs]
++
++        jolly = [x for x in events if isinstance(x, Jolly) and x.pk != self.pk]
++        jolly = [x.as_child() for x in jolly if x.squadra.num == self.squadra.num]
++        if len(jolly) > 0:
++            return (False, f"È già stato inserito un jolly per la squadra: {jolly}")
++
++        if not self.creatore.can_administrate(self.gara):
++            sol = self.gara.soluzioni.get(problema=self.problema)
++            consegne = [x for x in events if isinstance(x, Consegna)]
++            consegne = [x for x in consegne if x.squadra.num == self.squadra.num and x.problema == self.problema]
++            consegne_esatte = [x for x in consegne if x.risposta == sol.risposta]
++            if len(consegne_esatte) > 0:
++                return (False, f"Solo l'amministratore può inserire il jolly ad una risposta a cui la squadra ha già risposto correttamente: {consegne_esatte}")
++
++        if (res[0]):
++            self.save()
++            res = (res[0], res[1] + f". Il numero di protocollo è {self.pk} e la data di inserimento è {self.orario.astimezone(TIME_ZONE_SETTING)}.")
++        return res
++
++
++class Bonus(Evento):
++    """
++    Modello che descrive l'assegnazione di un bonus.
++    """
++    squadra = models.ForeignKey(Squadra, on_delete=models.CASCADE, related_name='bonus')
++    punteggio = models.SmallIntegerField()
++
++    class Meta(Evento.Meta):
++        # Eredita il Meta dell'evento generico
++        verbose_name_plural = "bonus"
++
++    def __str__(self):
++        return "Bonus di {} punti alla squadra {} nella gara {} @ {}".format(self.punteggio, self.squadra, self.gara, self.orario.astimezone(TIME_ZONE_SETTING))
++
++    def get_valore(self):
++        return self.punteggio
++
++    def clean(self):
++        """
++        Validazione dell'oggetto: accettiamo la consegna solo se:
++        - la squadra sta partecipando alla gara
++        """
++        if self.squadra.gara != self.gara:
++            raise ValidationError("Questa squadra non sta partecipando alla gara!")
++
++    def maybe_save(self):
++        res = super().maybe_save()
++
+         if (res[0]):
+             self.save()
+             res = (res[0], res[1] + f". Il numero di protocollo è {self.pk} e la data di inserimento è {self.orario.astimezone(TIME_ZONE_SETTING)}.")
+diff --git a/engine/static/engine/css/classifiche.css b/engine/static/engine/css/classifiche.css
+index dbcc06e..e082c17 100644
+--- a/engine/static/engine/css/classifiche.css
++++ b/engine/static/engine/css/classifiche.css
+@@ -19,7 +19,7 @@
+ 
+ th.squadra {
+     padding: 0.1em;
+-    font-size: larger;
++    font-size: small;
+ }
+ 
+ #cutoff {
+@@ -44,6 +44,13 @@ td.right-answer {
+     color: white;
+ }
+ 
++td.bonus {
++    padding-top: 0.1em;
++    padding-bottom: 0.1em;
++    vertical-align: middle;
++    color: black;
++}
++
+ tr:nth-child(even) .wrong-answer {
+     background-color: #dc3545;
+ }
+@@ -72,28 +79,6 @@ tr:nth-child(odd) .right-answer {
+     display: inline-block;
+ }
+ 
+-/* Cronaca */
+-#cronaca_main {
+-    position: relative;
+-}
+-#cronaca_main div {
+-    position: relative;
+-}
+-#cronaca_main a {
+-    display: block;
+-}
+-
+-#frasi {
+-    overflow: scroll;
+-    max-height: 80vh;
+-}
+-
+-@media (max-width: 992px) {
+-    #frasi {
+-        max-height: 30vh;
+-    }
+-}
+-
+ 
+ /* Following */
+ div.following {
+diff --git a/engine/static/engine/js/client.js b/engine/static/engine/js/client.js
+index f16e15d..b9d778d 100644
+--- a/engine/static/engine/js/client.js
++++ b/engine/static/engine/js/client.js
+@@ -46,7 +46,9 @@ class Gara {
+         if (data.inizio == null) return;
+ 
+         this.last_update = new Date(data.last_update);
+-        this.last_event = 0;
++        this.last_consegna_id = 0;
++        this.last_jolly_id = 0;
++        this.last_bonus_id = 0;
+         this._time = this.inizio; // Parte a calcolare dall'inizio della gara
+         this.fine = new Date(data.fine);
+         this.tempo_blocco = new Date(data.tempo_blocco);
+@@ -57,14 +59,17 @@ class Gara {
+             this.add_jolly(data.jolly[i])
+         }
+ 
+-        this.futuro = [];
+-        for (var i in data.consegne) {
+-            this.add_event(data.consegne[i]);
++        this.futuro_bonus = [];
++        this.passato_bonus = [];
++        for (var i in data.bonus) {
++            this.add_bonus(data.bonus[i])
+         }
+ 
+-        this.passato = [];
+-
+-        console.log(this);
++        this.futuro_consegne = [];
++        this.passato_consegne = [];
++        for (var i in data.consegne) {
++            this.add_consegna(data.consegne[i]);
++        }
+     }
+ 
+     add_jolly(event) {
+@@ -72,12 +77,17 @@ class Gara {
+         var prob = event.problema
+         this.squadre[sq_idx].jolly = this.squadre[sq_idx].risposte[prob];
+         this.squadre[sq_idx].jolly.is_jolly = true;
+-        this.last_event = event.id
++        this.last_jolly_id = event.id;
+     }
+ 
+-    add_event(event) {
+-        this.futuro.push(new Evento(this, event));
+-        this.last_event = event.id;
++    add_consegna(event) {
++        this.futuro_consegne.push(new Consegna(this, event));
++        this.last_consegna_id = event.id;
++    }
++
++    add_bonus(event) {
++        this.futuro_bonus.push(new Bonus(this, event));
++        this.last_bonus_id = event.id;
+     }
+ 
+     get time() {
+@@ -85,45 +95,56 @@ class Gara {
+     }
+ 
+     set time(value) {
+-        // Si sposta al tempo specificato, calcolando gli eventi in mezzo
+-        if (value >= this.time) {
++        var nel_futuro = (value >= this.time);  // necessario memorizzare perchè this.update_events cambia internamente il valore a this.time
++        console.log("updating consegne");
++        this.update_events(value, nel_futuro, this.futuro_consegne, this.passato_consegne);
++        console.log("updating bonus");
++        this.update_events(value, nel_futuro, this.futuro_bonus, this.passato_bonus);
++        // Finalmente, setta il tempo della gara
++        this._time = value;
++    }
++
++    update_events(new_time, nel_futuro, futuro, passato) {
++        // Si sposta al tempo specificato, calcolando gli eventi (consegne e bonus) in mezzo
++        if (nel_futuro) {
+             // Stiamo andando in avanti
+-            while (this.futuro.length > 0 && this.futuro[0].orario <= value) {
+-                // Processa eventi, finché il prossimo evento non è troppo avanti
+-                var e = this.futuro[0];
++            console.log(futuro.length, passato.length, "futuro");
++            if (futuro.length > 0) console.log(futuro[0].orario, new_time, "futuro");
++            while (futuro.length > 0 && futuro[0].orario <= new_time) {
++                // Processa eventi, finché il prossimo non è troppo avanti
++                var e = futuro[0];
+                 this._time = e.orario // Porta la gara all'ora della consegna
+ 
+-
+-                if (e.pts_prec == null) {
+-                    // Se non era già stato fatto, calcola la posizione attuale e il punteggio
+-                    e.pts_prec = e.squadra.punteggio;
+-                    e.pos_prec = e.squadra.posizione(this.classifica);
++                if (e instanceof Consegna) {
++                    e.squadra.risposte[e.problema.id].consegna(e.giusta);
+                 }
+-
+-                e.squadra.risposte[e.problema.id].consegna(e.giusta);
+-
+-                if (e.pts_succ == null) {
+-                    e.pts_succ = e.squadra.punteggio;
+-                    e.pos_succ = e.squadra.posizione(this.classifica);
++                else if (e instanceof Bonus) {
++                    e.squadra.aggiungi_bonus_manuale(e.punteggio)
+                 }
+-                this.passato.push(e);
+-                this.futuro.shift();
++
++                passato.push(e);
++                futuro.shift();
+             }
+         }
+         else {
+             // Stiamo tornando indietro
+-            while (this.passato.length > 0 && this.passato[this.passato.length-1].orario > value) {
+-                var e = this.passato[this.passato.length-1];
++            console.log(futuro.length, passato.length, "passato");
++            if (passato.length > 0) console.log(passato[passato.length-1].orario, new_time, "passato");
++            while (passato.length > 0 && passato[passato.length-1].orario > new_time) {
++                var e = passato[passato.length-1];
+                 this._time = e.orario // Porta la gara all'ora della consegna
+ 
+-                e.squadra.risposte[e.problema.id].undo_consegna(e.giusta);
++                if (e instanceof Consegna) {
++                    e.squadra.risposte[e.problema.id].undo_consegna(e.giusta);
++                }
++                else if (e instanceof Bonus) {
++                    e.squadra.rimuovi_bonus_manuale(e.punteggio)
++                }
+ 
+-                this.passato.pop();
+-                this.futuro.unshift(e);
++                passato.pop();
++                futuro.unshift(e);
+             }
+         }
+-        // Finalmente, setta il tempo della gara
+-        this._time = value;
+     }
+ 
+     get progess() {
+@@ -365,6 +386,7 @@ class Squadra {
+         for(var i in this.gara.problemi) {
+             this.risposte[i] = new Risposta(this, this.gara.problemi[i])
+         }
++        this.bonus_manuale = 0;
+         this._risposte_corrette = 0;
+         this._en_plein_bonus = 0;
+     }
+@@ -395,6 +417,14 @@ class Squadra {
+         }
+     }
+ 
++    aggiungi_bonus_manuale(punteggio) {
++        this.bonus_manuale += punteggio;
++    }
++
++    rimuovi_bonus_manuale(punteggio) {
++        this.bonus_manuale -= punteggio;
++    }
++
+     get punteggio() {
+         // Calcola il punteggio della squadra
+         var pts = this.gara.calcola_punteggio_tempo_iniziale(this.gara.n_prob, this.gara.penalita_errore);
+@@ -402,6 +432,7 @@ class Squadra {
+         for(var i in this.risposte) {
+             pts += this.risposte[i].punteggio
+         }
++        pts += this.bonus_manuale;
+         return pts
+     }
+ 
+@@ -416,60 +447,31 @@ class Squadra {
+     }
+ }
+ 
+-class Evento {
++class Consegna {
+     // Descrive una consegna, e contiene le informazioni necessarie per generare un commento
+     constructor(gara, data) {
+         this.gara = gara;
+-        if (data.orario > gara.fine)
++        this.orario = new Date(data.orario);
++        if (this.orario > gara.fine)
+             // Se l'evento è avvenuto dopo la fine, fallo accadere alla fine.
+             this.orario = new Date(gara.fine);
+-        else
+-            this.orario = new Date(data.orario);
+         this.squadra = gara.squadre[data.squadra];
+         this.problema = gara.problemi[data.problema];
+         this.giusta = data.giusta;
+-        this.pos_prec = null;
+-        this.pos_succ = null;
+-        this.pts_prec = null;
+-        this.pts_succ = null;
+     }
++}
+ 
+-    get frase() {
+-        // jolly risolto
+-        if (this.giusta && this.squadra.risposte[this.problema.id].is_jolly) {
+-          if (this.pos_succ != this.pos_prec){
+-            return `La squadra ${this.squadra.nome} risolve il proprio jolly, guadagnando ${this.pts_succ-this.pts_prec} punti e salendo in posizione ${this.pos_succ}`;
+-          }
+-          else{
+-            return `La squadra ${this.squadra.nome} risolve il proprio jolly, guadagnando ${this.pts_succ-this.pts_prec} punti, ma rimanendo in posizione ${this.pos_succ}`;
+-          }
+-        }
+-
+-        // alta classifica
+-        if (this.pos_succ<5) {
+-            if (this.pts_prec<this.pts_succ)
+-              if (this.pos_succ != this.pos_prec)
+-                return `La squadra ${this.squadra.nome} risolve il problema ${this.problema.id} e sale in posizione ${this.pos_succ}`;
+-              else
+-                return `La squadra ${this.squadra.nome} risolve il problema ${this.problema.id}, ma rimane in posizione ${this.pos_succ}`;
+-            else
+-              if (this.pos_succ != this.pos_prec)
+-                return `La squadra ${this.squadra.nome} sbaglia il problema ${this.problema.id} e scende in posizione ${this.pos_succ}`;
+-              else
+-                return `La squadra ${this.squadra.nome} sbaglia il problema ${this.problema.id}, ma rimane in posizione ${this.pos_succ}`;
+-        }
+-
+-        // molti punti?
+-        if (this.pts_succ-this.pts_prec>99)
+-          if (this.pos_succ != this.pos_prec)
+-            return `La squadra ${this.squadra.nome} risolve il problema ${this.problema.id}, guadagnando ${this.pts_succ-this.pts_prec} punti e salendo in posizione ${this.pos_succ}`;
+-          else
+-            return `La squadra ${this.squadra.nome} risolve il problema ${this.problema.id}, guadagnando ${this.pts_succ-this.pts_prec} punti, ma rimanendo in posizione ${this.pos_succ}`;
+-
+-        // se non succede niente di interessante ritorna null
+-        return null;
++class Bonus {
++    // Descrive un bonus manuale
++    constructor(gara, data) {
++        this.gara = gara;
++        this.orario = new Date(data.orario);
++        if (this.orario > gara.fine)
++            // Se l'evento è avvenuto dopo la fine, fallo accadere alla fine.
++            this.orario = new Date(gara.fine);
++        this.squadra = gara.squadre[data.squadra];
++        this.punteggio = data.punteggio;
+     }
+-
+ }
+ 
+ class ClassificaClient {
+@@ -500,8 +502,11 @@ class ClassificaClient {
+             this.init();
+             return
+         }
+-        var last_event_before = this.gara.last_event;
+-        $.getJSON(this.url, {last_event: last_event_before}).done(function(data){
++        var last_consegna_id_before = this.gara.last_consegna_id;
++        var last_jolly_id_before = this.gara.last_jolly_id;
++        var last_bonus_id_before = this.gara.last_bonus_id;
++        console.log("Last consegna ID is", last_consegna_id_before, "- last jolly ID is", last_jolly_id_before, "- last bonus ID is", last_bonus_id_before);
++        $.getJSON(this.url, {last_consegna_id: last_consegna_id_before, last_jolly_id: last_jolly_id_before, last_bonus_id: last_bonus_id_before}).done(function(data){
+             var new_lu = new Date(data.last_update);
+             if (new_lu > self.gara.last_update) {
+                 // C'è stata una modifica grossa, serve un ricalcolo totale
+@@ -509,15 +514,18 @@ class ClassificaClient {
+                 return;
+             }
+             // Evitiamo di riconteggiare alcuni eventi già arrivati; succede se la rete sta laggando
+-            if (self.gara.last_event > last_event_before) return;
++            if (self.gara.last_consegna_id > last_consegna_id_before || self.gara.last_jolly_id > last_jolly_id_before || self.gara.last_bonus_id > last_bonus_id_before) return;
+ 
+             // Aggiungiamo le nuove consegne e jolly
+             for (var i in data.consegne) {
+-                self.gara.add_event(data.consegne[i]);
++                self.gara.add_consegna(data.consegne[i]);
+             }
+             for (var i in data.jolly) {
+                 self.gara.add_jolly(data.jolly[i])
+             }
++            for (var i in data.bonus) {
++                self.gara.add_bonus(data.bonus[i])
++            }
+             self.progress = progress;
+         });
+     }
+@@ -538,7 +546,6 @@ class ClassificaClient {
+             case 'squadre': this._mostraClassifica(); break;
+             case 'problemi': this._mostraPuntiProblemi(); break;
+             case 'stato': this._mostraStatoProblemi(); break;
+-            case 'cronaca': this._mostraCronaca(); break;
+             case 'unica': this._mostraUnica(); break;
+         }
+         document.dispatchEvent(new Event('updated'));
+@@ -638,44 +645,6 @@ class ClassificaClient {
+         }
+     }
+ 
+-    _mostraCronaca() {
+-        var classifica = this.gara.classifica
+-        var max = classifica.length > 0 ? classifica[0].pts : 0;
+-        max = Math.max(max,this.gara.n_prob*10*4);
+-
+-        for (const sq_id of this.following) {
+-            $("#team-"+sq_id).addClass("following");
+-        }
+-
+-        for (var i in classifica) {
+-            var sq = classifica[i].squadra
+-            $("#team-"+sq.id).css('width', Math.round(classifica[i].pts/max*1000)/10+'%');
+-            $("#label-"+sq.id).text(sq.posizione(classifica) + "° - " + sq.nome);
+-            $("#label-points-"+sq.id).text(classifica[i].pts);
+-        }
+-
+-        var h = $("#div-1").outerHeight();
+-        var options = {"duration": 800, "queue": false};
+-        if (this.autoplay) options = {"duration": 100, "queue": false, "easing": "linear"};
+-        for (i=0; i<classifica.length; i++) {
+-            var sq = classifica[i].squadra;
+-            var dist = h*(i+1-sq.id);
+-            $("#div-"+sq.id).animate({
+-                top: dist
+-            }, options);
+-        }
+-
+-        if (this.gara.inizio != null) {
+-            $("#frasi").empty();
+-            $("#frasi").prepend('<li class="list-group-item">Gara iniziata!</li>');
+-            for (var e in this.gara.passato) {
+-                var f = this.gara.passato[e].frase;
+-                if (f!=null) $("#frasi").prepend('<li class="list-group-item">'+f+'</li>');
+-            }
+-        }
+-
+-    }
+-
+     _mostraUnica() {
+       var classifica = this.gara.classifica
+       var punti_problemi = this.gara.punti_problemi
+@@ -713,6 +682,8 @@ class ClassificaClient {
+ 
+               $("#cell-"+riga+"-"+j).html(text);
+           }
++          if (sq.bonus_manuale + sq._en_plein_bonus != 0) $("#cell-"+riga+"-bonus").html("<span><b>" + (sq.bonus_manuale + sq._en_plein_bonus ) + "</b></span>");
++          else $("#cell-"+riga+"-bonus").html("");
+ 
+           if (this.following.includes(sq.id)) $("#riga-"+riga).addClass("following");
+           else $("#riga-"+riga).removeClass("following");
+diff --git a/engine/templates/basegara.html b/engine/templates/basegara.html
+index 4f7719b..04162b9 100644
+--- a/engine/templates/basegara.html
++++ b/engine/templates/basegara.html
+@@ -30,7 +30,6 @@
+     <li><a class="text-white" href="{% url 'engine:classifica-problemi' object.pk %}" target="_blank">Problemi</a></li>
+     <li><a class="text-white" href="{% url 'engine:classifica-stato' object.pk %}" target="_blank">Stato</a></li>
+     {% if object.inizio is not null %}
+-    <li><a class="text-white" href="{% url 'engine:classifica-cronaca' object.pk %}" target="_blank">Telecronaca</a></li>
+     <li><a class="text-white" href="{% url 'engine:classifica-unica' object.pk %}" target="_blank">Unica</a></li>
+     {% endif %}
+   </ul>
+diff --git a/engine/templates/classifiche/cronaca.html b/engine/templates/classifiche/cronaca.html
+deleted file mode 100644
+index 0d97a3e..0000000
+--- a/engine/templates/classifiche/cronaca.html
++++ /dev/null
+@@ -1,50 +0,0 @@
+-{% extends "classifiche/class_template.html" %}
+-{% load static %}
+-{% block title %}Cronaca {{object.nome}}{% endblock %}
+-
+-{% block class_type %}cronaca{% endblock %}
+-
+-{% block head %}
+-{{ block.super }}
+-<script src="{% static "vendor/jquery-easing/jquery.easing.min.js" %}"></script>
+-{% endblock %}
+-
+-{% block main %}
+-<h3>Gara: <a href="{% url 'engine:gara-detail' object.pk %}">{{object.nome}}</a> - cronaca</h3>
+-<div class="container-fluid" id="cronaca_main">
+-    <div class="row no-gutters justify-content-end">
+-        <h3 id="orologio">##:##:##</h3>
+-    </div>
+-    <div class="row">
+-        <div class="col-lg-9">
+-            {% for sq in object.get_squadre_order %}
+-            <div class="row no-gutters" id="div-{{sq.num}}">
+-                <div class="col-4 col-md-2 small-padding text-truncate font-weight-bold" ><span id="label-{{sq.num}}"></span></div>
+-                <div class="col-8 col-md-10 small-padding">
+-                    <div class="progress">
+-                        <div id="team-{{sq.num}}" class="progress-bar{% if sq.ospite %} ospite{% endif %}" style="width:30%" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"><span id="label-points-{{sq.num}}" class="points-value">0</span></div>
+-                    </div>
+-                </div>
+-            </div>
+-            {% endfor %}
+-        </div>
+-        <div class="col-lg-3">
+-            <div class="card">
+-            <div class="card-header">Telecronaca</div>
+-            <ul id="frasi" class="list-group list-group-flush" >
+-                <li class="list-group-item">Stiamo aspettando di partire...</li>
+-            </ul>
+-            </div>
+-        </div>
+-    </div>
+-
+-    {% if object.finished %}
+-    <div class="row pt-3 no-gutters">
+-        <input type="range" min="0" max="1000" value="1000"  id="myRange">
+-        <button id="play" class="ml-2"><i class="fas fa-play"></i></button>
+-        <input value="{{object.durata}}" id="elapsedTimeText">
+-    </div>
+-    {% endif %}
+-
+-</div>
+-{% endblock %}
+diff --git a/engine/templates/classifiche/unica.html b/engine/templates/classifiche/unica.html
+index 84f4ac3..4e917e8 100644
+--- a/engine/templates/classifiche/unica.html
++++ b/engine/templates/classifiche/unica.html
+@@ -19,6 +19,7 @@
+             {% for s in soluzioni %}
+             <th scope="col" style="white-space:pre" id="pr-{{s.problema}}">#{{s.problema|stringformat:"02d"}}</th>
+             {% endfor %}
++            <th scope="col" style="white-space:pre" id="pr-bonus">&#xb1;</th>
+         </tr></thead>
+         <tbody>
+             {% for sq in object.get_squadre_order %}
+@@ -29,6 +30,7 @@
+                 {% for s in soluzioni %}
+                   <td id="cell-{{sq.num}}-{{s.problema}}"></td>
+                 {% endfor %}
++                <td id="cell-{{sq.num}}-bonus" class="bonus"></td>
+             </tr>
+             {% endfor %}
+         </tbody>
+diff --git a/engine/templates/gara/detail.html b/engine/templates/gara/detail.html
+index c97ec98..9ea5e69 100644
+--- a/engine/templates/gara/detail.html
++++ b/engine/templates/gara/detail.html
+@@ -158,21 +158,6 @@
+ 	</div>
+ </a>
+ </li>
+-
+-<li class="m-4">
+-<a class="nohover" href="{% url 'engine:classifica-cronaca' object.pk %}" target="_blank">
+-    <b>Telecronaca</b>
+-    <div class="col-sm-6 col-lg-4 border" style="position: relative">
+-        <div class="card">
+-        <div class="card-header">Telecronaca</div>
+-        <ul id="frasi" class="list-group list-group-flush" >
+-            <li class="list-group-item">La squadra 5 vince la finale a squadre!</li>
+-            <li class="list-group-item">La squadra 2 sbaglia e scende in seconda posizione.</li>
+-        </ul>
+-        </div>
+-    </div>
+-</a>
+-</li>
+ </ul>
+ 
+ {% endblock %}
+diff --git a/engine/templates/gara/inserimento.html b/engine/templates/gara/inserimento.html
+index fa6b787..c21f58e 100644
+--- a/engine/templates/gara/inserimento.html
++++ b/engine/templates/gara/inserimento.html
+@@ -34,21 +34,22 @@
+         </div>
+     </div>
+     {% if object.jolly %}{{ form.jolly|as_crispy_field }}{% endif %}
++    {% if is_admin %}{{ form.bonus|as_crispy_field }}{% endif %}
+ 
+     <button id="submit" type="submit" class="btn btn-primary" form="form-ins">Inserisci</button>
+ </form>
+   <div class="card mb-3" style="top: 30px">
+     <div class="card-header">
+       <i class="fas fa-table"></i>
+-      Risposte consegnate
++      Ultime risposte consegnate
+     </div>
+     <div class="card-body">
+       <div class="table-responsive">
+         <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+           <thead>
+             <tr>
++              <th>Id</th>
+               <th>Tipo</th>
+-              <th>ID Squadra</th>
+               <th>Squadra</th>
+               <th>Problema</th>
+               <th>Valore</th>
+@@ -57,24 +58,35 @@
+             </tr>
+           </thead>
+           <tbody>
+-              {% for m, e in eventi %}
++              {% for m, e in eventi_recenti %}
+             <tr id="event{{e.pk}}">
++                <td scope="row">{{e.pk}}</<td>
+                 <td scope="row">{{e.subclass}}</<td>
+-                <td scope="row">{{e.squadra.num}}</td>
+-                <td scope="row">{{e.squadra.nome}}</td>
+                 <td scope="row">
++                  <span class="event-static">{{e.squadra.get_id_nome}}</span>
++                  <select class="event-input" style="max-width: 100%" form="edit{{ e.pk }}" name="squadra">
++                    {% for s in squadre_inseribili %}
++                    <option value="{{s.pk}}" {% if e.squadra.pk == s.pk %}selected{% endif %}>{{s.get_id_nome}}</option>
++                    {% endfor %}
++                  </select>
++                </td>
++                <td scope="row">
++                  {% if e.subclass == "Bonus" %}
++                  B
++                  {% else %}
+                   <span class="event-static">{{e.problema}}</span>
+-                  <input type="number" class="event-input" form="edit{{ e.pk }}" name="{% if e.get_valore == "J" %}jolly{% else %}problema{% endif %}" value="{{ e.problema }}">
++                  <input type="number" class="event-input" form="edit{{ e.pk }}" name="problema" value="{{ e.problema }}">
++                  {% endif %}
+                 </td>
+-                {% if e.get_valore == "J" %}
+-                  <td scope="row">J</td>
+-                {% else %}
+-                  <td scope="row">
+-                    <span class="event-static">{{e.get_valore}}</span>
+-                    <input type="number" class="event-input" form="edit{{ e.pk }}" name="risposta" value="{{ e.get_valore }}">
+-                  </td>
+-                {% endif %}
+-                <td scope="row">{{e.orario}}</td>
++                <td scope="row">
++                  {% if e.subclass == "Jolly" %}
++                  J
++                  {% else %}
++                  <span class="event-static">{{e.get_valore}}</span>
++                  <input type="number" class="event-input" form="edit{{ e.pk }}" name="risposta" value="{{ e.get_valore }}">
++                  {% endif %}
++                </td>
++                <td scope="row">{{e.orario|date:'Y-m-d H:i:s'}}</td>
+                 <td scope="row">
+                 {% if m %}
+                   <a href="javascript:void(0)" class="event-actions" onclick="$('#event{{ e.pk }}').addClass('editable-event')" id="modifica-{{ e.pk }}">
+@@ -82,14 +94,14 @@
+                   <a href="javascript:void(0)" class="event-actions" onclick="$('#event{{ e.pk }}').addClass('deletable-event')" id="elimina-{{ e.pk }}">
+                       <i class="fas fa-trash fa-2x" title="Elimina"></i>&nbsp;&nbsp;</a>
+ 
+-                  <form id="edit{{ e.pk }}" class="edit-actions" method="post" action="{% url 'engine:evento-modifica' pk=e.pk %}">
++                  <form id="edit{{ e.pk }}" class="edit-actions" method="post" action="{% url 'engine:evento-modifica' pk=e.pk %}?redirect_to=engine:inserimento">
+                       {% csrf_token %}
+                       <a href="javascript:void(0)" onclick="$('#edit{{ e.pk }}').submit();" id="modifica-conferma-{{ e.pk }}"><i class="fas fa-check-circle fa-2x" title="Conferma"></i></a>
+                   </form>
+                   <a href="javascript:void(0)" class="edit-actions" onclick="$('#event{{ e.pk }}').removeClass('editable-event')" id="modifica-annulla-{{ e.pk }}">
+                       <i class="fas fa-times-circle fa-2x" title="Annulla"></i></a>
+ 
+-                  <form id="delete{{ e.pk }}" class="delete-actions" method="post" action="{% url 'engine:evento-elimina' pk=e.pk %}">
++                  <form id="delete{{ e.pk }}" class="delete-actions" method="post" action="{% url 'engine:evento-elimina' pk=e.pk %}?redirect_to=engine:inserimento">
+                       {% csrf_token %}
+                       <a href="javascript:void(0)" onclick="$('#delete{{ e.pk }}').submit();" id="elimina-conferma-{{ e.pk }}">
+                           <i class="confirm-delete-button fas fa-trash fa-2x" title="Elimina"></i></a>
+diff --git a/engine/templates/gara/query.html b/engine/templates/gara/query.html
+index 99fdcb4..20d7b54 100644
+--- a/engine/templates/gara/query.html
++++ b/engine/templates/gara/query.html
+@@ -4,8 +4,11 @@
+ {% block head %}
+ {% endblock %}
+ 
++{% load crispy_forms_tags %}
+ {% block title %}Query {{object.nome}}{% endblock %}
+ 
++{% block css %}<link href="{% static 'engine/css/inserimento.css' %}" rel="stylesheet" type="text/css" >{% endblock %}
++
+ 
+ {% block content %}
+ 
+@@ -16,17 +19,24 @@
+ 
+ <form>
+     <div class="form-row">
++        <div class="col-md-2">
++            <div class="form-group">
++              {{ form.id_evento|as_crispy_field }}
++            </div>
++        </div>
+         <div class="form-group col-md-6">
+-          <input type="text" id="qsquadra" name="squadra" class="form-control" placeholder="Squadra">
++            <div class="form-group">
++              {{ form.num_squadra|as_crispy_field }}
++            </div>
+         </div>
+-        <div class="col-md-3">
++        <div class="col-md-2">
+             <div class="form-group">
+-              <input type="text" id="qproblema" name="problema" class="form-control" placeholder="Problema">
++              {{ form.problema|as_crispy_field }}
+             </div>
+         </div>
+-        <div class="col-md-3">
++        <div class="col-md-2">
+             <div class="form-group">
+-              <input type="text" id="qrisposta" name="risposta" class="form-control" placeholder="Risposta">
++              {{ form.risposta|as_crispy_field }}
+             </div>
+         </div>
+     </div>
+@@ -43,31 +53,73 @@
+         <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+           <thead>
+             <tr>
++              <th>Id</th>
+               <th>Tipo</th>
+-              <th>ID Squadra</th>
+               <th>Squadra</th>
+               <th>Problema</th>
+               <th>Valore</th>
+               <th>Orario</th>
++              <th>Utente</th>
++              <th>Comandi</th>
+             </tr>
+           </thead>
+           <tbody>
+               {% for e in eventi %}
+             <tr id="event{{e.pk}}">
++                <td scope="row">{{e.pk}}</<td>
+                 <td scope="row">{{e.subclass}}</<td>
+-                <td scope="row">{{e.squadra.num}}</td>
+-                <td scope="row">{{e.squadra.nome}}</td>
+                 <td scope="row">
++                  <span class="event-static">{{e.squadra.get_id_nome}}</span>
++                  <select class="event-input" style="max-width: 100%" form="edit{{ e.pk }}" name="squadra">
++                    {% for s in squadre_inseribili %}
++                    <option value="{{s.pk}}" {% if e.squadra.pk == s.pk %}selected{% endif %}>{{s.get_id_nome}}</option>
++                    {% endfor %}
++                  </select>
++                </td>
++                <td scope="row">
++                  {% if e.subclass == "Bonus" %}
++                  B
++                  {% else %}
+                   <span class="event-static">{{e.problema}}</span>
++                  <input type="number" class="event-input" form="edit{{ e.pk }}" name="problema" value="{{ e.problema }}">
++                  {% endif %}
++                </td>
++                <td scope="row">
++                  {% if e.subclass == "Jolly" %}
++                  J
++                  {% else %}
++                  <span class="event-static">{{e.get_valore}}</span>
++                  <input type="number" class="event-input" form="edit{{ e.pk }}" name="risposta" value="{{ e.get_valore }}">
++                  {% if e.giusta is not None %}
++                  <small class="form-text text-muted">{{ e.giusta | yesno:"Giusta,Sbagliata" }}</small>
++                  {% endif %}
++                  {% endif %}
++                </td>
++                <td scope="row">
++                  {{e.orario|date:'Y-m-d H:i:s'}}
++                  <small class="form-text text-muted">Tempo di gara {{ e.timestamp }}</small>
++                </td>
++                <td scope="row">{{e.creatore}}</<td>
++                <td scope="row">
++                  <a href="javascript:void(0)" class="event-actions" onclick="$('#event{{ e.pk }}').addClass('editable-event')" id="modifica-{{ e.pk }}">
++                      <i class="fas fa-pen-square fa-2x" title="Modifica"></i>&nbsp;&nbsp;</a>
++                  <a href="javascript:void(0)" class="event-actions" onclick="$('#event{{ e.pk }}').addClass('deletable-event')" id="elimina-{{ e.pk }}">
++                      <i class="fas fa-trash fa-2x" title="Elimina"></i>&nbsp;&nbsp;</a>
++
++                  <form id="edit{{ e.pk }}" class="edit-actions" method="post" action="{% url 'engine:evento-modifica' pk=e.pk %}?redirect_to=engine:query">
++                      {% csrf_token %}
++                      <a href="javascript:void(0)" onclick="$('#edit{{ e.pk }}').submit();" id="modifica-conferma-{{ e.pk }}"><i class="fas fa-check-circle fa-2x" title="Conferma"></i></a>
++                  </form>
++                  <a href="javascript:void(0)" class="edit-actions" onclick="$('#event{{ e.pk }}').removeClass('editable-event')" id="modifica-annulla-{{ e.pk }}">
++                      <i class="fas fa-times-circle fa-2x" title="Annulla"></i></a>
++
++                  <form id="delete{{ e.pk }}" class="delete-actions" method="post" action="{% url 'engine:evento-elimina' pk=e.pk %}?redirect_to=engine:query">
++                      {% csrf_token %}
++                      <a href="javascript:void(0)" onclick="$('#delete{{ e.pk }}').submit();" id="elimina-conferma-{{ e.pk }}">
++                          <i class="confirm-delete-button fas fa-trash fa-2x" title="Elimina"></i></a>
++                  </form>
++                  <a href="javascript:void(0)" class="delete-actions" onclick="$('#event{{ e.pk }}').removeClass('deletable-event')" id="elimina-annulla-{{ e.pk }}"><i class="fas fa-times-circle fa-2x" title="Annulla"></i></a>
+                 </td>
+-                {% if e.get_valore == "J" %}
+-                  <td scope="row">J</td>
+-                {% else %}
+-                  <td scope="row">
+-                    <span class="event-static">{{e.get_valore}}</span>
+-                  </td>
+-                {% endif %}
+-                <td scope="row">{{e.orario}}</td>
+             </tr>
+             {% endfor %}
+           </tbody>
+diff --git a/engine/tests.py b/engine/tests.py
+index 95ead6d..502e58d 100644
+--- a/engine/tests.py
++++ b/engine/tests.py
+@@ -14,7 +14,7 @@ from selenium.webdriver.common.by import By
+ from selenium.webdriver.support.ui import WebDriverWait
+ import random
+ 
+-from engine.models import Gara, Squadra, Soluzione, Consegna, Jolly, User
++from engine.models import Gara, Squadra, Soluzione, Consegna, Jolly, User, Bonus
+ # Create your tests here.
+ 
+ 
+@@ -81,6 +81,15 @@ class TuringTests():
+         t.sleep(0.005)
+         return res
+ 
++    def put_bonus(self, squadra, punteggio):
++        '''Aggiunge un bonus al database (nel minuto corrente)'''
++
++        self.updated = False
++        res = Bonus(punteggio=punteggio, squadra=Squadra.objects.get(gara=self.gara, num=squadra), gara=self.gara, creatore=self.user)
++        res.save()
++        t.sleep(0.005)
++        return res
++
+     def modifica(self, evento, **kwargs):
+         self.updated = False
+         for k, v in kwargs.items():
+@@ -857,6 +866,24 @@ class HtmlTests(StaticLiveServerTestCase, TuringTests):
+         jolly[0]['id'] = -1
+         self.assertEqual(jolly, [{'id': -1, 'squadra': 1, 'problema': 1}])
+ 
++    def test_inserimento_bonus(self):
++        self.crea_gara(5, [0, 0, 0], admin=self.user)
++        url = self.get_url("engine:inserimento", pk=self.gara.pk)
++        self.selenium.get(url)
++
++        self.selenium.find_element(By.NAME, "squadra").send_keys("01")
++        self.selenium.find_element(By.NAME, "risposta").send_keys("-75")
++        self.selenium.find_element(By.NAME, "bonus").send_keys(" ")
++        self.selenium.find_element(By.ID, "submit").click()
++
++        bonus = self.gara.get_bonus()
++        assert len(bonus) == 1
++        # cannot compare IDs reliably with postgres
++        bonus[0]['id'] = -1
++        # do not have an expected timestamp for comparison
++        bonus[0].pop('orario')
++        self.assertEqual(bonus, [{'id': -1, 'squadra': 1, 'punteggio': -75}])
++
+     def test_inserimento_risposta(self):
+         self.crea_gara(5, [0, 0, 0])
+         self.gara.inseritori.add(self.user)
+@@ -1085,13 +1112,18 @@ class ValidationTests(MyTestCase, TuringTests):
+         self.gara.inseritori.add(self.user)
+         e = self.consegna(1, 1, 500)
+         self.url = reverse('engine:evento-modifica', kwargs={'pk': e.pk})
+-        self.data = {'problema': 1, 'risposta': 0}
++        sq2 = self.gara.squadre.all()[1]
++        self.data = {'squadra': sq2.pk, 'problema': 3, 'risposta': 0}
+ 
+         res = self.gara.get_consegne()
++        self.assertEqual(res[0]["squadra"], 1)
++        self.assertEqual(res[0]["problema"], 1)
+         self.assertEqual(res[0]["giusta"], False)
+ 
+         self.view_helper(post_code=200)
+         res = self.gara.get_consegne()
++        self.assertEqual(res[0]["squadra"], 2)
++        self.assertEqual(res[0]["problema"], 3)
+         self.assertEqual(res[0]["giusta"], True)
+ 
+     def test_modifica_risposta_vuota(self):
+@@ -1099,7 +1131,8 @@ class ValidationTests(MyTestCase, TuringTests):
+         self.gara.inseritori.add(self.user)
+         e = self.consegna(1, 1, 500)
+         self.url = reverse('engine:evento-modifica', kwargs={'pk': e.pk})
+-        self.data = {'problema': 1}
++        sq1 = self.gara.squadre.all()[0]
++        self.data = {'squadra': sq1.pk, 'problema': 1}
+ 
+         res = self.gara.get_consegne()
+         self.assertEqual(res[0]["giusta"], False)
+@@ -1113,29 +1146,61 @@ class ValidationTests(MyTestCase, TuringTests):
+         self.gara.inseritori.add(self.user)
+         e = self.put_jolly(1, 3)
+         self.url = reverse('engine:evento-modifica', kwargs={'pk': e.pk})
+-        self.data = {'jolly': 2}
++        sq4 = self.gara.squadre.all()[3]
++        self.data = {'squadra': sq4.pk, 'problema': 2}
+ 
+         res = self.gara.get_jolly()
+         self.assertEqual(res, [{'id': e.pk, 'squadra': 1, 'problema': 3}])
+ 
+         self.view_helper(post_code=200)
+         res = self.gara.get_jolly()
+-        self.assertEqual(res, [{'id': e.pk, 'squadra': 1, 'problema': 2}])
++        self.assertEqual(res, [{'id': e.pk, 'squadra': 4, 'problema': 2}])
+ 
+     def test_modifica_jolly_vuoto(self):
+         self.crea_gara(5, [0,0,0])
+         self.gara.inseritori.add(self.user)
+         e = self.put_jolly(1, 3)
+         self.url = reverse('engine:evento-modifica', kwargs={'pk': e.pk})
+-        self.data = {'jolly': ""}
++        sq1 = self.gara.squadre.all()[0]
++        self.data = {'squadra': sq1.pk, 'problema': ""}
+ 
+         res = self.gara.get_jolly()
+         self.assertEqual(res, [{'id': e.pk, 'squadra': 1, 'problema': 3}])
+ 
+-        self.view_helper(post_code=200, form_errors={'jolly': ['Questo campo è obbligatorio.']})
++        self.view_helper(post_code=200, form_errors={'problema': ['Questo campo è obbligatorio.']})
+         res = self.gara.get_jolly()
+         self.assertEqual(res, [{'id': e.pk, 'squadra': 1, 'problema': 3}])
+ 
++    def test_modifica_bonus_ok(self):
++        self.crea_gara(5, [0,0,0])
++        self.gara.inseritori.add(self.user)
++        e = self.put_bonus(1, -98)
++        self.url = reverse('engine:evento-modifica', kwargs={'pk': e.pk})
++        sq2 = self.gara.squadre.all()[1]
++        self.data = {'squadra': sq2.pk, 'risposta': 97}
++
++        res = self.gara.get_bonus()
++        self.assertEqual(res, [{'id': e.pk, 'squadra': 1, 'punteggio': -98, 'orario': e.orario}])
++
++        self.view_helper(post_code=200)
++        res = self.gara.get_bonus()
++        self.assertEqual(res, [{'id': e.pk, 'squadra': 2, 'punteggio': 97, 'orario': e.orario}])
++
++    def test_modifica_bonus_vuoto(self):
++        self.crea_gara(5, [0,0,0])
++        self.gara.inseritori.add(self.user)
++        e = self.put_bonus(1, -98)
++        self.url = reverse('engine:evento-modifica', kwargs={'pk': e.pk})
++        sq1 = self.gara.squadre.all()[0]
++        self.data = {'squadra': sq1.pk, 'risposta': ""}
++
++        res = self.gara.get_bonus()
++        self.assertEqual(res, [{'id': e.pk, 'squadra': 1, 'punteggio': -98, 'orario': e.orario}])
++
++        self.view_helper(post_code=200, form_errors={'risposta': ['Questo campo è obbligatorio.']})
++        res = self.gara.get_bonus()
++        self.assertEqual(res, [{'id': e.pk, 'squadra': 1, 'punteggio': -98, 'orario': e.orario}])
++
+ 
+ class PermissionTests(MyTestCase, TuringTests):
+     def test_crea_gara_permission(self):
+@@ -1325,7 +1390,7 @@ class PermissionTests(MyTestCase, TuringTests):
+         self.view_helper(200, 200, messages_post=[{"tag": "info", "message": "La risposta che hai consegnato è errata.", "partial": True}])
+ 
+         # Controlla gli eventi visibili
+-        eventi = self.view_helper(200).context['eventi']
++        eventi = self.view_helper(200).context['eventi_recenti']
+         self.assertEqual(len(eventi), 1)
+         self.assertEqual(eventi[0][1].get_valore(), 76)
+         self.assertEqual(eventi[0][1].squadra.num, 1)
+@@ -1334,7 +1399,7 @@ class PermissionTests(MyTestCase, TuringTests):
+         self.c.login(username='test2',password='test2')
+ 
+         # Controlla gli eventi visibili
+-        eventi = self.view_helper(200).context['eventi']
++        eventi = self.view_helper(200).context['eventi_recenti']
+         self.assertEqual(len(eventi), 0)
+ 
+         # Inserisce una nuova consegna
+@@ -1342,7 +1407,7 @@ class PermissionTests(MyTestCase, TuringTests):
+         self.view_helper(200, 200, messages_post=[{"tag": "info", "message": "Inserimento avvenuto", "partial": True}])
+ 
+         # Controlla gli eventi visibili
+-        eventi = self.view_helper(200).context['eventi']
++        eventi = self.view_helper(200).context['eventi_recenti']
+         self.assertEqual(len(eventi), 1)
+         self.assertEqual(eventi[0][1].get_valore(), "J")
+         self.assertEqual(eventi[0][1].squadra.num, 2)
+@@ -1351,7 +1416,7 @@ class PermissionTests(MyTestCase, TuringTests):
+         self.c.login(username='test',password='test')
+ 
+         # Continua a vedere solo il suo evento
+-        eventi = self.view_helper(200).context['eventi']
++        eventi = self.view_helper(200).context['eventi_recenti']
+         self.assertEqual(len(eventi), 1)
+         self.assertEqual(eventi[0][1].get_valore(), 76)
+         self.assertEqual(eventi[0][1].squadra.num, 1)
+@@ -1360,7 +1425,8 @@ class PermissionTests(MyTestCase, TuringTests):
+         self.crea_gara(5, [0,0,0])
+         e = self.consegna(1, 1, 500)
+         self.url = reverse('engine:evento-modifica', kwargs={'pk': e.pk})
+-        self.data = {'problema': 1, 'risposta': 0}
++        sq1 = self.gara.squadre.all()[0]
++        self.data = {'squadra': sq1.pk, 'problema': 1, 'risposta': 0}
+ 
+         self.assertEqual(e.creatore.username, 'test')
+ 
+@@ -1371,13 +1437,13 @@ class PermissionTests(MyTestCase, TuringTests):
+         self.user = User.objects.create_user('test2', 't2@e.st', 'test2')
+         self.c.login(username='test2', password='test2')
+ 
+-        self.view_helper(404, 404)
++        self.view_helper(403, 403)
+         res = self.gara.get_consegne()
+         self.assertEqual(res[0]["giusta"], False)
+ 
+         self.gara.inseritori.add(self.user)
+ 
+-        self.view_helper(404, 404)
++        self.view_helper(403, 403)
+         res = self.gara.get_consegne()
+         self.assertEqual(res[0]["giusta"], False)
+ 
+@@ -1403,12 +1469,12 @@ class PermissionTests(MyTestCase, TuringTests):
+         self.user = User.objects.create_user('test2', 't2@e.st', 'test2')
+         self.c.login(username='test2', password='test2')
+ 
+-        self.view_helper(post_code=404)
++        self.view_helper(post_code=403)
+         res = self.gara.get_consegne()
+         self.assertEqual(len(res), 1)
+ 
+         self.gara.inseritori.add(self.user)
+-        self.view_helper(post_code=404)
++        self.view_helper(post_code=403)
+         res = self.gara.get_consegne()
+         self.assertEqual(len(res), 1)
+ 
+@@ -1433,7 +1499,7 @@ class PermissionTests(MyTestCase, TuringTests):
+         self.view_helper(200, 200, messages_post=[{"tag": "info", "message": "Inserimento avvenuto", "partial": True}])
+ 
+         self.data = {'squadra': sq.pk, 'problema': 2, 'jolly': True}
+-        self.view_helper(200, 200, messages_post=[{"tag": "danger", "message": "Inserimento non riuscito"}])
++        self.view_helper(200, 200, messages_post=[{"tag": "warning", "message": "È già stato inserito un jolly per la squadra", "partial": True}])
+ 
+         jolly = self.gara.get_jolly()
+         assert len(jolly) == 1
+diff --git a/engine/urls.py b/engine/urls.py
+index 43b7c33..866313f 100644
+--- a/engine/urls.py
++++ b/engine/urls.py
+@@ -25,7 +25,6 @@ urlpatterns = [
+     path('classifica/<int:pk>/squadre', ClassificaView.as_view(), name='classifica-squadre'),
+     path('classifica/<int:pk>/problemi', PuntiProblemiView.as_view(), name='classifica-problemi'),
+     path('classifica/<int:pk>/stato', StatoProblemiView.as_view(), name='classifica-stato'),
+-    path('classifica/<int:pk>/cronaca', CronacaView.as_view(), name='classifica-cronaca'),
+     path('classifica/<int:pk>/unica', UnicaView.as_view(), name='classifica-unica'),
+     path('about', AboutView.as_view(), name="about")
+ ]
+diff --git a/engine/views.py b/engine/views.py
+index 3395f0b..b717e2d 100644
+--- a/engine/views.py
++++ b/engine/views.py
+@@ -10,9 +10,9 @@ from django.utils import timezone
+ from django.db import transaction
+ from django.contrib.auth import login, authenticate
+ 
+-from engine.models import User, Gara, Soluzione, Squadra, Evento, Consegna, Jolly
++from engine.models import User, Gara, Soluzione, Squadra, Evento, Consegna, Jolly, Bonus
+ from engine.forms import SignUpForm, RispostaFormset, SquadraFormset, InserimentoForm,\
+-    ModificaConsegnaForm, ModificaJollyForm, UploadGaraForm
++    ModificaConsegnaForm, ModificaJollyForm, ModificaBonusForm, UploadGaraForm, QueryForm
+ from engine.formfields import IntegerMultiField
+ 
+ import logging
+@@ -268,10 +268,11 @@ class DownloadGaraView(DetailView):
+ #             VIEW QUERY              #
+ #######################################
+ 
+-class QueryView(DetailView):
++class QueryView(CheckPermissionsMixin, DetailView, FormView):
+     """ Query: consente di cercare tra gli eventi """
+     model = Gara
+     template_name = 'gara/query.html'
++    form_class = QueryForm
+ 
+     def test_func(self):
+         self.object = self.get_object()
+@@ -280,10 +281,20 @@ class QueryView(DetailView):
+     def get_context_data(self, **kwargs):
+         context = super().get_context_data(**kwargs)
+         context.update({
+-            'eventi': self.object.get_all_eventi(self.request.user, self.request.GET.get('squadra'), self.request.GET.get('problema'), self.request.GET.get('risposta'))
++            'squadre_inseribili': self.object.get_squadre_inseribili(self.request.user),
++            'eventi': self.object.get_all_eventi(self.request.user, self.request.GET.get('id_evento'), self.request.GET.get('num_squadra'), self.request.GET.get('problema'), self.request.GET.get('risposta'))
+         })
+         return context
+ 
++    def get_form_kwargs(self):
++        kwargs = super(QueryView, self).get_form_kwargs()
++        kwargs['gara'] = self.object
++        kwargs['querystring_id_evento'] = self.request.GET.get('id_evento', '')
++        kwargs['querystring_num_squadra'] = self.request.GET.get('num_squadra', '')
++        kwargs['querystring_problema'] = self.request.GET.get('problema', '')
++        kwargs['querystring_risposta'] = self.request.GET.get('risposta', '')
++        return kwargs
++
+ 
+ #######################################
+ #    VIEWS INSERIMENTO E MODIFICA     #
+@@ -302,7 +313,9 @@ class InserimentoView(CheckPermissionsMixin, DetailView, FormView):
+     def get_context_data(self, **kwargs):
+         context = super().get_context_data(**kwargs)
+         context.update({
+-            'eventi': self.object.get_eventi(self.request.user)
++            'squadre_inseribili': self.object.get_squadre_inseribili(self.request.user),
++            'eventi_recenti': self.object.get_eventi_recenti(self.request.user, 20),
++            'is_admin': self.request.user.can_administrate(self.object)
+         })
+         return context
+ 
+@@ -310,7 +323,7 @@ class InserimentoView(CheckPermissionsMixin, DetailView, FormView):
+         return super().post(*args, **kwargs)
+ 
+     def get_form_kwargs(self):
+-        kwargs = super(InserimentoView, self).get_form_kwargs()
++        kwargs = super().get_form_kwargs()
+         kwargs['gara'] = self.object
+         kwargs['user'] = self.request.user
+         return kwargs
+@@ -337,56 +350,83 @@ class ModificaEventoView(CheckPermissionsMixin, DetailView, FormView):
+     model = Evento
+     template_name = "forms/evento_modifica.html"
+ 
+-    def get_queryset(self):
+-        qs = super().get_queryset()
+-        return qs.filter(creatore=self.request.user)
+-
+     def test_func(self):
+         self.object = self.get_object()
+         return self.request.user.can_edit_or_delete(self.object)
+ 
++    def get_context_data(self, **kwargs):
++        context = super().get_context_data(**kwargs)
++        context.update({
++            'squadre_inseribili': self.object.gara.get_squadre_inseribili(self.request.user)
++        })
++        return context
++
+     def get_form_class(self):
+         if self.object.subclass == "Consegna":
+             return ModificaConsegnaForm
+         elif self.object.subclass == "Jolly":
+             return ModificaJollyForm
++        elif self.object.subclass == "Bonus":
++            return ModificaBonusForm
+ 
+     def get_initial(self):
+         c = self.object.as_child()
+         if self.object.subclass == "Consegna":
+-            initial = {'problema': c.problema, 'risposta': c.risposta}
++            initial = {'squadra': c.squadra.num, 'problema': c.problema, 'risposta': c.risposta}
+         elif self.object.subclass == "Jolly":
+-            initial = {'jolly': c.problema}
++            initial = {'squadra': c.squadra.num, 'problema': c.problema}
++        elif self.object.subclass == "Bonus":
++            initial = {'squadra': c.squadra.num, 'risposta': c.punteggio}
+         return initial
+ 
++    def get_form_kwargs(self):
++        kwargs = super().get_form_kwargs()
++        kwargs['gara'] = self.object.gara
++        kwargs['user'] = self.request.user
++        return kwargs
++
+     def get_success_url(self, **kwargs):
+-        return reverse("engine:inserimento", kwargs={'pk': self.get_object().gara.pk})
++        return reverse(self.request.GET.get("redirect_to", "engine:inserimento"), kwargs={'pk': self.object.gara.pk})
+ 
+     def form_valid(self, form):
+         self.object = self.object.as_child()
+         if self.object.subclass == "Consegna":
++            self.object.squadra = form.cleaned_data.get('squadra')
+             self.object.problema = form.cleaned_data.get('problema')
+             self.object.risposta = form.cleaned_data.get('risposta')
+-            self.object.maybe_save()
+         elif self.object.subclass == "Jolly":
+-            self.object.problema = form.cleaned_data.get('jolly')
+-            self.object.maybe_save()
++            self.object.squadra = form.cleaned_data.get('squadra')
++            self.object.problema = form.cleaned_data.get('problema')
++        elif self.object.subclass == "Bonus":
++            self.object.squadra = form.cleaned_data.get('squadra')
++            self.object.punteggio = form.cleaned_data.get('risposta')
++        self.object.creatore = self.request.user
++        try:
++            self.object.clean()
++        except Exception as e:
++            messages.warning(self.request, f"Modifica non effettuata. {e}")
++        else:
++            res = self.object.maybe_save()
++            if res[0]:
++                messages.info(self.request, "Modifica eseguita con successo")
++            else:
++                messages.warning(self.request, f"Modifica non effettuata. {res[1]}")
+         return super().form_valid(form)
+ 
+ 
+ class EliminaEventoView(CheckPermissionsMixin, DeleteView):
+     model = Evento
+ 
+-    def get_queryset(self):
+-        qs = super().get_queryset()
+-        return qs.filter(creatore=self.request.user)
+-
+     def test_func(self):
+         self.object = self.get_object()
+         return self.request.user.can_edit_or_delete(self.object)
+ 
+     def get_success_url(self):
+-        return reverse('engine:inserimento', kwargs={'pk': self.object.gara.pk})
++        return reverse(self.request.GET.get("redirect_to", "engine:inserimento"), kwargs={'pk': self.object.gara.pk})
++
++    def form_valid(self, form):
++        messages.info(self.request, "Evento eliminato con successo")
++        return super().form_valid(form)
+ 
+ 
+ ####################################
+@@ -401,9 +441,13 @@ class StatusView(DetailView):
+         resp = {}
+         resp['last_update'] = gara.get_last_update()
+ 
+-        if "last_event" in request.GET:
+-            resp['consegne'] = gara.get_consegne(request.GET["last_event"])
+-            resp['jolly'] = gara.get_jolly(request.GET["last_event"])
++        if "last_consegna_id" in request.GET or "last_jolly_id" in request.GET or "last_bonus_id" in request.GET:
++            assert "last_consegna_id" in request.GET
++            resp['consegne'] = gara.get_consegne(request.GET["last_consegna_id"])
++            assert "last_jolly_id" in request.GET
++            resp['jolly'] = gara.get_jolly(request.GET["last_jolly_id"])
++            assert "last_bonus_id" in request.GET
++            resp['bonus'] = gara.get_bonus(request.GET["last_bonus_id"])
+             return JsonResponse(resp)
+ 
+         resp['nome'] = gara.nome
+@@ -431,6 +475,7 @@ class StatusView(DetailView):
+ 
+         resp['consegne'] = gara.get_consegne()
+         resp['jolly'] = gara.get_jolly()
++        resp['bonus'] = gara.get_bonus()
+ 
+         return JsonResponse(resp)
+ 
+@@ -463,12 +508,6 @@ class StatoProblemiView(DetailView):
+         return context
+ 
+ 
+-class CronacaView(DetailView):
+-    """ Visualizzazione stato problemi: quali sono stati risolti e quali no """
+-    model = Gara
+-    template_name = "classifiche/cronaca.html"
+-
+-
+ class UnicaView(DetailView):
+     """ Visualizzazione unica: tutte le informazioni """
+     model = Gara
