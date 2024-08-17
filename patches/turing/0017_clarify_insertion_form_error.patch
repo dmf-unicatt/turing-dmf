@@ -1,0 +1,35 @@
+diff --git a/engine/tests.py b/engine/tests.py
+index 502e58d..0a6c86d 100644
+--- a/engine/tests.py
++++ b/engine/tests.py
+@@ -1070,7 +1070,7 @@ class ValidationTests(MyTestCase, TuringTests):
+         self.assertTrue(self.user.is_inseritore(self.gara))
+ 
+         self.view_helper(200, 200,
+-                         messages_post=[{"tag": "danger", "message": "Inserimento non riuscito"}],
++                         messages_post=[{"tag": "danger", "message": "Inserimento non riuscito. Vedere l'elenco puntato sotto \"Gara: GaraTest - inserimento risposte\" per maggiori dettagli sull'errore."}],
+                          form_errors={'__all__': ['Il problema deve esistere']})
+ 
+         self.assertFalse(self.gara.eventi.exists())
+@@ -1089,7 +1089,7 @@ class ValidationTests(MyTestCase, TuringTests):
+         self.assertTrue(self.user.is_inseritore(self.gara))
+ 
+         self.view_helper(200, 200,
+-                         messages_post=[{"tag": "danger", "message": "Inserimento non riuscito"}],
++                         messages_post=[{"tag": "danger", "message": "Inserimento non riuscito. Vedere l'elenco puntato sotto \"Gara: GaraTest - inserimento risposte\" per maggiori dettagli sull'errore."}],
+                          form_errors={'squadra': ["Scegli un'opzione valida. La scelta effettuata non compare tra quelle disponibili."]})
+ 
+         self.assertFalse(self.gara.eventi.exists())
+diff --git a/engine/views.py b/engine/views.py
+index 37683fa..a7d6d81 100644
+--- a/engine/views.py
++++ b/engine/views.py
+@@ -346,7 +346,7 @@ class InserimentoView(CheckPermissionsMixin, DetailView, FormView):
+         return super().form_valid(form)
+ 
+     def form_invalid(self, form, *args, **kwargs):
+-        messages.error(self.request, "Inserimento non riuscito")
++        messages.error(self.request, f"Inserimento non riuscito. Vedere l'elenco puntato sotto \"Gara: {self.get_object().nome} - inserimento risposte\" per maggiori dettagli sull'errore.")
+         return super().form_invalid(form)
+ 
+ 

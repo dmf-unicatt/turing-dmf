@@ -19,3 +19,4 @@ This directory contains a few local patches. Most of them are related to changes
 14. `0014_manual_bonus.patch`: add feature to assign (positive or negative) bonus to a team. As a side effect, for simplicity of the implementation of the new feature the commentary has been disabled.
 15. `0015_classification_time_from_server_and_querystring.patch`: stop using `Date.now()` in the calculation of the classification and use the server datetime instead, since the browser date may not agree with the one on the server. Furthermore, allow the admin to pass to querystrings while viewing classifications: `t` view classifications at an arbitrary point in time, and `ended` to switch between the live update and the replay modes.
 16. `0016_improve_admin_panel.patch`: improve admin panel by enabling filtering on relevant model fields.
+17. `0017_clarify_insertion_form_error.patch`: clarify error message in insertion form, explaining where the error details are.

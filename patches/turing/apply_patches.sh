@@ -47,4 +47,5 @@ else
     apply_patch 0014_manual_bonus.patch
     apply_patch 0015_classification_time_from_server_and_querystring.patch
     apply_patch 0016_improve_admin_panel.patch
+    apply_patch 0017_clarify_insertion_form_error.patch
 fi
