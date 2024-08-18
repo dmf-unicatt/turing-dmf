@@ -1,0 +1,802 @@
+diff --git a/engine/context_processors.py b/engine/context_processors.py
+index ab617b5..43d1510 100644
+--- a/engine/context_processors.py
++++ b/engine/context_processors.py
+@@ -5,16 +5,18 @@ from engine.models import Gara
+ 
+ 
+ def get_gare():
+-    gare = Gara.objects.filter(inizio__isnull=False)
++    gare = Gara.objects.filter(inizio__isnull=False).order_by("-inizio", "-id")
+     loraesatta = timezone.now()
+     attive = []
+     archivio = []
+     for g in gare:
+-        if g.get_ora_fine() < loraesatta:
++        if g.sospensione is not None:
++            attive.append(g)
++        elif g.get_ora_fine() < loraesatta:
+             archivio.append(g)
+         else:
+             attive.append(g)
+-    da_iniziare = Gara.objects.filter(inizio__isnull=True)
++    da_iniziare = Gara.objects.filter(inizio__isnull=True).order_by("-id")
+     return attive, archivio, da_iniziare
+ 
+ 
+diff --git a/engine/models.py b/engine/models.py
+index ed8f6d7..f67b707 100644
+--- a/engine/models.py
++++ b/engine/models.py
+@@ -91,6 +91,7 @@ class Gara(models.Model):
+     """
+     nome = models.CharField(max_length=200, help_text="Nome della gara")
+     inizio = models.DateTimeField(blank=True, null=True)
++    sospensione = models.DateTimeField(blank=True, null=True)
+     durata = models.DurationField(default=timedelta(hours=2), help_text="Durata nel formato hh:mm:ss")
+     n_blocco = models.PositiveSmallIntegerField(blank=True, default=2, null=True,  # Il valore NULL non fa bloccare mai il punteggio
+                                                 verbose_name="Parametro N",
+@@ -162,15 +163,19 @@ class Gara(models.Model):
+     def get_ora_fine(self):
+         if not self.inizio:
+             return None
++        if self.sospensione:
++            return None
+         return self.inizio + self.durata
+ 
+     def get_ora_blocco(self):
+         if not self.inizio:
+             return None
++        if self.sospensione:
++            return None
+         return self.inizio + self.durata - self.durata_blocco
+ 
+     def finished(self):
+-        return (self.inizio is not None) and (timezone.now() > self.get_ora_fine())
++        return (self.inizio is not None) and (self.sospensione is None) and (timezone.now() > self.get_ora_fine())
+ 
+     def get_all_eventi(self, user, id_evento, num_squadra, problema, risposta):
+         """Restituisce tutti gli eventi all'amministratore."""
+@@ -565,8 +570,10 @@ class Evento(KnowsChild):
+         loraesatta = timezone.now()
+         if self.gara.inizio is None:
+             return (False, "Gara non ancora iniziata")
++        if self.gara.sospensione is not None:
++            return (False, "Gara sospesa")
+         if loraesatta < self.gara.inizio:
+-            return (False, "Stai cercando di fare cose buffe")
++            return (False, "Non puoi consegnare con un orario precedente all'inizio della gara")
+         if loraesatta > self.gara.get_ora_fine():
+             if self.creatore == self.squadra.consegnatore:
+                 return (False, "Non puoi consegnare dopo la fine della gara")
+diff --git a/engine/templates/basegara.html b/engine/templates/basegara.html
+index 04162b9..e56b9f2 100644
+--- a/engine/templates/basegara.html
++++ b/engine/templates/basegara.html
+@@ -29,7 +29,7 @@
+     <li><a class="text-white" href="{% url 'engine:classifica-squadre' object.pk %}" target="_blank">Squadre</a></li>
+     <li><a class="text-white" href="{% url 'engine:classifica-problemi' object.pk %}" target="_blank">Problemi</a></li>
+     <li><a class="text-white" href="{% url 'engine:classifica-stato' object.pk %}" target="_blank">Stato</a></li>
+-    {% if object.inizio is not null %}
++    {% if object.inizio is not null and object.sospensione is null %}
+     <li><a class="text-white" href="{% url 'engine:classifica-unica' object.pk %}" target="_blank">Unica</a></li>
+     {% endif %}
+   </ul>
+diff --git a/engine/templates/classifiche/class_template.html b/engine/templates/classifiche/class_template.html
+index 62417b0..dfef131 100644
+--- a/engine/templates/classifiche/class_template.html
++++ b/engine/templates/classifiche/class_template.html
+@@ -8,7 +8,7 @@
+ {% block css %}<link href="{% static 'engine/css/classifiche.css' %}" rel="stylesheet" type="text/css" >{% endblock %}
+ 
+ {% block content %}
+-{% if object.inizio is not null %}
++{% if object.inizio is not null and object.sospensione is null %}
+ {% block main %}{% endblock %}
+ 
+ <script>
+@@ -153,6 +153,10 @@ $(document).ready(function() {
+ 
+ </script>
+ {% else %}
++    {% if object.sospensione is not null %}
++<p>La classifica non è disponibile in caso di sospensione della gara</p>
++    {% else %}
+ <p>La classifica non è disponibile prima dell'inizio della gara</p>
++    {% endif %}
+ {% endif %}
+ {% endblock %}
+diff --git a/engine/templates/gara/delete.html b/engine/templates/gara/delete.html
+new file mode 100644
+index 0000000..8e573fb
+--- /dev/null
++++ b/engine/templates/gara/delete.html
+@@ -0,0 +1,18 @@
++{% extends "basegara.html" %}
++{% block title %}{{object.nome}} reset{% endblock %}
++
++{% block content %}
++<h3>Gara: <a href="{% url 'engine:gara-detail' object.pk %}">{{ object.nome }}</a> - cancellazione gara</h3>
++
++<p>
++È consigliato fare un <a href="{% url 'engine:gara-download' object.pk %}">download</a> dello stato corrente di gara prima di procedere!
++</p>
++<p>
++Questa azione cancellerà la gara, inclusi i suoi parametri di configurazione ed eventuali eventi già avvenuti. Sei sicuro di voler procedere?<br/>
++<form method="post">{% csrf_token %}
++    <input type="hidden" name="delete" value=1>
++    <input type="submit" value="Sì, procedi alla cancellazione della gara!" id="submit">
++</form>
++</p>
++
++{% endblock %}
+diff --git a/engine/templates/gara/detail.html b/engine/templates/gara/detail.html
+index 859d370..41d8e02 100644
+--- a/engine/templates/gara/detail.html
++++ b/engine/templates/gara/detail.html
+@@ -7,7 +7,7 @@
+ {% block content %}
+ <h3>Gara: {{ object.nome }}  {% if is_admin %}<a href="{% url 'engine:gara-admin' object.pk %}" title="Modifica impostazioni di gara"><i class="fas fa-cogs"></i></a>{% endif %}</h3>
+ 
+-{% if object.inizio is not null %}
++{% if object.inizio is not null and object.sospensione is null %}
+     <p>
+     Iniziata {{object.inizio}};
+     {% if not object.finished %}
+@@ -23,7 +23,11 @@
+     <p>Scarica il testo: <a href="{{object.testo}}" target=_blank><i class="fas fa-file-pdf"></i></a></p>
+     {% endif %}
+ {% else %}
++    {% if object.sospensione is not null %}
++<p>Gara temporaneamente sospesa da {{object.sospensione}}</p>
++    {% else %}
+ <p>Gara ancora da iniziare</p>
++    {% endif %}
+ {% endif %}
+ 
+ <h5>Visualizza le classifiche:</h5>
+diff --git a/engine/templates/gara/detail_admin.html b/engine/templates/gara/detail_admin.html
+index e02b207..c093ec2 100644
+--- a/engine/templates/gara/detail_admin.html
++++ b/engine/templates/gara/detail_admin.html
+@@ -8,12 +8,12 @@
+ <h5><a href="{% url 'engine:gara-parametri' object.pk %}"> <i class="fas fa-cog"></i> Parametri</a></h5>
+ <h5><a href="{% url 'engine:gara-risposte' object.pk %}"> <i class="fas fa-tasks"></i> Soluzioni</a><br/></h5>
+ <h5><a href="{% url 'engine:gara-squadre' object.pk %}"> <i class="fas fa-users"></i> Squadre</a><br/></h5>
+-{% if object.inizio is not null %}
++{% if object.inizio is not null and object.sospensione is null %}
+ <h5><a href="{% url 'engine:query' object.pk %}"> <i class="fas fa-database"></i> Query</a><br/></h5>
+ {% endif %}
+ 
+ <p>
+-{% if object.inizio is not null %}
++{% if object.inizio is not null and object.sospensione is null %}
+ Iniziata {{object.inizio}};
+ {% if not object.finished %}
+ finisce {{object.get_ora_fine}}.
+@@ -26,13 +26,18 @@ finita {{object.get_ora_fine}}.
+ 
+ 
+ {% else %}
++    {% if object.sospensione is not null %}
++<p>Gara temporaneamente sospesa da {{object.sospensione}}</p>
++    {% else %}
+ <p>
+ Gara ancora da iniziare<br/>
++{% if num_eventi > 0 %}ATTENZIONE! Questa garà già contiene {{ num_eventi }} eventi. Sei sicuro di non dover fare un reset prima di iniziare la gara?<br/>{% endif %}
+ <form method="post">{% csrf_token %}
+     <input type="hidden" name="inizia" value=1>
+     <input type="submit" value="Inizia la gara" id="submit">
+ </form>
+ </p>
++    {% endif %}
+ {% endif %}
+ 
+ {% endblock %}
+diff --git a/engine/templates/gara/pause.html b/engine/templates/gara/pause.html
+new file mode 100644
+index 0000000..38982e7
+--- /dev/null
++++ b/engine/templates/gara/pause.html
+@@ -0,0 +1,27 @@
++{% extends "basegara.html" %}
++{% block title %}{{object.nome}} reset{% endblock %}
++
++{% block content %}
++<h3>Gara: <a href="{% url 'engine:gara-detail' object.pk %}">{{ object.nome }}</a> - sospensione gara</h3>
++
++
++{% if object.sospensione is null %}
++    {% if object.inizio is not null %}
++<p>
++È consigliato fare un <a href="{% url 'engine:gara-download' object.pk %}">download</a> dello stato corrente di gara prima di procedere!
++</p>
++<p>
++Questa azione metterà in pausa la gara, sospendendo l'inserimento di nuovi eventi e la visualizzazione della classifica. Sei sicuro di voler procedere?<br/>
++<form method="post">{% csrf_token %}
++    <input type="hidden" name="delete" value=1>
++    <input type="submit" value="Sì, procedi alla sospensione della gara!" id="submit">
++</form>
++</p>
++    {% else %}
++<p>La gara non è iniziata, e dunque non è nemmeno possibile sospenderla.</p>
++    {% endif %}
++{% else %}
++<p>La gara è già temporaneamente sospesa.</p>
++{% endif %}
++
++{% endblock %}
+diff --git a/engine/templates/gara/reset.html b/engine/templates/gara/reset.html
+new file mode 100644
+index 0000000..93b55a9
+--- /dev/null
++++ b/engine/templates/gara/reset.html
+@@ -0,0 +1,18 @@
++{% extends "basegara.html" %}
++{% block title %}{{object.nome}} reset{% endblock %}
++
++{% block content %}
++<h3>Gara: <a href="{% url 'engine:gara-detail' object.pk %}">{{ object.nome }}</a> - reset gara</h3>
++
++<p>
++È consigliato fare un <a href="{% url 'engine:gara-download' object.pk %}">download</a> dello stato corrente di gara prima di procedere!
++</p>
++<p>
++Questa azione cancellerà tutte le consegne, tutti i jolly e tutti i bonus registrati nella gara, e ne azzererà la data ed ora di inizio. Sei sicuro di voler procedere?<br/>
++<form method="post">{% csrf_token %}
++    <input type="hidden" name="reset" value=1>
++    <input type="submit" value="Sì, procedi al reset della gara!" id="submit">
++</form>
++</p>
++
++{% endblock %}
+diff --git a/engine/templates/gara/resume.html b/engine/templates/gara/resume.html
+new file mode 100644
+index 0000000..d73f24a
+--- /dev/null
++++ b/engine/templates/gara/resume.html
+@@ -0,0 +1,20 @@
++{% extends "basegara.html" %}
++{% block title %}{{object.nome}} reset{% endblock %}
++
++{% block content %}
++<h3>Gara: <a href="{% url 'engine:gara-detail' object.pk %}">{{ object.nome }}</a> - ripresa gara</h3>
++
++
++{% if object.sospensione is not null %}
++<p>
++Questa azione farà ripartire la gara, consentendo nuovamente l'inserimento di nuovi eventi e la visualizzazione della classifica. Sei sicuro di voler procedere?<br/>
++<form method="post">{% csrf_token %}
++    <input type="hidden" name="delete" value=1>
++    <input type="submit" value="Sì, fai ripartire la gara!" id="submit">
++</form>
++</p>
++{% else %}
++<p>La gara non è temporanemante sospesa, e dunque non è nemmeno possibile farla ripartire.</p>
++{% endif %}
++
++{% endblock %}
+diff --git a/engine/templates/index.html b/engine/templates/index.html
+index fa86faa..f98c16d 100644
+--- a/engine/templates/index.html
++++ b/engine/templates/index.html
+@@ -21,6 +21,12 @@
+               <th>Testo</th>
+               <th>Inizio</th>
+               <th>Fine</th>
++              {% if user.is_staff %}
++              <th>Download</th>
++              <th>Sospendi/Riprendi</th>
++              <th>Reset</th>
++              <th>Cancella</th>
++              {% endif %}
+             </tr>
+           </thead>
+           <tbody>
+@@ -28,9 +34,23 @@
+             <tr>
+               <td>{{gara.pk}}</td>
+               <td><a href="{% url 'engine:gara-detail' gara.pk%}">{{gara.nome}}</a></td>
+-              <td>{% if gara.testo %}<a href="{{gara.testo}}" target=_blank><i class="fas fa-file-pdf"></i></a>{% else %}<i class="fas fa-ban"></i>{% endif %}</td>
++              <td>{% if gara.testo %}<a href="{{gara.testo}}" target=_blank><i class="fas fa-file-pdf" title="Download testo"></i></a>{% else %}<i class="fas fa-ban"></i>{% endif %}</td>
+               <td>{{gara.inizio}}</td>
++              {% if gara.sospensione is null %}
+               <td>{{gara.get_ora_fine}}</td>
++              {% else %}
++              <td>Temporaneamente sospesa</td>
++              {% endif %}
++              {% if user.is_staff %}
++              <td><a href="{% url 'engine:gara-download' gara.pk%}" target=_blank><i class="fas fa-download" title="Download gara"></i></a></td>
++              {% if gara.sospensione is null %}
++              <td><a href="{% url 'engine:gara-pause' gara.pk%}" target=_blank><i class="fas fa-pause" title="Sospendi gara"></i></a></td>
++              {% else %}
++              <td><a href="{% url 'engine:gara-resume' gara.pk%}" target=_blank><i class="fas fa-play" title="Riprendi gara"></i></a></td>
++              {% endif %}
++              <td><a href="{% url 'engine:gara-reset' gara.pk%}" target=_blank><i class="fas fa-undo" title="Reset gara"></i></a></td>
++              <td><a href="{% url 'engine:gara-delete' gara.pk%}" target=_blank><i class="fas fa-trash" title="Cancella gara"></i></a></td>
++              {% endif %}
+             </tr>
+             {% endfor %}
+           </tbody>
+@@ -58,6 +78,12 @@
+             <tr>
+               <th>Id</th>
+               <th>Nome</th>
++              {% if user.is_staff %}
++              <th>Download</th>
++              <th>Inizia</th>
++              <th>Reset</th>
++              <th>Cancella</th>
++              {% endif %}
+             </tr>
+           </thead>
+           <tbody>
+@@ -65,6 +91,12 @@
+             <tr>
+               <td>{{gara.pk}}</td>
+               <td><a href="{% url 'engine:gara-detail' gara.pk%}">{{gara.nome}}</a></td>
++              {% if user.is_staff %}
++              <td><a href="{% url 'engine:gara-download' gara.pk%}" target=_blank><i class="fas fa-download" title="Download gara"></i></a></td>
++              <td><a href="{% url 'engine:gara-admin' gara.pk%}" target=_blank><i class="fas fa-play" title="Inizia gara"></i></a></td>
++              <td><a href="{% url 'engine:gara-reset' gara.pk%}" target=_blank><i class="fas fa-undo" title="Reset gara"></i></a></td>
++              <td><a href="{% url 'engine:gara-delete' gara.pk%}" target=_blank><i class="fas fa-trash" title="Cancella gara"></i></a></td>
++              {% endif %}
+             </tr>
+             {% endfor %}
+           </tbody>
+@@ -93,7 +125,11 @@
+                 <th>Nome</th>
+                 <th>Inizio</th>
+                 <th>Fine</th>
++                {% if user.is_staff %}
+                 <th>Download</th>
++                <th>Reset</th>
++                <th>Cancella</th>
++                {% endif %}
+               </tr>
+             </thead>
+             <tbody>
+@@ -103,7 +139,11 @@
+               <td><a href="{% url 'engine:gara-detail' gara.pk%}">{{gara.nome}}</a></td>
+                 <td>{{gara.inizio}}</td>
+                 <td>{{gara.get_ora_fine}}</td>
+-                <td><a href="{% url 'engine:gara-download' gara.pk%}" target=_blank><i class="fas fa-download"></i></a></td>
++                {% if user.is_staff %}
++                <td><a href="{% url 'engine:gara-download' gara.pk%}" target=_blank><i class="fas fa-download" title="Download gara"></i></a></td>
++                <td><a href="{% url 'engine:gara-reset' gara.pk%}" target=_blank><i class="fas fa-undo" title="Reset gara"></i></a></td>
++                <td><a href="{% url 'engine:gara-delete' gara.pk%}" target=_blank><i class="fas fa-trash" title="Cancella gara"></i></a></td>
++                {% endif %}
+               </tr>
+               {% endfor %}
+             </tbody>
+diff --git a/engine/tests.py b/engine/tests.py
+index 0a6c86d..8dab23d 100644
+--- a/engine/tests.py
++++ b/engine/tests.py
+@@ -979,6 +979,142 @@ class HtmlTests(StaticLiveServerTestCase, TuringTests):
+ 
+         self.assertEqual(len(Soluzione.objects.filter(gara=gara)), 3)
+ 
++    def test_reset_gara(self):
++        self.crea_gara(5, [0,0,0], admin=self.user)
++        gara = Gara.objects.first()
++
++        self.put_jolly(1, 3)
++        self.put_bonus(2, -98)
++        self.consegna(3, 1, 500)
++
++        self.assertEqual(len(Jolly.objects.filter(gara=gara)), 1)
++        self.assertEqual(len(Bonus.objects.filter(gara=gara)), 1)
++        self.assertEqual(len(Consegna.objects.filter(gara=gara)), 1)
++
++        url = self.get_url("engine:gara-reset", pk=gara.pk)
++        self.selenium.get(url)
++        self.selenium.find_element(By.ID, "submit").click()
++
++        self.assertEqual(len(Jolly.objects.filter(gara=gara)), 0)
++        self.assertEqual(len(Bonus.objects.filter(gara=gara)), 0)
++        self.assertEqual(len(Consegna.objects.filter(gara=gara)), 0)
++
++    def test_cancellazione_gara(self):
++        self.crea_gara(5, [0,0,0], admin=self.user)
++        gara = Gara.objects.first()
++
++        self.consegna(1, 1, 500)
++
++        self.assertEqual(len(Gara.objects.filter(pk=gara.pk)), 1)
++        self.assertEqual(len(Consegna.objects.filter(gara=gara)), 1)
++
++        url = self.get_url("engine:gara-delete", pk=gara.pk)
++        self.selenium.get(url)
++        self.selenium.find_element(By.ID, "submit").click()
++
++        self.assertEqual(len(Gara.objects.filter(pk=gara.pk)), 0)
++        self.assertEqual(len(Consegna.objects.filter(gara=gara)), 0)
++
++    def test_sospensione_ripresa_gara(self):
++        self.crea_gara(5, [0,0,0], admin=self.user)
++
++        gara = Gara.objects.first()
++        orario_inizio = gara.inizio
++        self.assertIsNotNone(orario_inizio)
++
++        sleep_before_events = 1.0
++        t.sleep(sleep_before_events)
++
++        orario_jolly = self.put_jolly(1, 3).orario
++        orario_bonus = self.put_bonus(2, -98).orario
++        orario_consegna = self.consegna(3, 1, 500).orario
++
++        self.assertGreaterEqual((orario_jolly - orario_inizio).total_seconds(), sleep_before_events)
++        self.assertGreaterEqual((orario_bonus - orario_inizio).total_seconds(), sleep_before_events)
++        self.assertGreaterEqual((orario_consegna - orario_inizio).total_seconds(), sleep_before_events)
++
++        self.assertIsNone(gara.sospensione)
++
++        sleep_before_race_pause = 1.0
++        t.sleep(sleep_before_race_pause)
++
++        url = self.get_url("engine:gara-pause", pk=gara.pk)
++        self.selenium.get(url)
++        self.selenium.find_element(By.ID, "submit").click()
++
++        # Aggiorna l'oggetto gara dopo la modifica dovuta alla sospensione
++        gara = Gara.objects.first()
++
++        self.assertIsNotNone(gara.inizio)
++        self.assertIsNotNone(gara.sospensione)
++        self.assertGreaterEqual(
++            (gara.sospensione - orario_inizio).total_seconds(), sleep_before_events + sleep_before_race_pause)
++
++        sleep_before_race_resume = 3.0
++        t.sleep(sleep_before_race_resume)
++
++        url = self.get_url("engine:gara-resume", pk=gara.pk)
++        self.selenium.get(url)
++        self.selenium.find_element(By.ID, "submit").click()
++
++        # Aggiorna l'oggetto gara dopo la modifica dovuta alla ripresa
++        gara = Gara.objects.first()
++
++        self.assertIsNone(gara.sospensione)
++
++        nuovo_orario_inizio = gara.inizio
++        self.assertIsNotNone(nuovo_orario_inizio)
++        self.assertGreaterEqual(
++            (nuovo_orario_inizio - orario_inizio).total_seconds(), sleep_before_race_resume)
++
++        nuovo_orario_jolly = Jolly.objects.filter(gara=gara).first().orario
++        nuovo_orario_bonus = Bonus.objects.filter(gara=gara).first().orario
++        nuovo_orario_consegna = Consegna.objects.filter(gara=gara).first().orario
++
++        self.assertEqual(
++            (nuovo_orario_jolly - orario_jolly).total_seconds(),
++            (nuovo_orario_inizio - orario_inizio).total_seconds())
++        self.assertEqual(
++            (nuovo_orario_bonus - orario_bonus).total_seconds(),
++            (nuovo_orario_inizio - orario_inizio).total_seconds())
++        self.assertEqual(
++            (nuovo_orario_consegna - orario_consegna).total_seconds(),
++            (nuovo_orario_inizio - orario_inizio).total_seconds())
++
++        self.assertEqual(
++            (nuovo_orario_jolly - nuovo_orario_inizio).total_seconds(),
++            (orario_jolly - orario_inizio).total_seconds())
++        self.assertEqual(
++            (nuovo_orario_bonus - nuovo_orario_inizio).total_seconds(),
++            (orario_bonus - orario_inizio).total_seconds())
++        self.assertEqual(
++            (nuovo_orario_consegna - nuovo_orario_inizio).total_seconds(),
++            (orario_consegna - orario_inizio).total_seconds())
++
++    def test_doppia_sospensione_gara(self):
++        self.crea_gara(5, [0,0,0], admin=self.user)
++
++        gara = Gara.objects.first()
++        self.assertIsNone(gara.sospensione)
++
++        url = self.get_url("engine:gara-pause", pk=gara.pk)
++        self.selenium.get(url)
++        self.selenium.find_element(By.ID, "submit").click()
++
++        # Interroga di nuovo la pagina di sospensione gara, e conferma che ora non è più presente il bottone
++        self.selenium.get(url)
++        self.assertEqual(len(self.selenium.find_elements(By.ID, "submit")), 0)
++
++    def test_ripresa_senza_sospensione_gara(self):
++        self.crea_gara(5, [0,0,0], admin=self.user)
++
++        gara = Gara.objects.first()
++        self.assertIsNone(gara.sospensione)
++
++        url = self.get_url("engine:gara-resume", pk=gara.pk)
++        self.selenium.get(url)
++        self.assertEqual(len(self.selenium.find_elements(By.ID, "submit")), 0)
++
+     # TODO: test download and reupload
+ 
+ 
+@@ -1055,7 +1191,22 @@ class ValidationTests(MyTestCase, TuringTests):
+         self.assertTrue(self.user.is_inseritore(self.gara))
+ 
+         self.go_to_minute(-5)
+-        self.view_helper(200, 200, messages_post=[{"tag": "warning", "message": "Stai cercando di fare cose buffe"}])
++        self.view_helper(200, 200, messages_post=[{"tag": "warning", "message": "Non puoi consegnare con un orario precedente all'inizio della gara"}])
++
++    def test_inserimento_durante_sospensione_gara(self):
++        self.crea_gara(5, [0,0,0])
++        self.url = reverse('engine:inserimento', kwargs={'pk': self.gara.pk})
++        sq = self.gara.squadre.all()[0]
++        self.data = {'squadra': sq.pk, 'problema': 1, 'risposta': 76}
++
++        self.gara.inseritori.add(self.user)
++        self.assertTrue(self.user.is_inseritore(self.gara))
++
++        self.gara.sospensione = timezone.now()
++        self.gara.save()
++
++        self.view_helper(200, 200, messages_post=[{"tag": "warning", "message": "Gara sospesa"}])
++        self.assertFalse(self.gara.eventi.exists())
+ 
+     def test_inserimento_problema_inesistente(self):
+         self.crea_gara(5, [0,0,0])
+@@ -1241,6 +1392,114 @@ class PermissionTests(MyTestCase, TuringTests):
+         self.view_helper(403, 403)
+         self.assertEqual(gara.nome, 'GaraTest')
+ 
++    def test_reset_gara(self):
++        self.crea_gara(2, [0, 0, 0])
++        gara = self.gara
++        self.url = reverse('engine:gara-reset', kwargs={'pk': gara.pk})
++        self.data = {}
++
++        self.consegna(1, 1, 500)
++        self.assertEqual(len(Consegna.objects.filter(gara=gara)), 1)
++
++        # Un utente a caso non può fare il reset della gara
++        self.view_helper(403, 403)
++        self.assertEqual(len(Consegna.objects.filter(gara=gara)), 1)
++
++        # Un inseritore nemmeno
++        gara.inseritori.add(self.user)
++        self.assertTrue(self.user.is_inseritore(gara))
++
++        self.view_helper(403, 403)
++        self.assertEqual(len(Consegna.objects.filter(gara=gara)), 1)
++
++        # Solo l'admin può
++        gara.admin = self.user
++        gara.save()
++
++        self.view_helper(200, 200, messages_post=[{"tag": "success", "message": "Reset gara avvenuto con successo!"}])
++        self.assertEqual(len(Consegna.objects.filter(gara=gara)), 0)
++
++    def test_cancellazione_gara(self):
++        self.crea_gara(2, [0, 0, 0])
++        gara = self.gara
++        self.url = reverse('engine:gara-delete', kwargs={'pk': gara.pk})
++        self.data = {}
++
++        self.assertEqual(len(Gara.objects.filter(pk=gara.pk)), 1)
++
++        # Un utente a caso non può cancellare la gara
++        self.view_helper(403, 403)
++        self.assertEqual(len(Gara.objects.filter(pk=gara.pk)), 1)
++
++        # Un inseritore nemmeno
++        gara.inseritori.add(self.user)
++        self.assertTrue(self.user.is_inseritore(gara))
++
++        self.view_helper(403, 403)
++        self.assertEqual(len(Gara.objects.filter(pk=gara.pk)), 1)
++
++        # Solo l'admin può
++        gara.admin = self.user
++        gara.save()
++
++        self.view_helper(200, 200, messages_post=[{"tag": "success", "message": "Gara cancellata con successo!"}])
++        self.assertEqual(len(Gara.objects.filter(pk=gara.pk)), 0)
++
++    def test_sospensione_gara(self):
++        self.crea_gara(2, [0, 0, 0])
++        gara = self.gara
++        self.url = reverse('engine:gara-pause', kwargs={'pk': gara.pk})
++        self.data = {}
++
++        self.assertIsNone(Gara.objects.filter(pk=gara.pk).first().sospensione)
++
++        # Un utente a caso non può sospendere la gara
++        self.view_helper(403, 403)
++        self.assertIsNone(Gara.objects.filter(pk=gara.pk).first().sospensione)
++
++        # Un inseritore nemmeno
++        gara.inseritori.add(self.user)
++        self.assertTrue(self.user.is_inseritore(gara))
++
++        self.view_helper(403, 403)
++        self.assertIsNone(Gara.objects.filter(pk=gara.pk).first().sospensione)
++
++        # Solo l'admin può
++        gara.admin = self.user
++        gara.save()
++
++        self.view_helper(200, 200, messages_post=[{"tag": "success", "message": "Gara sospesa con successo!"}])
++        self.assertIsNotNone(Gara.objects.filter(pk=gara.pk).first().sospensione)
++
++    def test_ripresa_gara(self):
++        self.crea_gara(2, [0, 0, 0])
++        gara = self.gara
++        self.url = reverse('engine:gara-resume', kwargs={'pk': gara.pk})
++        self.data = {}
++
++        gara.sospensione = timezone.now()
++        gara.save()
++
++        self.assertIsNotNone(Gara.objects.filter(pk=gara.pk).first().sospensione)
++
++        # Un utente a caso non può sospendere la gara
++        self.view_helper(403, 403)
++        self.assertIsNotNone(Gara.objects.filter(pk=gara.pk).first().sospensione)
++
++        # Un inseritore nemmeno
++        gara.inseritori.add(self.user)
++        self.assertTrue(self.user.is_inseritore(gara))
++
++        self.view_helper(403, 403)
++        self.assertIsNotNone(Gara.objects.filter(pk=gara.pk).first().sospensione)
++
++        # Solo l'admin può
++        gara.admin = self.user
++        gara.save()
++
++        self.view_helper(200, 200, messages_post=[{"tag": "success", "message": "Gara ripartita con successo!"}])
++        self.assertIsNone(Gara.objects.filter(pk=gara.pk).first().sospensione)
++
+     def test_inserimento_soluzioni(self):
+         self.crea_gara(2, [0, 0, 0])
+         self.url = reverse('engine:gara-risposte', kwargs={'pk': self.gara.pk})
+diff --git a/engine/urls.py b/engine/urls.py
+index 649612d..308e438 100644
+--- a/engine/urls.py
++++ b/engine/urls.py
+@@ -17,6 +17,10 @@ urlpatterns = [
+     path('gara/<int:pk>/risposte', GaraRisposteView.as_view(), name='gara-risposte'),
+     path('gara/<int:pk>/squadre', GaraSquadreView.as_view(), name='gara-squadre'),
+     path('gara/<int:pk>/download', DownloadGaraView.as_view(), name='gara-download'),
++    path('gara/<int:pk>/reset', GaraResetView.as_view(), name='gara-reset'),
++    path('gara/<int:pk>/delete', GaraDeleteView.as_view(), name='gara-delete'),
++    path('gara/<int:pk>/pause', GaraPauseView.as_view(), name='gara-pause'),
++    path('gara/<int:pk>/resume', GaraResumeView.as_view(), name='gara-resume'),
+     path('query/<int:pk>', QueryView.as_view(), name='query'),
+     path('inserisci/<int:pk>', InserimentoView.as_view(), name='inserimento'),
+     path('evento/<int:pk>/modifica', ModificaEventoView.as_view(), name='evento-modifica'),
+diff --git a/engine/views.py b/engine/views.py
+index a7d6d81..c20b5e7 100644
+--- a/engine/views.py
++++ b/engine/views.py
+@@ -9,6 +9,8 @@ from django.http import JsonResponse, HttpResponse
+ from django.utils import timezone
+ from django.db import transaction
+ from django.contrib.auth import login, authenticate
++from django import forms
++from django.db.models import F
+ 
+ from engine.models import User, Gara, Soluzione, Squadra, Evento, Consegna, Jolly, Bonus
+ from engine.forms import SignUpForm, RispostaFormset, SquadraFormset, InserimentoForm,\
+@@ -163,6 +165,11 @@ class GaraAdminView(CheckPermissionsMixin, DetailView):
+         self.object = self.get_object()
+         return self.request.user.can_administrate(self.object)
+ 
++    def get_context_data(self, **kwargs):
++        context = super().get_context_data(**kwargs)
++        context['num_eventi'] = len(self.object.eventi.all())
++        return context
++
+     def post(self, request, *args, **kwargs):
+         if "inizia" in request.POST:
+             loraesatta = timezone.now()
+@@ -259,15 +266,101 @@ class DownloadGaraView(DetailView):
+ 
+     def get(self, request, *args, **kwargs):
+         super().get(request, *args, **kwargs)
+-        loraesatta = timezone.now()
+-        if self.object.get_ora_fine() >= loraesatta:
+-            return HttpResponse('Non puoi scaricare una gara in corso', status=404)
+         data = self.object.dump_to_json()
+         response = HttpResponse(data, content_type="application/json")
+         response['Content-Disposition'] = 'attachment; filename={}.json'.format(self.object.nome)
+         return response
+ 
+ 
++class GaraResetView(CheckPermissionsMixin, SuccessMessageMixin, FormView, DetailView):
++    """ View per il reset di una gara """
++    model = Gara
++    form_class = forms.Form
++    template_name = "gara/reset.html"
++    success_message = 'Reset gara avvenuto con successo!'
++
++    def test_func(self):
++        self.object = self.get_object()
++        return self.request.user.can_administrate(self.object)
++
++    @transaction.atomic
++    def form_valid(self, form):
++        gara = self.object
++        Jolly.objects.filter(gara=gara).delete()
++        Jolly.history.filter(gara=gara).delete()
++        Consegna.objects.filter(gara=gara).delete()
++        Consegna.history.filter(gara=gara).delete()
++        Bonus.objects.filter(gara=gara).delete()
++        Bonus.history.filter(gara=gara).delete()
++        gara.inizio = None
++        gara.save()
++        return super().form_valid(form)
++
++    def get_success_url(self, **kwargs):
++        return reverse("engine:gara-admin", kwargs={'pk': self.object.pk})
++
++
++class GaraDeleteView(CheckPermissionsMixin, SuccessMessageMixin, FormView, DeleteView):
++    """ View per la cancellazione di una gara """
++    model = Gara
++    form_class = forms.Form
++    template_name = "gara/delete.html"
++    success_message = 'Gara cancellata con successo!'
++
++    def test_func(self):
++        self.object = self.get_object()
++        return self.request.user.can_administrate(self.object)
++
++    def get_success_url(self, **kwargs):
++        return reverse("engine:index")
++
++
++class GaraPauseView(CheckPermissionsMixin, SuccessMessageMixin, FormView, DetailView):
++    """ View per la sospensione di una gara """
++    model = Gara
++    form_class = forms.Form
++    template_name = "gara/pause.html"
++    success_message = 'Gara sospesa con successo!'
++
++    def test_func(self):
++        self.object = self.get_object()
++        return self.request.user.can_administrate(self.object)
++
++    def form_valid(self, form):
++        gara = self.object
++        gara.sospensione = timezone.now()
++        gara.save()
++        return super().form_valid(form)
++
++    def get_success_url(self, **kwargs):
++        return reverse("engine:gara-resume", kwargs={'pk': self.object.pk})
++
++
++class GaraResumeView(CheckPermissionsMixin, SuccessMessageMixin, FormView, DetailView):
++    """ View per la ripresa di una gara """
++    model = Gara
++    form_class = forms.Form
++    template_name = "gara/resume.html"
++    success_message = 'Gara ripartita con successo!'
++
++    def test_func(self):
++        self.object = self.get_object()
++        return self.request.user.can_administrate(self.object)
++
++    @transaction.atomic
++    def form_valid(self, form):
++        gara = self.object
++        loraesatta = timezone.now()
++        shift = loraesatta - gara.sospensione
++        gara.inizio += shift
++        gara.eventi.update(orario=F("orario") + shift)
++        gara.sospensione = None
++        gara.save()
++        return super().form_valid(form)
++
++    def get_success_url(self, **kwargs):
++        return reverse("engine:gara-admin", kwargs={'pk': self.object.pk})
++
+ #######################################
+ #             VIEW QUERY              #
+ #######################################
