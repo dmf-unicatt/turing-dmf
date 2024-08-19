@@ -16,16 +16,31 @@ def test_data_directory_exists(data_dir: pathlib.Path) -> None:
     assert data_dir.is_dir()
 
 
-@pytest.mark.parametrize("this_extension,other_extension", [(".journal", ".score"), (".score", ".journal")])
-def test_data_both_journal_and_score_files_exist(
-    data_dir: pathlib.Path, this_extension: str, other_extension: str
-) -> None:
-    """Test that every journal file has an associated score file, and viceversa."""
+@pytest.mark.parametrize("race_extension", [".journal", ".json"])
+def test_data_has_a_score_file_for_every_race_file(data_dir: pathlib.Path, race_extension: str) -> None:
+    """Test that every journal or json file has an associated score file."""
     found_files = 0
-    for entry in data_dir.rglob(f"*{this_extension}"):
+    for entry in data_dir.rglob(f"*{race_extension}"):
         assert entry.is_file() or entry.is_dir()
         if entry.is_file():
-            assert entry.with_suffix(other_extension).exists()
+            assert entry.with_suffix(".score").exists()
+            found_files += 1
+        elif entry.is_dir():
+            pass
+        else:
+            raise RuntimeError(f"Invalid {entry}")
+    assert found_files > 0
+
+
+def test_data_has_a_race_file_for_every_score_file(data_dir: pathlib.Path) -> None:
+    """Test that every journal or json file has an associated score file."""
+    found_files = 0
+    for entry in data_dir.rglob("*.score"):
+        assert entry.is_file() or entry.is_dir()
+        if entry.is_file():
+            exists_journal = entry.with_suffix(".journal").exists()
+            exists_json = entry.with_suffix(".json").exists()
+            assert int(exists_journal) + int(exists_json) == 1
             found_files += 1
         elif entry.is_dir():
             pass
@@ -35,7 +50,7 @@ def test_data_both_journal_and_score_files_exist(
 
 
 def test_data_contains_only_journal_and_score_files(data_dir: pathlib.Path) -> None:
-    """Test that the data directory only contains journal and score files."""
+    """Test that the data directory only contains journal, json and score files."""
     for entry in data_dir.rglob("*"):
         assert entry.is_file() or entry.is_dir()
         if entry.is_file():
@@ -43,7 +58,7 @@ def test_data_contains_only_journal_and_score_files(data_dir: pathlib.Path) -> N
                 # allow auxiliary script
                 pass
             else:
-                assert entry.suffix in (".journal", ".score")
+                assert entry.suffix in (".journal", ".json", ".score")
         elif entry.is_dir():
             pass
         else:
