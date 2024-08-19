@@ -11,7 +11,7 @@ This directory contains a few local patches. Most of them are related to changes
 6. `0006_test_pk_for_postgres.patch`: update tests for compatibility with PostgreSQL. It seems that SQLite3 uses a standalone database at every test and/or resets primary keys at every test, while PostgreSQL does not. Due to this, some hardcoded primary keys had to be replaced with a value fetched from the current database state.
 7. `0007_generalize_race_parameters.patch`: allow customization of the deadline time for question score periodic increase. Furthermore, isolate the remaining the race parameters in the javascript client, so that they can be generalized more easily in the django interface in future.
 8. `0008_default_n_k_blocco.patch`: add default values for `n_blocco` and `k_blocco`. **mathrace** only supports the case `k_blocco = 1`, and therefore we prefer to provide this value as the default to facilitate setting up **mathrace**-compatible races in **Turing @ DMF**.
-9. `0009_upload_journal.patch`: allow user to upload and import a **mathrace** journal.
+9. `0009_upload_journal.patch`: allow user to upload and import a **mathrace** journal. Furthermore, be explicit in allowing or disallowing race events that will end up being in the future.
 10. `0010_update_requirements.patch`: update versions in `requirements.txt`, after checking that tests still run correctly.
 11. `0011_models_to_from_dict_fixes.patch`: fixes to `Gara.create_from_dictionary` and `Gara.to_dict`, so that the latter returns a fully serialized object, and the former does not change the input dictionary.
 12. `0012_display_protocol_numbers.patch`: display the protocol number (primary key in the database) when adding a new answer or jolly selection through the web interface.

@@ -1,8 +1,8 @@
 diff --git a/engine/forms.py b/engine/forms.py
-index 3a7c02a..ddb1066 100644
+index 3a7c02a..3cae582 100644
 --- a/engine/forms.py
 +++ b/engine/forms.py
-@@ -1,6 +1,8 @@
+@@ -1,9 +1,18 @@
  from django import forms
  from engine.models import User
 +from django.core.validators import FileExtensionValidator
@@ -11,7 +11,30 @@ index 3a7c02a..ddb1066 100644
  from crispy_forms.helper import FormHelper
  
  from engine.models import Squadra, Soluzione, Jolly, Consegna
-@@ -125,4 +127,12 @@ class ModificaJollyForm(forms.Form):
++from dateutil.parser import parse
++from mathrace_interaction.journal_reader import journal_reader
++from mathrace_interaction.filter.strip_mathrace_only_attributes_from_imported_turing import (
++    strip_mathrace_only_attributes_from_imported_turing)
++
++import io
++import json
+ 
+ class SignUpForm(UserCreationForm):
+     class Meta:
+@@ -97,10 +106,10 @@ class InserimentoForm(forms.Form):
+ 
+         if bool(cleaned_data['jolly']) != bool(cleaned_data['risposta'] is None):
+             raise forms.ValidationError('Inserire la risposta o il jolly, ma non entrambi')
+-        
++
+         if bool(cleaned_data['jolly']) and Jolly.objects.filter(squadra = cleaned_data['squadra']).exists():
+             raise forms.ValidationError('Ė già stato inserito un jolly per la squadra')
+- 
++
+         obj = self.get_instance()
+         obj.clean()
+         return cleaned_data
+@@ -125,4 +134,71 @@ class ModificaJollyForm(forms.Form):
  
  
  class UploadGaraForm(forms.Form):
@@ -19,20 +42,89 @@ index 3a7c02a..ddb1066 100644
 +    gara = forms.FileField(
 +        label="Gara", help_text="Scegli il file .journal o .json contente la gara da importare",
 +        validators=[FileExtensionValidator(allowed_extensions=["journal", "json"])])
++    eventi_futuri = forms.BooleanField(
++        required=False, initial=False, label="Consenti eventi futuri", help_text=(
++            "Spuntare per consentire eventi che hanno data nel futuro. Di default tali eventi non sono consentiti, "
++            "perché possono creare confusione tra gli inseritori i quali, guardando la classifica, "
++            "vedrebbero comparire gradualmente eventi senza che loro li stiano inserendo"
++        ))
++    eventi_riordina = forms.BooleanField(
++        required=False, initial=False, label="Riordina automaticamente eventi", help_text=(
++            "Spuntare per riordinare automaticamente gli eventi in ordine cronologico crescente. "
++            "Caricare un file con eventi disordinati può creare problemi nella visualizzazione della classifica, "
++            "perché gli inserimento non arrivano in ordine corretto. Di default gli eventi non vengono automaticamente "
++            "riordinati ma, se questa opzione non è selezionata, viene comunque controllato che siano già nell'ordine "
++            "cronologico corretto"
++        ))
 +    nome_gara = forms.CharField(
 +        label="Nome della gara (richiesto solo per il formato .journal)",
 +        initial="Disfida", required=False)
 +    data_gara = forms.DateTimeField(
 +        label="Data della gara (richiesto solo per il formato .journal)",
 +        initial=timezone.now(), required=False)
++
++    def clean(self):
++        cleaned_data = super().clean()
++        if self.errors:
++            return cleaned_data
++
++        gara_file = cleaned_data["gara"]
++        if gara_file.name.endswith(".json"):
++            gara_json = json.load(gara_file)
++        elif gara_file.name.endswith(".journal"):
++            race_name = cleaned_data["nome_gara"]
++            race_date = cleaned_data["data_gara"]
++            with journal_reader(io.TextIOWrapper(gara_file, encoding="utf-8")) as journal_stream:
++                # Disable strict processing: incorrectly sorted events will be handled according to
++                # the choice in eventi_riordina
++                journal_stream.strict_timestamp_race_events = False
++                try:
++                    gara_json = journal_stream.read(race_name, race_date)
++                except RuntimeError as e:
++                    raise forms.ValidationError(f"Errore nella conversione del file journal: {e}")
++            strip_mathrace_only_attributes_from_imported_turing(gara_json)
++
++        has_inizio = ("inizio" in gara_json and gara_json["inizio"] is not None)
++        has_eventi = ("eventi" in gara_json)
++        if not has_inizio and has_eventi:
++            raise forms.ValidationError(f'La gara contiene eventi ma non ha una data di inizio')
++
++        if has_eventi:
++            if cleaned_data["eventi_riordina"]:
++                gara_json['eventi'] = list(sorted(gara_json['eventi'], key=lambda e: (
++                    e["orario"], e["subclass"], e["squadra_id"], e["problema"] if "problema" in e else None)))
++
++            loraesatta = timezone.now()
++            orario_precedente = parse(gara_json["inizio"])
++            for evento in gara_json["eventi"]:
++                orario = parse(evento["orario"])
++                if not cleaned_data["eventi_futuri"] and orario > loraesatta:
++                    raise forms.ValidationError(f'La gara contiene eventi che hanno data nel futuro, ad esempio in data {evento["orario"]}')
++                if orario < orario_precedente:
++                    raise forms.ValidationError(f"La gara contiene eventi in ordine non cronologico crescente, ad esempio l'evento alle {orario_precedente} viene prima dell'evento delle {orario}")
++                else:
++                    orario_precedente = orario
++
++        cleaned_data["gara_json"] = gara_json
++        return cleaned_data
 diff --git a/engine/templates/gara/upload.html b/engine/templates/gara/upload.html
-index de5b066..443a8e3 100644
+index de5b066..22854c9 100644
 --- a/engine/templates/gara/upload.html
 +++ b/engine/templates/gara/upload.html
-@@ -17,6 +17,14 @@
+@@ -17,6 +17,24 @@
          {{ form.gara|as_crispy_field }}
          </div>
      </div>
++    <div class="form-row">
++        <div class="form-group col-md-12">
++        {{ form.eventi_futuri|as_crispy_field }}
++        </div>
++    </div>
++    <div class="form-row">
++        <div class="form-group col-md-12">
++        {{ form.eventi_riordina|as_crispy_field }}
++        </div>
++    </div>
 +    <div class="form-row">
 +        <div class="form-group col-md-6">
 +        {{ form.nome_gara|as_crispy_field }}
@@ -45,35 +137,33 @@ index de5b066..443a8e3 100644
      <button type="submit" class="btn btn-primary">Carica</button>
  </form>
 diff --git a/engine/views.py b/engine/views.py
-index 2f68324..e372dc9 100644
+index 2f68324..3395f0b 100644
 --- a/engine/views.py
 +++ b/engine/views.py
-@@ -14,7 +14,12 @@ from engine.models import User, Gara, Soluzione, Squadra, Evento, Consegna, Joll
- from engine.forms import SignUpForm, RispostaFormset, SquadraFormset, InserimentoForm,\
+@@ -15,8 +15,6 @@ from engine.forms import SignUpForm, RispostaFormset, SquadraFormset, Inseriment
      ModificaConsegnaForm, ModificaJollyForm, UploadGaraForm
  from engine.formfields import IntegerMultiField
-+from mathrace_interaction.journal_reader import journal_reader
-+from mathrace_interaction.filter.strip_mathrace_only_attributes_from_imported_turing import (
-+    strip_mathrace_only_attributes_from_imported_turing)
  
-+import datetime
-+import io
- import json
- import time
+-import json
+-import time
  import logging
-@@ -245,7 +250,14 @@ class UploadGaraView(PermissionRequiredMixin, SuccessMessageMixin, FormView):
+ logger = logging.getLogger(__name__)
+ 
+@@ -241,12 +239,13 @@ class UploadGaraView(PermissionRequiredMixin, SuccessMessageMixin, FormView):
+     permission_required = "engine.add_gara"
+ 
+     def get_success_url(self):
+-        return reverse("engine:gara-detail", kwargs={'pk': self.gara.pk})
++        return reverse("engine:gara-detail", kwargs={'pk': self.object.pk})
  
      def form_valid(self, form):
-         gara_file = self.request.FILES['gara']
+-        gara_file = self.request.FILES['gara']
 -        gara_json = json.load(gara_file)
-+        if gara_file.name.endswith(".json"):
-+            gara_json = json.load(gara_file)
-+        elif gara_file.name.endswith(".journal"):
-+            race_name = form.cleaned_data.get("nome_gara")
-+            race_date = form.cleaned_data.get("data_gara")
-+            with journal_reader(io.TextIOWrapper(gara_file, encoding="utf-8")) as journal_stream:
-+                gara_json = journal_stream.read(race_name, race_date)
-+            strip_mathrace_only_attributes_from_imported_turing(gara_json)
-         self.gara = Gara.create_from_dict(gara_json)
+-        self.gara = Gara.create_from_dict(gara_json)
++        self.object = Gara.create_from_dict(form.cleaned_data["gara_json"])
++        self.object.admin = self.request.user
++        self.object.eventi.update(creatore=self.request.user)
++        self.object.save()
          return super().form_valid(form)
+ 
  
