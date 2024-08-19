@@ -23,13 +23,44 @@ cd turing
 HEAD_DETACHED=$(git branch --show-current | wc -l)
 if [[ ${HEAD_DETACHED} -eq 1 ]]; then
     echo "Currently on a branch, assuming that it already contains the required patches."
+    echo "If this is not the case you may want to return to the detached HEAD state with"
+    echo "    git submodule update --recursive"
 else
+    echo "On a detached HEAD, applying patches"
+
+    echo "Determining git configuration"
+    if git config user.name && git config user.email; then
+        GIT_CONFIGURED="yes"
+    else
+        GIT_CONFIGURED="no"
+    fi
+
+    if [[ $GIT_CONFIGURED == "yes" ]]; then
+        echo "Creating new git branch"
+        git checkout -b patch-$(date '+%Y%m%d-%H%M%S')
+    fi
+
+    TMP_DIR=$(mktemp -d)
     apply_patch () {
-        echo "Applying patch $1"
-        patch -p1 < ../patches/turing/$1
+        echo "Applying $1"
+        (
+            set -o pipefail  # otherwise tee would swallow the exit status of patch
+            patch --no-backup-if-mismatch --strip 1 < ../patches/turing/$1 | tee $TMP_DIR/out-$1
+        )
+        if grep -q "offset" "$TMP_DIR/out-$1"; then
+            echo "Patch $1 requires offset, which is not allowed. Exiting with error."
+            return 1
+        fi
+        if grep -q "fuzz" "$TMP_DIR/out-$1"; then
+            echo "Patch $1 requires fuzz, which is not allowed. Exiting with error."
+            return 1
+        fi
+        if [[ $GIT_CONFIGURED == "yes" ]]; then
+            git add .
+            git commit -m "Apply $1"
+        fi
     }
 
-    echo "On a detached HEAD, applying patches"
     apply_patch 0000_customize_footer.patch
     apply_patch 0001_show_elapsed_time_instead_of_countdown.patch
     apply_patch 0002_change_elapsed_time_via_textbox.patch
@@ -50,4 +81,5 @@ else
     apply_patch 0017_clarify_insertion_form_error.patch
     apply_patch 0018_suspend_reset_delete_button.patch
     apply_patch 0019_users_and_upload_in_race_creation_edit.patch
+    echo "All patches have been applied successfully"
 fi
