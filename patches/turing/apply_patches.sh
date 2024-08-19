@@ -49,4 +49,5 @@ else
     apply_patch 0016_improve_admin_panel.patch
     apply_patch 0017_clarify_insertion_form_error.patch
     apply_patch 0018_suspend_reset_delete_button.patch
+    apply_patch 0019_users_and_upload_in_race_creation_edit.patch
 fi
