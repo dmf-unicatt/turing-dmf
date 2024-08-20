@@ -81,5 +81,6 @@ else
     apply_patch 0017_clarify_insertion_form_error.patch
     apply_patch 0018_suspend_reset_delete_button.patch
     apply_patch 0019_users_and_upload_in_race_creation_edit.patch
+    apply_patch 0020_logging_datetime_ip.patch
     echo "All patches have been applied successfully"
 fi
