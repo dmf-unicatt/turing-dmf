@@ -13,6 +13,11 @@ WORKDIR /root
 RUN apt update -y -q && \
     apt install -y -qq curl git net-tools python3-pip sudo unzip vim wget
 
+# Customize shell prompt color to better highlight that the user is running commands in the docker container
+RUN echo 'PS1='"'"'\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;38;5;27m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\$\[\033[00m\] '"'"'' >> /root/.bashrc && \
+    echo "alias ls='ls --color=auto'"  >> /root/.bashrc && \
+    echo "alias ll='ls -l'"  >> /root/.bashrc
+
 # Part 1: turing
 COPY patches patches
 COPY turing turing
