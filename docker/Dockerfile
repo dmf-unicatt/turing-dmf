@@ -20,7 +20,8 @@ COPY .git/modules/turing turing/.git
 
 RUN sed -i "/worktree =/d" turing/.git/config && patches/turing/apply_patches.sh
 
-RUN apt install -y -qq libpq-dev postgresql postgresql-client postgresql-contrib python3-psycopg2 python3-selenium
+RUN apt update -y -q && \
+    apt install -y -qq libpq-dev postgresql postgresql-client postgresql-contrib python3-psycopg2 python3-selenium
 
 # postgres has created a new user, which should be allowed read-only access to /root
 RUN chmod go+rx /root
@@ -36,7 +37,8 @@ ENV DJANGO_SETTINGS_MODULE="Turing.settings" \
 # Part 2: mathrace-interaction
 COPY mathrace_interaction mathrace_interaction
 
-RUN apt install -y -qq python3-jsondiff python3-paramiko python3-pycryptodome && \
+RUN apt update -y -q && \
+    apt install -y -qq python3-jsondiff python3-paramiko python3-pycryptodome && \
     sed -i '1s/^/import warnings\nwarnings.filterwarnings("ignore", module="invoke.loader")\n/' /usr/lib/python3/dist-packages/invoke/loader.py
 
 RUN cd /root/mathrace_interaction && \
