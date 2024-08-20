@@ -1,6 +1,6 @@
 # Turing @ DMF: local patches for compatibility with mathrace in-house implementation
 
-This directory contains a few local patches. Most of them are related to changes required to make **Turing** behave as **mathrace**:
+This directory contains some local patches. A few of them are related to changes required to make **Turing** behave as **mathrace**:
 
 0. `0000_customize_footer.patch`: customize the footer of the website, to acknowledge that customizations were carried out.
 1. `0001_show_elapsed_time_instead_of_countdown.patch`: this change affects how time is displayed in all classification views. **Turing** displays a countdown to the end of the race, while **mathrace** displays the elapsed time since the beginning of the race. To ease comparison with **mathrace**, **Turing @ DMF** has patched **Turing** to display the elapsed time instead of a countdown.
