@@ -11,19 +11,17 @@ index 05ee41c..cf56525 100644
  ]
  
 diff --git a/requirements-dev.txt b/requirements-dev.txt
-index 1f595b0..832ca60 100644
+index 1f595b0..e8d0d93 100644
 --- a/requirements-dev.txt
 +++ b/requirements-dev.txt
-@@ -1,16 +1,6 @@
+@@ -1,16 +1,4 @@
 -asgiref==3.5.0
 -coverage==5.3
 -Django==3.2.12
 -django-crispy-forms==1.14.0
-+-r requirements.txt
-+coverage==7.4.3
- django-debug-toolbar==3.1.1
- django-debug-toolbar-force==0.1.8
- django-nine==0.2.3
+-django-debug-toolbar==3.1.1
+-django-debug-toolbar-force==0.1.8
+-django-nine==0.2.3
 -django-simple-history==3.0.0
 -python-dateutil==2.8.2
 -python-decouple==3.6
@@ -33,9 +31,12 @@ index 1f595b0..832ca60 100644
 -sqlparse==0.4.2
 -urllib3==1.25.11
 -whitenoise==6.6.0
++-r requirements.txt
++coverage==7.6.1
++# la versione di selenium qui sotto deve essere la stessa di quella di "apt install python3-selenium"
 +selenium==4.8.3
 diff --git a/requirements.txt b/requirements.txt
-index f5f9799..9588043 100644
+index f5f9799..7bf93d1 100644
 --- a/requirements.txt
 +++ b/requirements.txt
 @@ -1,11 +1,12 @@
@@ -43,19 +44,21 @@ index f5f9799..9588043 100644
 -Django==3.2.12
 -django-crispy-forms==1.14.0
 -django-simple-history==3.0.0
-+asgiref==3.7.2
-+crispy-bootstrap4==2023.1
-+Django==5.0.2
-+django-crispy-forms==2.1
-+django-simple-history==3.4.0
- python-dateutil==2.8.2
+-python-dateutil==2.8.2
 -python-decouple==3.6
 -pytz==2021.3
++asgiref==3.8.1
++crispy-bootstrap4==2024.1
++Django==5.1
++django-crispy-forms==2.3
++django-simple-history==3.7.0
++python-dateutil==2.9.0.post0
 +python-decouple==3.8
 +pytz==2024.1
  six==1.16.0
 -sqlparse==0.4.2
 -typing_extensions==4.1.1
-+sqlparse==0.4.4
-+typing_extensions==4.9.0
- whitenoise==6.6.0
+-whitenoise==6.6.0
++sqlparse==0.5.1
++typing_extensions==4.12.2
++whitenoise==6.7.0
