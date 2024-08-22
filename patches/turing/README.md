@@ -23,3 +23,4 @@ This directory contains some local patches. A few of them are related to changes
 18. `0018_suspend_reset_delete_button.patch`: administrators will now find additional buttons on the home page to suspend a running race, reset any race, or delete any race.
 19. `0019_users_and_upload_in_race_creation_edit.patch`: change race creation page to select admin user and introducer users, as well as upload the team names, question names and question answers from text file. The chosen admin/introducers can also be modified on the race edit page.
 20. `0020_logging_datetime_ip.patch`: add date and IP address to the log file.
+21. `0021_logout_django_5.patch`: log out needs to be carried out via a POST request since django 5.
