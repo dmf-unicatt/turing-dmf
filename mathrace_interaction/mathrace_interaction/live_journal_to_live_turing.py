@@ -256,8 +256,8 @@ if __name__ == "__main__":  # pragma: no cover
 
     input_file_client: paramiko.SSHClient | None = None
     if args.input_file_host != "":
-        input_file_client = get_ssh_client(args.input_file_host, args.input_file_host_user)
+        input_file_client = get_ssh_client(args.input_file_host, args.input_file_host_user)  # type: ignore[operator]
     live_journal_to_live_turing(
-        lambda: open_file_on_ssh_host(pathlib.Path(args.input_file), input_file_client),
+        lambda: open_file_on_ssh_host(pathlib.Path(args.input_file), input_file_client),  # type: ignore[operator]
         engine.models, args.turing_race_id, args.sleep, pathlib.Path(args.output_directory),
         lambda time_counter, race_ended: race_ended)

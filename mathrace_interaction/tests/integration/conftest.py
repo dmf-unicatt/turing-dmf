@@ -5,15 +5,111 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """pytest configuration file for integration tests."""
 
+import datetime
 import os
 import pathlib
 import typing
 
+import _pytest
+import engine.models
 import pytest
 import Turing
 
 import mathrace_interaction
 import mathrace_interaction.test
+
+runtime_error_contains = mathrace_interaction.test.runtime_error_contains_fixture
+
+@pytest.fixture
+def simple_turing_race() -> engine.models.Gara:  # type: ignore[no-any-unimported]
+    """Create a new turing race with the same content as the one used in the unit tests."""
+    race_date = datetime.datetime(2000, 1, 1, tzinfo=datetime.UTC)
+    turing_dict = {
+        "nome": "test race",
+        "inizio": race_date.isoformat(),
+        "durata": 10,
+        "durata_blocco": 2,
+        "n_blocco": 4,
+        "k_blocco": 1,
+        "cutoff": None,
+        "fixed_bonus": "20,15,10,8,6,5,4,3,2,1",
+        "super_mega_bonus": "100,60,40,30,20,10",
+        "num_problemi": 7,
+        "soluzioni": [
+            {"nome": f"Problema {p}", "problema": p, "punteggio": 20, "risposta": 1} for p in range(1, 8)],
+        "squadre": [{"nome": f"Squadra {s}", "num": s, "ospite": False} for s in range(1, 11)],
+        "eventi": [
+            {
+                "subclass": "Jolly",
+                "orario": (race_date + datetime.timedelta(minutes=4, seconds=3)).isoformat(),
+                "squadra_id": 1,
+                "problema": 2
+            },
+            {
+                "subclass": "Jolly",
+                "orario": (race_date + datetime.timedelta(minutes=4, seconds=11)).isoformat(),
+                "squadra_id": 2,
+                "problema": 3
+            },
+            {
+                "subclass": "Jolly",
+                "orario": (race_date + datetime.timedelta(minutes=4, seconds=19)).isoformat(),
+                "squadra_id": 3,
+                "problema": 4
+            },
+            {
+                "subclass": "Consegna",
+                "orario": (race_date + datetime.timedelta(minutes=5, seconds=30)).isoformat(),
+                "squadra_id": 5,
+                "problema": 5,
+                "risposta": 1
+            },
+            {
+                "subclass": "Consegna",
+                "orario": (race_date + datetime.timedelta(minutes=5, seconds=41)).isoformat(),
+                "squadra_id": 6,
+                "problema": 6,
+                "risposta": 0
+            },
+            {
+                "subclass": "Consegna",
+                "orario": (race_date + datetime.timedelta(minutes=7, seconds=15)).isoformat(),
+                "squadra_id": 2,
+                "problema": 3,
+                "risposta": 1
+            },
+            {
+                "subclass": "Consegna",
+                "orario": (race_date + datetime.timedelta(minutes=7, seconds=30)).isoformat(),
+                "squadra_id": 3,
+                "problema": 4,
+                "risposta": 0
+            },
+            {
+                "subclass": "Consegna",
+                "orario": (race_date + datetime.timedelta(minutes=8, seconds=30)).isoformat(),
+                "squadra_id": 8,
+                "problema": 2,
+                "risposta": 0
+            },
+            {
+                "subclass": "Bonus",
+                "orario": (race_date + datetime.timedelta(minutes=8, seconds=40)).isoformat(),
+                "squadra_id": 7,
+                "punteggio": 43
+            },
+            {
+                "subclass": "Consegna",
+                "orario": (race_date + datetime.timedelta(minutes=9, seconds=30)).isoformat(),
+                "squadra_id": 9,
+                "problema": 3,
+                "risposta": 1
+            }
+        ]
+    }
+    return engine.models.Gara.create_from_dict(turing_dict)
+
+# Data files
 
 _data_dir = pathlib.Path(__file__).parent.parent.parent / "data"
 
@@ -106,6 +202,35 @@ _journals_is_basic_testing = {
     "2024/february_9_short_run.journal": True,
 }
 
+_jsons = mathrace_interaction.test.get_data_files_in_directory(_data_dir, "json")
+
+
+@pytest.fixture
+def admin_user() -> engine.models.User:  # type: ignore[no-any-unimported]
+    """Return a superuser of turing."""
+    return engine.models.User._default_manager.create_superuser(username="admin", password="pwadmin")
+
+
+@pytest.fixture
+def normal_user() -> engine.models.User:  # type: ignore[no-any-unimported]
+    """Return a normal user (logged in, but not superuser) of turing."""
+    return engine.models.User._default_manager.create_user(username="user", password="pwuser")
+
+
+@pytest.fixture
+def authenticated_user(request: _pytest.fixtures.SubRequest) -> engine.models.User:  # type: ignore[no-any-unimported]
+    """Return a user after login, either administrator or not."""
+    return request.getfixturevalue(request.param)
+
+
+@pytest.fixture
+def any_user(request: _pytest.fixtures.SubRequest) -> engine.models.User | None:  # type: ignore[no-any-unimported]
+    """Return a logged in user, or None if the user is logged out."""
+    if request.param is None:
+        return None
+    else:
+        return request.getfixturevalue(request.param)
+
 
 def pytest_addoption(parser: pytest.Parser, pluginmanager: pytest.PytestPluginManager) -> None:
     """Add options to run tests on all data files, rather than only the basic subset."""
@@ -127,7 +252,14 @@ def pytest_generate_tests(metafunc: pytest.Metafunc) -> None:
         lambda: {journal_name: _journal_versions[journal_name] for journal_name in journal_names},
         metafunc
     )
-
+    # Parametrization over json files
+    if "json_name" in metafunc.fixturenames:
+        metafunc.parametrize("json_name", _jsons)
+    # Parametrization over users
+    if "authenticated_user" in metafunc.fixturenames:
+        metafunc.parametrize("authenticated_user", ["admin_user", "normal_user"], indirect=True)
+    if "any_user" in metafunc.fixturenames:
+        metafunc.parametrize("any_user", ["admin_user", "normal_user", None], indirect=True)
 
 @pytest.fixture
 def data_dir() -> pathlib.Path:

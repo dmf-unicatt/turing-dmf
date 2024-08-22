@@ -29,8 +29,11 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules"
 ]
 dependencies = [
+    "bs4",
     "jsondiff",
-    "paramiko"
+    "paramiko",
+    "requests",
+    "selenium"
 ]
 
 [project.urls]
@@ -47,7 +50,9 @@ lint = [
     "isort",
     "mypy",
     "ruff",
+    "types-beautifulsoup4",
     "types-paramiko",
+    "types-requests",
     "yamllint"
 ]
 tests = [
@@ -56,6 +61,7 @@ tests = [
     "pycryptodomex",
     "pytest",
     "pytest-django",
+    "pytest_httpserver",
     "pytest-random-order"
 ]
 
