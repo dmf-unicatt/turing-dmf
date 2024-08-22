@@ -21,6 +21,9 @@ RUN echo 'PS1='"'"'\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[
     echo "alias ls='ls --color=auto'"  >> /root/.bashrc && \
     echo "alias ll='ls -l'"  >> /root/.bashrc
 
+# Allow system-wide install Python packages via pip
+RUN rm /usr/lib/python3.11/EXTERNALLY-MANAGED
+
 # Part 1: turing
 RUN apt update -y -q && \
     apt install -y -qq libpq-dev postgresql postgresql-client postgresql-contrib python3-psycopg2 python3-selenium
@@ -42,8 +45,8 @@ COPY .git/modules/turing turing/.git
 
 RUN sed -i "/worktree =/d" turing/.git/config && patches/turing/apply_patches.sh
 
-RUN python3 -m pip install --break-system-packages -r turing/requirements.txt && \
-    python3 -m pip install --break-system-packages -r turing/requirements-dev.txt && \
+RUN python3 -m pip install -r turing/requirements.txt && \
+    python3 -m pip install -r turing/requirements-dev.txt && \
     sed -i '1s/^/import warnings\nwarnings.filterwarnings("ignore", module="django.http.request")\n/' /usr/local/lib/python3.11/dist-packages/django/http/request.py && \
     sed -i '1s/^/import warnings\nwarnings.filterwarnings("ignore", module="django.utils.encoding")\n/' /usr/local/lib/python3.11/dist-packages/django/utils/encoding.py
 
@@ -54,7 +57,7 @@ ENV DJANGO_SETTINGS_MODULE="Turing.settings" \
 COPY mathrace_interaction mathrace_interaction
 
 RUN cd /root/mathrace_interaction && \
-    python3 -m pip install --break-system-packages .[tests] && \
+    python3 -m pip install .[tests] && \
     touch /usr/local/lib/python3.11/dist-packages/mockssh/py.typed
 
 ## Group C. Entrypoint setup.

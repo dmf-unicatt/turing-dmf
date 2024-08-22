@@ -22,6 +22,9 @@ jobs:
         include:
           - name: without-turing
             setup_container: |
+              export DEBIAN_FRONTEND="noninteractive"
+              apt install -y -qq python3-pip python3-selenium
+              rm /usr/lib/python3.11/EXTERNALLY-MANAGED
               mkdir -p /usr/local/lib/python3.11/dist-packages/mockssh
               touch /usr/local/lib/python3.11/dist-packages/mockssh/py.typed
           - name: with-turing
@@ -58,11 +61,6 @@ jobs:
       - name: Setup container
         run: ${{ matrix.setup_container }}
         working-directory: .
-      - name: Install non-pip dependencies of mathrace-interaction
-        run: |
-          export DEBIAN_FRONTEND="noninteractive"
-          apt install -y -qq python3-pip
-          rm /usr/lib/python3.*/EXTERNALLY-MANAGED
       - name: Install mathrace-interaction
         run: |
           python3 -m pip install .[docs,lint,tests]
