@@ -17,7 +17,7 @@ import mathrace_interaction.test
 
 _data_dir = pathlib.Path(__file__).parent.parent.parent / "data"
 
-_journals = mathrace_interaction.test.get_journals_in_directory(_data_dir)
+_journals = mathrace_interaction.test.get_data_files_in_directory(_data_dir, "journal")
 
 _journal_versions = {
     journal_name: mathrace_interaction.determine_journal_version(open(journal))
@@ -108,14 +108,15 @@ _journals_is_basic_testing = {
 
 
 def pytest_addoption(parser: pytest.Parser, pluginmanager: pytest.PytestPluginManager) -> None:
-    """Add options to run tests on all journal files, rather than only the basic subset."""
-    parser.addoption("--all-journals", action="store_true", help="Run tests on all journal files")
+    """Add options to run tests on all data files, rather than only the basic subset."""
+    parser.addoption("--all-data-files", action="store_true", help="Run tests on all data files")
 
 
 def pytest_generate_tests(metafunc: pytest.Metafunc) -> None:
-    """Parametrize tests with journal fixture over journals in the data directory."""
+    """Parametrize tests with fixtures to iterate over content of the data directory."""
+    # Parametrization over journals
     assert set(_journals_is_basic_testing.keys()) == set(_journals.keys())
-    if metafunc.config.option.all_journals:
+    if metafunc.config.option.all_data_files:
         journal_names = list(_journals_is_basic_testing.keys())
     else:
         journal_names = [

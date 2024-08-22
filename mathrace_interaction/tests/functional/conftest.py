@@ -13,7 +13,7 @@ import mathrace_interaction.test
 
 _data_dir = pathlib.Path(__file__).parent.parent.parent / "data"
 
-_journals = mathrace_interaction.test.get_journals_in_directory(_data_dir)
+_journals = mathrace_interaction.test.get_data_files_in_directory(_data_dir, "journal")
 
 _journal_versions = {
     # r5539

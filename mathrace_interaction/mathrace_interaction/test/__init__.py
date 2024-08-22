@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """mathrace_interaction.test module."""
 
-from mathrace_interaction.test.get_journals_in_directory import get_journals_in_directory
+from mathrace_interaction.test.get_data_files_in_directory import get_data_files_in_directory
 from mathrace_interaction.test.live_conversion_tester import (
     LiveJournalToLiveTuringTester, LiveTuringToLiveJournalTester)
 # mathrace_interaction.test.mock_models was not imported on purpose

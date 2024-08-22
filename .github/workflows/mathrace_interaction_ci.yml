@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
     inputs:
       full_integration_tests:
-        description: "If yes, run integration tests with --all-journals. Default value is no"
+        description: "If yes, run integration tests with --all-data-files. Default value is no"
 
 jobs:
   test:
@@ -122,7 +122,7 @@ jobs:
       - name: Run integration tests (full)
         if: steps.determine_integration_tests_options.outputs.with_integration_tests == 'yes' && steps.determine_integration_tests_options.outputs.full_integration_tests == 'yes'
         run: |
-          python3 -m pytest --all-journals --random-order tests/integration
+          python3 -m pytest --all-data-files --random-order tests/integration
       - name: Determine performance tests options
         id: determine_performance_tests_options
         run: |
