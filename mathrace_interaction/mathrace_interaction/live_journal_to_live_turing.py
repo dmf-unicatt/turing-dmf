@@ -18,8 +18,7 @@ import jsondiff
 import paramiko
 
 from mathrace_interaction.filter import (
-    reorder_lists_in_imported_turing, strip_mathrace_only_attributes_from_imported_turing,
-    strip_trailing_zero_bonus_superbonus_from_imported_turing)
+    strip_mathrace_only_attributes_from_imported_turing, strip_trailing_zero_bonus_superbonus_from_imported_turing)
 from mathrace_interaction.journal_reader import journal_reader
 from mathrace_interaction.network import get_ssh_client, open_file_on_ssh_host
 from mathrace_interaction.typing import TuringDict
@@ -229,7 +228,6 @@ def _convert_and_backup_input_file(
 def _clean_up_turing_dictionary(turing_dict: TuringDict) -> None:
     """Clean up a turing dictionary in place."""
     strip_mathrace_only_attributes_from_imported_turing(turing_dict)
-    reorder_lists_in_imported_turing(turing_dict)
     strip_trailing_zero_bonus_superbonus_from_imported_turing(turing_dict)
 
 if __name__ == "__main__":  # pragma: no cover

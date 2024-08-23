@@ -213,6 +213,7 @@ def test_journal_reader_writer_same_version_comparison(
         mathrace_interaction.journal_writer(exported_journal, journal_version) as output_journal_stream
     ):
         turing_dict = input_journal_stream.read(journal_name, journal_date)
+        mathrace_interaction.filter.strip_milliseconds_in_imported_turing(turing_dict)
         output_journal_stream.write(turing_dict)
         same_version_comparison(journal, journal_name, exported_journal.getvalue().strip("\n"))
 
@@ -221,7 +222,7 @@ def test_journal_reader_writer_same_version_comparison(
 def test_journal_version_converter_same_turing_dictionary(
     journal: typing.TextIO, journal_name: str, target_version: str
 ) -> None:
-    """Test that journal_reader and journal_version converter return the same turing dictionary."""
+    """Test that journal_reader and journal_version_converter return the same turing dictionary."""
     if (
         journal_name in (
             "2019/cesenatico_finale_formato_extracted.journal", "2019/cesenatico_finale_formato_journal.journal",

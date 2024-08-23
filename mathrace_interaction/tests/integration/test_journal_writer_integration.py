@@ -29,7 +29,6 @@ def test_journal_writer_integration(journal: typing.TextIO, journal_name: str, j
     with mathrace_interaction.journal_reader(journal) as journal_stream:
         turing_dict = journal_stream.read(journal_name, journal_date)
     mathrace_interaction.filter.strip_mathrace_only_attributes_from_imported_turing(turing_dict)
-    mathrace_interaction.filter.reorder_lists_in_imported_turing(turing_dict)
     mathrace_interaction.filter.strip_trailing_zero_bonus_superbonus_from_imported_turing(turing_dict)
     gara = engine.models.Gara.create_from_dict(turing_dict)
     # Then, export it back via journal_writer
@@ -46,7 +45,6 @@ def test_journal_writer_integration(journal: typing.TextIO, journal_name: str, j
         converted_stream.strict_timestamp_race_events = False  # type: ignore[attr-defined]
         reimported_dict = converted_stream.read(journal_name, journal_date)
     mathrace_interaction.filter.strip_mathrace_only_attributes_from_imported_turing(reimported_dict)
-    mathrace_interaction.filter.reorder_lists_in_imported_turing(reimported_dict)
     mathrace_interaction.filter.strip_trailing_zero_bonus_superbonus_from_imported_turing(reimported_dict)
     # The two dictionaries must be the same
     diff = jsondiff.diff(reimported_dict, turing_dict, syntax="symmetric")
@@ -101,7 +99,6 @@ def test_journal_writer_entrypoint_integration(
             converted_stream.strict_timestamp_race_events = False  # type: ignore[attr-defined]
             reimported_dict = converted_stream.read(journal_name, journal_date)
         mathrace_interaction.filter.strip_mathrace_only_attributes_from_imported_turing(reimported_dict)
-        mathrace_interaction.filter.reorder_lists_in_imported_turing(reimported_dict)
         mathrace_interaction.filter.strip_trailing_zero_bonus_superbonus_from_imported_turing(reimported_dict)
         # The two dictionaries must be the same
         diff = jsondiff.diff(reimported_dict, imported_dict, syntax="symmetric")

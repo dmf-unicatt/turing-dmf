@@ -470,6 +470,33 @@ def test_journal_reader_live_race(race_date: datetime.datetime) -> None:
     assert dict_with_timer_offset["eventi"][2]["orario"] == (race_date + datetime.timedelta(seconds=100)).isoformat()
 
 
+def test_journal_reader_multiple_race_events_at_same_time(race_date: datetime.datetime) -> None:
+    """Test that the order of race events happening at the same time is preserved by shifting of a few milliseconds."""
+    journal_with_events_at_same_time = io.StringIO("""\
+--- 001 inizializzazione simulatore
+--- 003 10 7 70 10 6 4 1 1 10 2 -- squadre: 10 quesiti: 7
+0 002 inizio gara
+60 022 aggiorna punteggio esercizi, orologio: 1
+80 011 2 3 1 squadra 2, quesito 3: giusto
+80 011 4 5 1 squadra 4, quesito 5: giusto
+80 011 6 7 1 squadra 6, quesito 7: giusto
+600 029 termine gara
+--- 999 fine simulatore
+""")
+    with mathrace_interaction.journal_reader(journal_with_events_at_same_time) as journal_stream:
+        dict_with_events_at_same_time = journal_stream.read("journal_with_events_at_same_time", race_date)
+    assert len(dict_with_events_at_same_time["eventi"]) == 3
+    print(dict_with_events_at_same_time)
+    assert dict_with_events_at_same_time["eventi"][0]["orario"] == (
+        race_date + datetime.timedelta(seconds=80)).isoformat()
+    assert dict_with_events_at_same_time["eventi"][0]["squadra_id"] == 2
+    assert dict_with_events_at_same_time["eventi"][1]["orario"] == (
+        race_date + datetime.timedelta(seconds=80, milliseconds=1)).isoformat()
+    assert dict_with_events_at_same_time["eventi"][1]["squadra_id"] == 4
+    assert dict_with_events_at_same_time["eventi"][2]["orario"] == (
+        race_date + datetime.timedelta(seconds=80, milliseconds=2)).isoformat()
+    assert dict_with_events_at_same_time["eventi"][2]["squadra_id"] == 6
+
 
 def test_journal_reader_missing_protocol_numbers(
     race_date: datetime.datetime, runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType

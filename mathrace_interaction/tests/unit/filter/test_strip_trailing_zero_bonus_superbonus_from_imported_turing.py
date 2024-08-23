@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """Test mathrace_interaction.filter.strip_trailing_zero_bonus_superbonus_from_imported_turing."""
 
+import copy
 import json
 import tempfile
 
@@ -17,7 +18,7 @@ import mathrace_interaction.typing
 @pytest.fixture
 def modified_dict(turing_dict: mathrace_interaction.typing.TuringDict) -> mathrace_interaction.typing.TuringDict:
     """Append trailing zeros to bonus and superbonus definition."""
-    turing_dict_copy = dict(turing_dict)
+    turing_dict_copy = copy.deepcopy(turing_dict)
     for (key_index, key) in enumerate(("fixed_bonus", "super_mega_bonus")):
         turing_dict_copy[key] = turing_dict[key] + ",0,0" * (key_index + 1)
     return turing_dict_copy

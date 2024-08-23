@@ -32,6 +32,5 @@ def test_live_turing_to_live_journal_on_data(journal: io.StringIO, journal_name:
     with mathrace_interaction.journal_reader(journal_copy) as expected_stream:
         expected_dict = expected_stream.read(journal_name, journal_date)
     mathrace_interaction.filter.strip_mathrace_only_attributes_from_imported_turing(expected_dict)
-    mathrace_interaction.filter.reorder_lists_in_imported_turing(expected_dict)
     mathrace_interaction.filter.strip_trailing_zero_bonus_superbonus_from_imported_turing(expected_dict)
     assert final_dict == expected_dict

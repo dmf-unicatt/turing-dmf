@@ -56,6 +56,10 @@ class JournalReaderR5539(AbstractJournalReader):
         super().__init__(journal_stream)
         # Strict processing of timestamp for race events
         self.strict_timestamp_race_events = True
+        # Time of the last processed event to disambiguate between events that happen at the same time:
+        # mathrace has a precision up to the second, while turing up to the milliseconds.
+        self._last_event_datetime: datetime.datetime | None = None
+        self._last_event_same_datetime_occurences = 0
 
     def _read_race_definition_section(self, turing_dict: TuringDict) -> None:
         """Read the race definition section."""
@@ -325,7 +329,7 @@ class JournalReaderR5539(AbstractJournalReader):
         """Process a jolly selection event."""
         # Allow jolly to be selected even before the offset is computed, since setting it with
         # a slightly wrong timestamp does not affect the overall score of the race
-        event_datetime = self._convert_timestamp_to_datetime(timestamp_str, False, turing_dict)
+        event_datetime = self._convert_timestamp_to_datetime(timestamp_str, False, True, turing_dict)
         # Determine mathrace event ID, if available
         event_mathrace_id = self._determine_mathrace_event_id(event_content)
         # Process the event content
@@ -347,7 +351,7 @@ class JournalReaderR5539(AbstractJournalReader):
         # Answer submission requires a strict datetime, including time stamp offset, because
         # slightly different times may end up affecting the overall team score
         event_datetime = self._convert_timestamp_to_datetime(
-            timestamp_str, self.strict_timestamp_race_events, turing_dict)
+            timestamp_str, self.strict_timestamp_race_events, True, turing_dict)
         # Determine mathrace event ID, if available
         event_mathrace_id = self._determine_mathrace_event_id(event_content)
         # Process the event content
@@ -365,8 +369,10 @@ class JournalReaderR5539(AbstractJournalReader):
 
     def _process_jolly_timeout_event(self, timestamp_str: str, event_content: str, turing_dict: TuringDict) -> None:
         """Process a jolly timeout event."""
+        # Calling self._convert_timestamp_to_datetime with check_same_datetime_occurences=False because
+        # the jolly timeout event is not reflected in the turing dictionary
         event_datetime = self._convert_timestamp_to_datetime(
-            timestamp_str, self.strict_timestamp_race_events, turing_dict)
+            timestamp_str, self.strict_timestamp_race_events, False, turing_dict)
         turing_dict["mathrace_only"]["jolly_timeout"] = event_datetime.isoformat()
 
     def _process_timer_update_event(self, timestamp_str: str, event_content: str, turing_dict: TuringDict) -> None:
@@ -401,7 +407,7 @@ class JournalReaderR5539(AbstractJournalReader):
         """Process a manual bonus event."""
         # Allow manual bonus to be assigned even before the offset is computed, since setting it with
         # a slightly wrong timestamp does not affect the overall score of the race
-        event_datetime = self._convert_timestamp_to_datetime(timestamp_str, False, turing_dict)
+        event_datetime = self._convert_timestamp_to_datetime(timestamp_str, False, True, turing_dict)
         # Process the event content
         team_id, bonus_points, _ = event_content.split(" ", maxsplit=2)
         if int(team_id) <= 0:
@@ -414,7 +420,7 @@ class JournalReaderR5539(AbstractJournalReader):
         })
 
     def _convert_timestamp_to_datetime(
-        self, timestamp_str: str, strict: bool, turing_dict: TuringDict
+        self, timestamp_str: str, strict: bool, check_same_datetime_occurences: bool, turing_dict: TuringDict
     ) -> datetime.datetime:
         """
         Convert a timestamp into a date and time.
@@ -433,7 +439,19 @@ class JournalReaderR5539(AbstractJournalReader):
             else:
                 timestamp = int(timestamp_str)
         race_date = datetime.datetime.fromisoformat(turing_dict["inizio"])
-        return race_date + datetime.timedelta(seconds=timestamp)
+        event_datetime = race_date + datetime.timedelta(seconds=timestamp)
+        if check_same_datetime_occurences:
+            if self._last_event_datetime is not None and event_datetime == self._last_event_datetime:
+                # Add a millisecond to the previous time to disambiguate between the two events
+                self._last_event_same_datetime_occurences += 1
+                return self._last_event_datetime + datetime.timedelta(
+                    milliseconds=self._last_event_same_datetime_occurences)
+            else:
+                self._last_event_datetime = event_datetime
+                self._last_event_same_datetime_occurences = 0
+                return event_datetime
+        else:
+            return event_datetime
 
     def _determine_mathrace_event_id(self, event_content: str) -> str:
         """Determine mathrace event ID. This version does not store them, so a placeholder is returned."""

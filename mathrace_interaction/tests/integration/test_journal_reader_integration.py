@@ -28,7 +28,6 @@ def test_journal_reader_integration(journal: typing.TextIO, journal_name: str) -
     with mathrace_interaction.journal_reader(journal) as journal_stream:
         turing_dict = journal_stream.read(journal_name, journal_date)
     mathrace_interaction.filter.strip_mathrace_only_attributes_from_imported_turing(turing_dict)
-    mathrace_interaction.filter.reorder_lists_in_imported_turing(turing_dict)
     mathrace_interaction.filter.strip_trailing_zero_bonus_superbonus_from_imported_turing(turing_dict)
     gara = engine.models.Gara.create_from_dict(turing_dict)
     diff = jsondiff.diff(gara.to_dict(), turing_dict, syntax="symmetric")
@@ -90,9 +89,7 @@ def test_journal_reader_entrypoint_integration(
         with mathrace_interaction.journal_reader(journal_copy) as expected_stream:
             expected_dict = expected_stream.read(journal_name, journal_date)
         mathrace_interaction.filter.strip_mathrace_only_attributes_from_imported_turing(expected_dict)
-        if race_date_option != "":
-            mathrace_interaction.filter.reorder_lists_in_imported_turing(expected_dict)
-        else:
+        if race_date_option == "":
             assert len(expected_dict["eventi"]) == 0
         mathrace_interaction.filter.strip_trailing_zero_bonus_superbonus_from_imported_turing(expected_dict)
         assert imported_dict == expected_dict
