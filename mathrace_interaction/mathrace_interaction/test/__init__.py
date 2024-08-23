@@ -10,6 +10,7 @@ from mathrace_interaction.test.live_conversion_tester import (
     LiveJournalToLiveTuringTester, LiveTuringToLiveJournalTester)
 # mathrace_interaction.test.mock_models was not imported on purpose
 from mathrace_interaction.test.parametrize_journal_fixtures import parametrize_journal_fixtures
+from mathrace_interaction.test.read_score_file_fixture import read_score_file_fixture
 from mathrace_interaction.test.run_entrypoint_fixture import run_entrypoint_fixture
 from mathrace_interaction.test.runtime_error_contains_fixture import runtime_error_contains_fixture
 from mathrace_interaction.test.ssh_server_fixture import ssh_server_fixture

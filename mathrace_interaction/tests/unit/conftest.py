@@ -13,6 +13,7 @@ import pytest
 import mathrace_interaction.test
 import mathrace_interaction.typing
 
+read_score_file = mathrace_interaction.test.read_score_file_fixture
 run_entrypoint = mathrace_interaction.test.run_entrypoint_fixture
 runtime_error_contains = mathrace_interaction.test.runtime_error_contains_fixture
 ssh_server = mathrace_interaction.test.ssh_server_fixture

@@ -26,4 +26,6 @@
 194,
 907,
 320,
-0]
+# squadra 28: la moviola non permette di andare in negativo, mentre turing lo permette. In assenza di una
+# fonte di confronto ho copiato in questo file il dato fornito da turing.
+-30]

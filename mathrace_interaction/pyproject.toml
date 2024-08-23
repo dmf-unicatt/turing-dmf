@@ -62,7 +62,8 @@ tests = [
     "pytest",
     "pytest-django",
     "pytest_httpserver",
-    "pytest-random-order"
+    "pytest-random-order",
+    "simpleeval"
 ]
 
 [tool.isort]
@@ -89,6 +90,7 @@ module = [
     "engine",
     "engine.models",
     "jsondiff",
+    "simpleeval",
     "Turing"
 ]
 ignore_missing_imports = true

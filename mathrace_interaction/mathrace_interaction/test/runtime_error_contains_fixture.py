@@ -3,7 +3,7 @@
 # This file is part of Turing @ DMF.
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
-"""Run a module entrypoint."""
+"""Check that a RuntimeError is raised and contains the expected text."""
 
 import typing
 

@@ -23,7 +23,7 @@ import mathrace_interaction.typing
 @pytest.mark.django_db
 def test_journal_writer_integration(journal: typing.TextIO, journal_name: str, journal_version: str) -> None:
     """Test interaction between turing and journal_writer."""
-    # First, import the journal into turng via journal_reader
+    # First, import the journal into turing via journal_reader
     journal_year, _ = journal_name.split(os.sep, maxsplit=1)
     journal_date = datetime.datetime(int(journal_year), 1, 1, tzinfo=datetime.UTC)
     with mathrace_interaction.journal_reader(journal) as journal_stream:

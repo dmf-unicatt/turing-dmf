@@ -18,6 +18,7 @@ import Turing
 import mathrace_interaction
 import mathrace_interaction.test
 
+read_score_file = mathrace_interaction.test.read_score_file_fixture
 runtime_error_contains = mathrace_interaction.test.runtime_error_contains_fixture
 
 @pytest.fixture
