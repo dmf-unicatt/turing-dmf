@@ -62,7 +62,6 @@ _journal_versions = {
     "2020/disfida.journal": "r20642",
     "2022/cesenatico_finale.journal": "r20642",
     "2022/cesenatico_finale_femminile.journal": "r20642",
-    "2022/cesenatico_pubblico.journal": "r20642",
     "2022/cesenatico_semifinale_A.journal": "r20642",
     "2022/cesenatico_semifinale_B.journal": "r20642",
     "2022/cesenatico_semifinale_C.journal": "r20642",

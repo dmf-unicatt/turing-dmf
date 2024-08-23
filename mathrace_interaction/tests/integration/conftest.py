@@ -152,7 +152,6 @@ _journals_is_basic_testing = {
     # cesenatico: standard race definition, no guest teams, but with bonus/superbonus specification
     "2022/cesenatico_finale.journal": True,
     "2022/cesenatico_finale_femminile.journal": True,
-    "2022/cesenatico_pubblico.journal": True,
     "2022/cesenatico_semifinale_A.journal": False,
     "2022/cesenatico_semifinale_B.journal": False,
     "2022/cesenatico_semifinale_C.journal": False,

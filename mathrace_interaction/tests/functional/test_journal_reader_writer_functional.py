@@ -132,8 +132,7 @@ def same_version_comparison(journal: typing.TextIO, journal_name: str, exported_
         exported_journal = strip_race_setup_code_lines(exported_journal, "004")
         exported_journal = strip_race_setup_code_lines(exported_journal, "005")
     elif journal_name in (
-        "2020/disfida.journal", "2022/cesenatico_finale.journal",
-        "2022/cesenatico_finale_femminile.journal", "2022/cesenatico_pubblico.journal",
+        "2020/disfida.journal", "2022/cesenatico_finale.journal", "2022/cesenatico_finale_femminile.journal",
         "2022/cesenatico_semifinale_A.journal", "2022/cesenatico_semifinale_B.journal",
         "2022/cesenatico_semifinale_C.journal", "2022/cesenatico_semifinale_D.journal",
         "2022/qualificazione_arezzo_cagliari_taranto_trento.journal",
@@ -154,19 +153,17 @@ def same_version_comparison(journal: typing.TextIO, journal_name: str, exported_
         stripped_journal = strip_race_setup_code_lines(stripped_journal, "003")
         exported_journal = strip_race_setup_code_lines(exported_journal, "002")
         if journal_name not in (
-            "2022/cesenatico_finale.journal", "2022/cesenatico_pubblico.journal",
-            "2023/qualificazione_femminile_1.journal", "2023/qualificazione_femminile_2.journal",
-            "2023/qualificazione_femminile_3.journal"
+            "2022/cesenatico_finale.journal", "2023/qualificazione_femminile_1.journal",
+            "2023/qualificazione_femminile_2.journal", "2023/qualificazione_femminile_3.journal"
         ):
             exported_journal = strip_race_setup_code_lines(exported_journal, "005")
     # Some journals report in a slightly different format the bonus and superbonus entries.
     # This typically happens when setting a large superbonus cardinality and adding zeros at the end
     if journal_name in (
         "2020/disfida.journal", "2022/cesenatico_finale.journal",
-        "2022/cesenatico_finale_femminile.journal", "2022/cesenatico_pubblico.journal",
-        "2022/cesenatico_semifinale_A.journal", "2022/cesenatico_semifinale_B.journal",
-        "2022/cesenatico_semifinale_C.journal", "2022/cesenatico_semifinale_D.journal",
-        "2022/qualificazione_arezzo_cagliari_taranto_trento.journal",
+        "2022/cesenatico_finale_femminile.journal", "2022/cesenatico_semifinale_A.journal",
+        "2022/cesenatico_semifinale_B.journal", "2022/cesenatico_semifinale_C.journal",
+        "2022/cesenatico_semifinale_D.journal", "2022/qualificazione_arezzo_cagliari_taranto_trento.journal",
         "2022/qualificazione_brindisi_catania_forli_cesena_sassari.journal",
         "2022/qualificazione_campobasso_collevaldelsa_pisa_napoli.journal",
         "2022/qualificazione_femminile_1.journal", "2022/qualificazione_femminile_2.journal",
@@ -186,7 +183,7 @@ def same_version_comparison(journal: typing.TextIO, journal_name: str, exported_
         stripped_journal = strip_race_setup_code_lines(stripped_journal, "012")
         exported_journal = strip_race_setup_code_lines(exported_journal, "012")
     # Some journals have protocol numbers that are not formally correct
-    if journal_name in ("2019/cesenatico_semifinale_A.journal", "2022/cesenatico_pubblico.journal"):
+    if journal_name in ("2019/cesenatico_semifinale_A.journal", ):
         stripped_journal = strip_protocol_numbers(stripped_journal)
         exported_journal = strip_protocol_numbers(exported_journal)
     # Compare the two journals
@@ -238,18 +235,18 @@ def test_journal_version_converter_same_turing_dictionary(
             "2019/cesenatico_finale_formato_extracted_nomi_squadra.journal", "2019/cesenatico_semifinale_A.journal",
             "2019/cesenatico_semifinale_B.journal", "2019/cesenatico_semifinale_C.journal",
             "2019/cesenatico_semifinale_D.journal", "2022/cesenatico_finale.journal",
-            "2022/cesenatico_pubblico.journal", "2023/qualificazione_femminile_1.journal",
-            "2023/qualificazione_femminile_2.journal", "2023/qualificazione_femminile_3.journal",
-            "2023/disfida_new_format.journal", "2024/february_9_short_run.journal"
+            "2023/qualificazione_femminile_1.journal", "2023/qualificazione_femminile_2.journal",
+            "2023/qualificazione_femminile_3.journal", "2023/disfida_new_format.journal",
+            "2024/february_9_short_run.journal"
         ) and target_version in ("r5539", "r11167", "r11184", "r11189", "r17497")
     ):
         pytest.skip("This version does not support customizing the team name or setting its guest status")
     elif (
         journal_name in (
             "2020/disfida.journal", "2022/cesenatico_finale.journal", "2022/cesenatico_finale_femminile.journal",
-            "2022/cesenatico_pubblico.journal", "2022/cesenatico_semifinale_A.journal",
-            "2022/cesenatico_semifinale_B.journal", "2022/cesenatico_semifinale_C.journal",
-            "2022/cesenatico_semifinale_D.journal", "2022/qualificazione_arezzo_cagliari_taranto_trento.journal",
+            "2022/cesenatico_semifinale_A.journal", "2022/cesenatico_semifinale_B.journal",
+            "2022/cesenatico_semifinale_C.journal", "2022/cesenatico_semifinale_D.journal",
+            "2022/qualificazione_arezzo_cagliari_taranto_trento.journal",
             "2022/qualificazione_brindisi_catania_forli_cesena_sassari.journal",
             "2022/qualificazione_campobasso_collevaldelsa_pisa_napoli.journal",
             "2022/qualificazione_femminile_1.journal", "2022/qualificazione_femminile_2.journal",
