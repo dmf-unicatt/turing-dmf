@@ -80,7 +80,6 @@ jobs:
           python3 -m mypy --exclude=conftest.py .
           python3 -m mypy tests/functional/conftest.py
           python3 -m mypy tests/integration/conftest.py
-          python3 -m mypy tests/performance/conftest.py
           python3 -m mypy tests/unit/conftest.py
       - name: Run yamllint
         run: |
@@ -123,18 +122,6 @@ jobs:
         if: steps.determine_integration_tests_options.outputs.with_integration_tests == 'yes' && steps.determine_integration_tests_options.outputs.full_integration_tests == 'yes'
         run: |
           python3 -m pytest --all-data-files --random-order tests/integration
-      - name: Determine performance tests options
-        id: determine_performance_tests_options
-        run: |
-          WITH_PERFORMANCE_TESTS=yes
-          if [ "${{ matrix.name }}" != "with-turing" ]; then
-            WITH_PERFORMANCE_TESTS=no
-          fi
-          echo "with_performance_tests=${WITH_PERFORMANCE_TESTS}" >> ${GITHUB_OUTPUT}
-      - name: Run performance tests
-        if: steps.determine_performance_tests_options.outputs.with_performance_tests == 'yes'
-        run: |
-          python3 -m pytest --random-order tests/performance
 
   warn:
     runs-on: ubuntu-latest

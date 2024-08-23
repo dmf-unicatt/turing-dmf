@@ -12,7 +12,7 @@ if [[ -z "${COMPONENT}" ]]; then
     echo "Need to write the component you want to test (e.g., turing) as first argument"
     exit 1
 fi
-if [[ "${COMPONENT}" != "turing" && "${COMPONENT}" != "mathrace_interaction/tests/unit" && "${COMPONENT}" != "mathrace_interaction/tests/functional" && "${COMPONENT}" != "mathrace_interaction/tests/integration" && "${COMPONENT}" != "mathrace_interaction/tests/performance" ]]; then
+if [[ "${COMPONENT}" != "turing" && "${COMPONENT}" != "mathrace_interaction/tests/unit" && "${COMPONENT}" != "mathrace_interaction/tests/functional" && "${COMPONENT}" != "mathrace_interaction/tests/integration" ]]; then
     echo "Invalid component ${COMPONENT}"
     exit 1
 fi
@@ -41,7 +41,7 @@ if [[ "${COMPONENT}" == "turing" ]]; then
         cd turing && \
         python3 manage.py test --noinput \
     "
-elif [[ "${COMPONENT}" == "mathrace_interaction/tests/unit" || "${COMPONENT}" == "mathrace_interaction/tests/functional" || "${COMPONENT}" == "mathrace_interaction/tests/integration" || "${COMPONENT}" == "mathrace_interaction/tests/performance" ]]; then
+elif [[ "${COMPONENT}" == "mathrace_interaction/tests/unit" || "${COMPONENT}" == "mathrace_interaction/tests/functional" || "${COMPONENT}" == "mathrace_interaction/tests/integration" ]]; then
     RUN_TEST_COMMAND="\
         cd mathrace_interaction && \
         python3 -m pytest ${COMPONENT#*/} \

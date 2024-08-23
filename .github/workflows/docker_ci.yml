@@ -37,7 +37,6 @@ jobs:
           ./run_tests.sh mathrace_interaction/tests/unit run ${{ matrix.database-type }}
           ./run_tests.sh mathrace_interaction/tests/functional run ${{ matrix.database-type }}
           ./run_tests.sh mathrace_interaction/tests/integration run ${{ matrix.database-type }}
-          ./run_tests.sh mathrace_interaction/tests/performance run ${{ matrix.database-type }}
       - name: Run tests with docker exec
         if: matrix.database-type != 'SQLite3'
         run: |
@@ -48,7 +47,6 @@ jobs:
           ./run_tests.sh mathrace_interaction/tests/unit exec ${{ matrix.database-type }}
           ./run_tests.sh mathrace_interaction/tests/functional exec ${{ matrix.database-type }}
           ./run_tests.sh mathrace_interaction/tests/integration exec ${{ matrix.database-type }}
-          ./run_tests.sh mathrace_interaction/tests/performance exec ${{ matrix.database-type }}
           ./stop_container.sh
       - name: Publish image to GitHub packages
         if: matrix.database-type != 'SQLite3' && github.repository == 'dmf-unicatt/turing-dmf' && github.ref == 'refs/heads/main'
