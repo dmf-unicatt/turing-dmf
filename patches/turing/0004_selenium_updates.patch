@@ -1,5 +1,5 @@
 diff --git a/engine/tests.py b/engine/tests.py
-index 0b8b4fd..ab0b7ca 100644
+index 867fdd4..cb53ca9 100644
 --- a/engine/tests.py
 +++ b/engine/tests.py
 @@ -10,6 +10,7 @@ import time as t
@@ -10,16 +10,17 @@ index 0b8b4fd..ab0b7ca 100644
  from selenium.webdriver.support.ui import WebDriverWait
  import random
  
-@@ -102,7 +103,7 @@ class LiveTests(StaticLiveServerTestCase, TuringTests):
+@@ -102,7 +103,8 @@ class LiveTests(StaticLiveServerTestCase, TuringTests):
          chrome_options.add_argument('--window-size=1420,1080')
          chrome_options.add_argument('--headless')
          chrome_options.add_argument('--disable-gpu')
 -        self.selenium = webdriver.Chrome(chrome_options=chrome_options)
++        chrome_options.add_argument("--disable-dev-shm-usage")
 +        self.selenium = webdriver.Chrome(options=chrome_options)
          self.updated = False
  
          self.user = User.objects.create_user('test', 't@e.st', 'test')
-@@ -116,7 +117,7 @@ class LiveTests(StaticLiveServerTestCase, TuringTests):
+@@ -116,7 +118,7 @@ class LiveTests(StaticLiveServerTestCase, TuringTests):
          chrome_options = webdriver.ChromeOptions()
          chrome_options.add_argument('--no-sandbox')
          chrome_options.add_argument('--window-size=1420,1080')
@@ -28,7 +29,7 @@ index 0b8b4fd..ab0b7ca 100644
          url = '{}/engine/'.format(self.live_server_url)
          chrome.get(url)
          input('Premi Invio per continuare...')
-@@ -159,7 +160,7 @@ class LiveTests(StaticLiveServerTestCase, TuringTests):
+@@ -159,7 +161,7 @@ class LiveTests(StaticLiveServerTestCase, TuringTests):
  
          self.get_classifica('squadre')
  
@@ -37,7 +38,7 @@ index 0b8b4fd..ab0b7ca 100644
          if expected is not None:
              self.assertEqual(
                  str(expected), punteggio,
-@@ -182,7 +183,7 @@ class LiveTests(StaticLiveServerTestCase, TuringTests):
+@@ -182,7 +184,7 @@ class LiveTests(StaticLiveServerTestCase, TuringTests):
  
          self.get_classifica('squadre')
  
@@ -46,7 +47,7 @@ index 0b8b4fd..ab0b7ca 100644
          posizione = int(el.text[:-1])
          if expected is not None:
              self.assertEqual(
-@@ -207,8 +208,8 @@ class LiveTests(StaticLiveServerTestCase, TuringTests):
+@@ -207,8 +209,8 @@ class LiveTests(StaticLiveServerTestCase, TuringTests):
  
          self.get_classifica('problemi')
  
@@ -57,7 +58,7 @@ index 0b8b4fd..ab0b7ca 100644
          if punteggio_bonus == "":
              punteggio_bonus = "0"
          if expected_base is not None:
-@@ -545,8 +546,8 @@ class LiveTests(StaticLiveServerTestCase, TuringTests):
+@@ -545,8 +547,8 @@ class LiveTests(StaticLiveServerTestCase, TuringTests):
          self.go_to_minute(150)
  
          self.check_punti_problema(1,10)
@@ -68,11 +69,12 @@ index 0b8b4fd..ab0b7ca 100644
  
      def test_edit_bonus_array(self):
          self.crea_gara(num_squadre=5, n_blocco=10, num_ospiti=0, soluzioni=[0, 0, 0, 0, 0])
-@@ -759,15 +760,15 @@ class HtmlTests(StaticLiveServerTestCase, TuringTests):
+@@ -759,15 +761,16 @@ class HtmlTests(StaticLiveServerTestCase, TuringTests):
          chrome_options.add_argument('--window-size=1420,1080')
          chrome_options.add_argument('--headless')
          chrome_options.add_argument('--disable-gpu')
 -        self.selenium = webdriver.Chrome(chrome_options=chrome_options)
++        chrome_options.add_argument("--disable-dev-shm-usage")
 +        self.selenium = webdriver.Chrome(options=chrome_options)
  
          # Crea un utente di test
@@ -88,7 +90,7 @@ index 0b8b4fd..ab0b7ca 100644
  
      def tearDown(self):
          self.selenium.quit()
-@@ -785,10 +786,10 @@ class HtmlTests(StaticLiveServerTestCase, TuringTests):
+@@ -785,10 +788,10 @@ class HtmlTests(StaticLiveServerTestCase, TuringTests):
  
          url = self.get_url("engine:gara-new")
          self.selenium.get(url)
@@ -103,7 +105,7 @@ index 0b8b4fd..ab0b7ca 100644
  
          gara = Gara.objects.first()
          self.assertEqual(gara.nome, "prova")
-@@ -801,9 +802,9 @@ class HtmlTests(StaticLiveServerTestCase, TuringTests):
+@@ -801,9 +804,9 @@ class HtmlTests(StaticLiveServerTestCase, TuringTests):
  
          url = self.get_url("engine:gara-new")
          self.selenium.get(url)
@@ -116,7 +118,7 @@ index 0b8b4fd..ab0b7ca 100644
  
          self.assertEqual(Gara.objects.count(), 0)
  
-@@ -814,7 +815,7 @@ class HtmlTests(StaticLiveServerTestCase, TuringTests):
+@@ -814,7 +817,7 @@ class HtmlTests(StaticLiveServerTestCase, TuringTests):
  
          url = self.get_url("engine:gara-admin", pk=self.gara.pk)
          self.selenium.get(url)
@@ -125,7 +127,7 @@ index 0b8b4fd..ab0b7ca 100644
          now = timezone.now()
  
          self.gara.refresh_from_db()
-@@ -825,11 +826,11 @@ class HtmlTests(StaticLiveServerTestCase, TuringTests):
+@@ -825,11 +828,11 @@ class HtmlTests(StaticLiveServerTestCase, TuringTests):
          gara = Gara.objects.create(nome="GaraTest", admin=self.user, inizio=timezone.now())
          url = self.get_url("engine:gara-squadre", pk=gara.pk)
          self.selenium.get(url)
@@ -141,7 +143,7 @@ index 0b8b4fd..ab0b7ca 100644
  
          self.assertEqual(gara.get_squadre(), {
              1: {"nome": "sq1", "ospite": False},
-@@ -842,10 +843,10 @@ class HtmlTests(StaticLiveServerTestCase, TuringTests):
+@@ -842,10 +845,10 @@ class HtmlTests(StaticLiveServerTestCase, TuringTests):
          url = self.get_url("engine:inserimento", pk=self.gara.pk)
          self.selenium.get(url)
  
@@ -156,7 +158,7 @@ index 0b8b4fd..ab0b7ca 100644
  
          self.assertEqual(self.gara.get_jolly(), [{'id': 1, 'squadra': 1, 'problema': 1}])
  
-@@ -855,10 +856,10 @@ class HtmlTests(StaticLiveServerTestCase, TuringTests):
+@@ -855,10 +858,10 @@ class HtmlTests(StaticLiveServerTestCase, TuringTests):
          url = self.get_url("engine:inserimento", pk=self.gara.pk)
          self.selenium.get(url)
  
@@ -171,7 +173,7 @@ index 0b8b4fd..ab0b7ca 100644
  
          c = self.gara.get_consegne()
  
-@@ -870,9 +871,9 @@ class HtmlTests(StaticLiveServerTestCase, TuringTests):
+@@ -870,9 +873,9 @@ class HtmlTests(StaticLiveServerTestCase, TuringTests):
          url = self.get_url("engine:inserimento", pk=self.gara.pk)
          self.selenium.get(url)
  
@@ -184,7 +186,7 @@ index 0b8b4fd..ab0b7ca 100644
  
          self.assertFalse(self.gara.eventi.exists())
  
-@@ -882,10 +883,10 @@ class HtmlTests(StaticLiveServerTestCase, TuringTests):
+@@ -882,10 +885,10 @@ class HtmlTests(StaticLiveServerTestCase, TuringTests):
          url = self.get_url("engine:inserimento", pk=self.gara.pk)
          self.selenium.get(url)
  
@@ -199,7 +201,7 @@ index 0b8b4fd..ab0b7ca 100644
  
          c = self.gara.get_consegne()
  
-@@ -897,10 +898,10 @@ class HtmlTests(StaticLiveServerTestCase, TuringTests):
+@@ -897,10 +900,10 @@ class HtmlTests(StaticLiveServerTestCase, TuringTests):
          url = self.get_url("engine:inserimento", pk=self.gara.pk)
          self.selenium.get(url)
  
@@ -214,7 +216,7 @@ index 0b8b4fd..ab0b7ca 100644
  
          c = self.gara.get_consegne()
  
-@@ -912,15 +913,15 @@ class HtmlTests(StaticLiveServerTestCase, TuringTests):
+@@ -912,15 +915,15 @@ class HtmlTests(StaticLiveServerTestCase, TuringTests):
  
          url = self.get_url("engine:gara-parametri", pk=gara.pk)
          self.selenium.get(url)
@@ -239,7 +241,7 @@ index 0b8b4fd..ab0b7ca 100644
  
          gara = Gara.objects.first()
          self.assertEqual(gara.durata, timedelta(hours=2,minutes=30))
-@@ -935,9 +936,9 @@ class HtmlTests(StaticLiveServerTestCase, TuringTests):
+@@ -935,9 +938,9 @@ class HtmlTests(StaticLiveServerTestCase, TuringTests):
  
          url = self.get_url("engine:gara-parametri", pk=gara.pk)
          self.selenium.get(url)
