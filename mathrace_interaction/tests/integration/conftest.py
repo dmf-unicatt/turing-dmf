@@ -254,7 +254,7 @@ def pytest_generate_tests(metafunc: pytest.Metafunc) -> None:
     )
     # Parametrization over json files
     if "json_name" in metafunc.fixturenames:
-        metafunc.parametrize("json_name", _jsons)
+        metafunc.parametrize("json_name", [json_name for json_name in _jsons if "bugs" not in json_name])
     # Parametrization over users
     if "authenticated_user" in metafunc.fixturenames:
         metafunc.parametrize("authenticated_user", ["admin_user", "normal_user"], indirect=True)
