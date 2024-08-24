@@ -208,6 +208,7 @@ class Gara:
         self.cutoff: int | None = None
         self.fixed_bonus: str | None = None
         self.super_mega_bonus: str | None = None
+        self.jolly: bool | None = None
         self.eventi: list[Evento] = []
         self.soluzioni: list[Soluzione] = []
         self.squadre: list[Squadra] = []
@@ -221,7 +222,7 @@ class Gara:
     def to_dict(self) -> TuringDict:
         """Convert to a dictionary."""
         for key in (
-            "nome", "inizio", "durata", "durata_blocco", "num_problemi", "fixed_bonus", "super_mega_bonus"
+            "nome", "inizio", "durata", "durata_blocco", "num_problemi", "fixed_bonus", "super_mega_bonus", "jolly"
             # "n_blocco", "k_blocco", "cutoff" are optional
         ):
             assert getattr(self, key) is not None, f"{key} is still set to None"
@@ -235,6 +236,7 @@ class Gara:
             "num_problemi": self.num_problemi,
             "cutoff": self.cutoff,
             "fixed_bonus": self.fixed_bonus,
+            "jolly": self.jolly,
             "super_mega_bonus": self.super_mega_bonus,
             "eventi": [e.to_dict() for e in self.eventi],
             "soluzioni": [s.to_dict() for s in self.soluzioni],
@@ -256,7 +258,9 @@ class Gara:
 
         this = cls()
 
-        for k in ("nome", "n_blocco", "k_blocco", "num_problemi", "cutoff", "fixed_bonus", "super_mega_bonus"):
+        for k in (
+            "nome", "n_blocco", "k_blocco", "num_problemi", "cutoff", "fixed_bonus", "super_mega_bonus", "jolly"
+        ):
             setattr(this, k, data[k])
 
         inizio = data["inizio"]

@@ -88,6 +88,9 @@ class AbstractJournalReader(abc.ABC):
         else:
             turing_dict["inizio"] = None
 
+        # mathrace always creates races with jolly enabled
+        turing_dict["jolly"] = True
+
         # The first line must contain the initialization of the file
         first_line = self._read_line()
         if first_line != "--- 001 inizializzazione simulatore":

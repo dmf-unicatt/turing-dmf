@@ -477,6 +477,7 @@ def turing_dict(race_name: str, race_date: datetime.datetime) -> mathrace_intera
         "cutoff": None,
         "fixed_bonus": "20,15,10,8,6,5,4,3,2,1",
         "super_mega_bonus": "100,60,40,30,20,10",
+        "jolly": True,
         "num_problemi": 7,
         "soluzioni": [
             {"nome": f"Problema {p}", "problema": p, "punteggio": 20, "risposta": 1} for p in range(1, 8)],
