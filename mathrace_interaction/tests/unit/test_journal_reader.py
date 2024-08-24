@@ -486,7 +486,6 @@ def test_journal_reader_multiple_race_events_at_same_time(race_date: datetime.da
     with mathrace_interaction.journal_reader(journal_with_events_at_same_time) as journal_stream:
         dict_with_events_at_same_time = journal_stream.read("journal_with_events_at_same_time", race_date)
     assert len(dict_with_events_at_same_time["eventi"]) == 3
-    print(dict_with_events_at_same_time)
     assert dict_with_events_at_same_time["eventi"][0]["orario"] == (
         race_date + datetime.timedelta(seconds=80)).isoformat()
     assert dict_with_events_at_same_time["eventi"][0]["squadra_id"] == 2
@@ -496,6 +495,51 @@ def test_journal_reader_multiple_race_events_at_same_time(race_date: datetime.da
     assert dict_with_events_at_same_time["eventi"][2]["orario"] == (
         race_date + datetime.timedelta(seconds=80, milliseconds=2)).isoformat()
     assert dict_with_events_at_same_time["eventi"][2]["squadra_id"] == 6
+
+
+def test_journal_reader_wrong_race_events_order(
+    race_date: datetime.datetime, runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
+) -> None:
+    """Test that journal_reader raises an error when race events are incorrectly sorted."""
+    journal_with_incorrectly_sorted_events = io.StringIO("""\
+--- 001 inizializzazione simulatore
+--- 003 10 7 70 10 6 4 1 1 10 2 -- squadre: 10 quesiti: 7
+0 002 inizio gara
+60 022 aggiorna punteggio esercizi, orologio: 1
+82 011 4 5 1 squadra 4, quesito 5: giusto
+81 011 2 3 1 squadra 2, quesito 3: giusto
+600 029 termine gara
+--- 999 fine simulatore
+""")
+    runtime_error_contains(
+        lambda: mathrace_interaction.journal_reader(journal_with_incorrectly_sorted_events).read(
+            "journal_with_incorrectly_sorted_events", race_date),
+        "The file contains incorrectly sorted events: event at time 2000-01-01 00:01:22+00:00 "
+        "happens before event at time 2000-01-01 00:01:21+00:00 (timestamp 81)")
+
+
+def test_journal_reader_wrong_race_events_order_not_strict(race_date: datetime.datetime) -> None:
+    """Test that journal_reader without strict mode allows to import incorrectly sorted events."""
+    journal_with_incorrectly_sorted_events = io.StringIO("""\
+--- 001 inizializzazione simulatore
+--- 003 10 7 70 10 6 4 1 1 10 2 -- squadre: 10 quesiti: 7
+0 002 inizio gara
+60 022 aggiorna punteggio esercizi, orologio: 1
+82 011 4 5 1 squadra 4, quesito 5: giusto
+81 011 2 3 1 squadra 2, quesito 3: giusto
+600 029 termine gara
+--- 999 fine simulatore
+""")
+    with mathrace_interaction.journal_reader(journal_with_incorrectly_sorted_events) as journal_stream:
+        journal_stream.strict_timestamp_race_events = False  # type: ignore[attr-defined]
+        dict_with_incorrectly_sorted_events = journal_stream.read("journal_with_incorrectly_sorted_events", race_date)
+    assert len(dict_with_incorrectly_sorted_events["eventi"]) == 2
+    assert dict_with_incorrectly_sorted_events["eventi"][0]["orario"] == (
+        race_date + datetime.timedelta(seconds=82)).isoformat()
+    assert dict_with_incorrectly_sorted_events["eventi"][0]["squadra_id"] == 4
+    assert dict_with_incorrectly_sorted_events["eventi"][1]["orario"] == (
+        race_date + datetime.timedelta(seconds=81)).isoformat()
+    assert dict_with_incorrectly_sorted_events["eventi"][1]["squadra_id"] == 2
 
 
 def test_journal_reader_missing_protocol_numbers(

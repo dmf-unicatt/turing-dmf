@@ -134,14 +134,48 @@ def test_journal_writer_not_started_yet_without_events(
 
 
 def test_journal_writer_not_started_yet_with_events(
-    turing_dict: mathrace_interaction.typing.TuringDict, journal: io.StringIO, journal_version: str,
+    turing_dict: mathrace_interaction.typing.TuringDict,
     runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
 ) -> None:
     """Test journal_writer raises an error when the race has not started yet, yet it contains events."""
     turing_dict["inizio"] = None
     with (
         io.StringIO("") as exported_journal,
-        mathrace_interaction.journal_writer(exported_journal, journal_version) as journal_stream
+        mathrace_interaction.journal_writer(exported_journal, "r5539") as journal_stream
     ):
         runtime_error_contains(
             lambda: journal_stream.write(turing_dict), "Race has not started, yet there are 10 events")
+
+
+def test_journal_writer_wrong_race_events_order(
+    turing_dict: mathrace_interaction.typing.TuringDict,
+    runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
+) -> None:
+    """Test that journal_writer raises an error when race events are incorrectly sorted."""
+    turing_dict["eventi"][-2], turing_dict["eventi"][-1] = turing_dict["eventi"][-1], turing_dict["eventi"][-2]
+    with (
+        io.StringIO("") as exported_journal,
+        mathrace_interaction.journal_writer(exported_journal, "r5539") as journal_stream
+    ):
+        runtime_error_contains(
+            lambda: journal_stream.write(turing_dict),
+            "The file contains incorrectly sorted events: event at time 2000-01-01 00:09:30+00:00 "
+            "happens before event at time 2000-01-01 00:08:40+00:00")
+
+
+def test_journal_writer_wrong_race_events_order_not_strict(
+    turing_dict: mathrace_interaction.typing.TuringDict
+) -> None:
+    """Test that journal_reader without strict mode allows to import incorrectly sorted events."""
+    turing_dict["eventi"][-2], turing_dict["eventi"][-1] = turing_dict["eventi"][-1], turing_dict["eventi"][-2]
+    with (
+        io.StringIO("") as exported_journal,
+        mathrace_interaction.journal_writer(exported_journal, "r5539") as journal_stream
+    ):
+        journal_stream.strict_timestamp_race_events = False  # type: ignore[attr-defined]
+        journal_stream.write(turing_dict)
+        exported_lines = exported_journal.getvalue().splitlines()
+        assert exported_lines[-4] == "570 011 9 3 1 squadra 9, quesito 3: giusto"
+        assert exported_lines[-3] == "520 091 7 43 squadra 7 bonus 43"
+        assert exported_lines[-2] == "600 029 termine gara"
+        assert exported_lines[-1] == "--- 999 fine simulatore"
