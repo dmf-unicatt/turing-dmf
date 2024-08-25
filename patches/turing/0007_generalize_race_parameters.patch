@@ -40,10 +40,26 @@ index 391935c..a843c59 100644
  
          d.update({
 diff --git a/engine/static/engine/js/client.js b/engine/static/engine/js/client.js
-index ee986ff..ba3af2f 100644
+index ee986ff..f16e15d 100644
 --- a/engine/static/engine/js/client.js
 +++ b/engine/static/engine/js/client.js
-@@ -40,6 +40,7 @@ class Gara {
+@@ -26,6 +26,15 @@ class Gara {
+         this.cutoff = data.cutoff;
+         this.jolly_enabled = data.jolly_enabled;
+ 
++        this.penalita_errore = 10;
++        this.coefficiente_derivata = 1;
++        this.coefficiente_bonus_errori = 2;
++        this.coefficiente_jolly = 2;
++        this.calcola_punteggio_tempo_iniziale = function(n_prob, penalita_errore) {
++            return n_prob * penalita_errore;
++        }
++        this._scadenza_jolly = 10 * 60 * 1000; // misurato in millisecondi
++
+         this.problemi = {};
+         for (var i in data.problemi)
+             this.problemi[i] = new Problema(this, i, data.problemi[i]["nome"], data.problemi[i]["punteggio"]);
+@@ -40,6 +49,7 @@ class Gara {
          this.last_event = 0;
          this._time = this.inizio; // Parte a calcolare dall'inizio della gara
          this.fine = new Date(data.fine);
@@ -51,7 +67,7 @@ index ee986ff..ba3af2f 100644
          this.en_plein = 0;
  
          for (var i in data.jolly) {
-@@ -132,7 +133,7 @@ class Gara {
+@@ -132,13 +142,13 @@ class Gara {
      get soglia_blocco() {
          // Il momento in cui i problemi smettono di salire
          if (this.inizio == null) return new Date();
@@ -60,6 +76,46 @@ index ee986ff..ba3af2f 100644
      }
  
      get scadenza_jolly() {
+         // Il momento dopo il quale mostrare i jolly
+         if (this.inizio == null) return new Date();
+-        return new Date(this.inizio.getTime() + 1000*60*10);
++        return new Date(this.inizio.getTime() + this._scadenza_jolly);
+     }
+ 
+     get en_plein_bonus() {
+@@ -251,8 +261,8 @@ class Problema {
+         else
+             var t = this.gara.time;
+ 
+-        var derivata = Math.floor((t - this.gara.inizio) / 60000);
+-        var bonus_errori = this._risposte_sbagliate * 2;
++        var derivata = Math.floor((t - this.gara.inizio) / 60000) * this.gara.coefficiente_derivata;
++        var bonus_errori = this._risposte_sbagliate * this.gara.coefficiente_bonus_errori;
+         return this.punteggio + derivata + bonus_errori;
+     }
+ 
+@@ -335,10 +345,10 @@ class Risposta {
+             pts += this.problema.punti_base + this._bonus;
+         }
+ 
+-        pts -= this.errori * 10;
++        pts -= this.errori * this.gara.penalita_errore;
+ 
+         if (this.is_jolly)
+-            pts = pts * 2;
++            pts = pts * this.gara.coefficiente_jolly;
+ 
+         return pts
+     }
+@@ -387,7 +397,7 @@ class Squadra {
+ 
+     get punteggio() {
+         // Calcola il punteggio della squadra
+-        var pts = this.gara.n_prob * 10;
++        var pts = this.gara.calcola_punteggio_tempo_iniziale(this.gara.n_prob, this.gara.penalita_errore);
+         pts += this._en_plein_bonus;
+         for(var i in this.risposte) {
+             pts += this.risposte[i].punteggio
 diff --git a/engine/templates/gara/parametri.html b/engine/templates/gara/parametri.html
 index 049e2d0..ab4f395 100644
 --- a/engine/templates/gara/parametri.html
