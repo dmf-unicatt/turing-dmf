@@ -33,6 +33,7 @@ dependencies = [
     "jsondiff",
     "paramiko",
     "prettytable",
+    "pytz",
     "requests",
     "selenium",
     "tinycss2"
@@ -54,6 +55,7 @@ lint = [
     "ruff",
     "types-beautifulsoup4",
     "types-paramiko",
+    "types-pytz",
     "types-requests",
     "yamllint"
 ]
@@ -89,6 +91,7 @@ warn_unused_ignores = true
 [[tool.mypy.overrides]]
 module = [
     "django",
+    "django.conf",
     "engine",
     "engine.models",
     "jsondiff",

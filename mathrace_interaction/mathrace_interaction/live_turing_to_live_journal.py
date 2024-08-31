@@ -22,7 +22,7 @@ def live_turing_to_live_journal(
     sleep: float, output_directory: pathlib.Path, termination_condition: typing.Callable[[int], bool]
 ) -> None:
     """
-    Follow the mathrace journal of a live race, and register all events into a live session in turing.
+    Follow a live session in turing and convert it into a sequence of mathrace journals.
 
     Parameters
     ----------

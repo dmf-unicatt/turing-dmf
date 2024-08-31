@@ -175,3 +175,51 @@ while true; do
     sleep 5
 done
 ```
+
+## Live `turing` to HTML output
+
+The script `mathrace_interaction/live_turing_to_html.py` transfers race events from a live `turing` session to a sequence of HTML files, which are suitable to update a mirror website and warn about podium position changes.
+
+### Before the race
+
+Set up the race through the turing web interface, and make a note of the value of the race id as `${LIVE_TURING_PRIMARY_KEY}`.
+
+### At the beginning of the race
+
+#### Step 1: send live updates from `turing`
+
+```
+python3 -m mathrace_interaction.live_turing_to_html -u "http://0.0.0.0" -p $(cat /mnt/secrets/.django_superuser_initial_password) -t "${LIVE_TURING_PRIMARY_KEY}" -s 10 -o "/shared/host-tmp/live_${LIVE_TURING_PRIMARY_KEY}"
+```
+
+#### Step 2: sync from docker host to another machine
+
+```
+while true; do
+    rsync -arvz ${TURING_HOST_USER}@${TURING_HOST}:/tmp/shared-turing-dmf/live_${LIVE_TURING_PRIMARY_KEY}/ /tmp/live_${LIVE_TURING_PRIMARY_KEY}
+    sleep 5
+done
+```
+
+#### Step 3: copy current classification to a remote website
+
+```
+HTML_TURING_OUTPUT=/tmp/shared-turing-dmf/live_${LIVE_TURING_PRIMARY_KEY}/html_files
+REMOTE_WEBSITE_PATH=/tmp/remote-website
+for EXT in css eot ttf woff woff2; do
+    scp ${TURING_HOST_USER}@${TURING_HOST}:${HTML_TURING_OUTPUT}/*.${EXT} ${REMOTE_WEBSITE_HOST_USER}@${REMOTE_WEBSITE_HOST}:${REMOTE_WEBSITE_PATH}
+done
+ssh -t ${TURING_HOST_USER}@${TURING_HOST} "tail -n 0 -f ${HTML_TURING_OUTPUT}/watch.txt" | while read -r LINE; do
+    scp ${TURING_HOST_USER}@${TURING_HOST}:${HTML_TURING_OUTPUT}/latest.html ${REMOTE_WEBSITE_HOST_USER}@${REMOTE_WEBSITE_HOST}:${REMOTE_WEBSITE_PATH}/index.html
+done
+```
+
+#### Step 4: execute an action on podium change
+
+```
+PODIUM_CHANGE_TURING_OUTPUT=/tmp/shared-turing-dmf/live_${LIVE_TURING_PRIMARY_KEY}/podium_change_files
+ssh -t ${TURING_HOST_USER}@${TURING_HOST} "tail -n 0 -f ${PODIUM_CHANGE_TURING_OUTPUT}/watch.txt" | while read -r LINE; do
+    POSITION=$(echo "${LINE}" | tr -d "\r" | rev | cut -d" " -f1 | rev)
+    echo "Podium position ${POSITION} changed" >> /tmp/podium-change-history
+done
+```
