@@ -5,6 +5,8 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """Test mathrace_interaction.network.TuringClassificationSelenium on a live turing instace."""
 
+import datetime
+
 import engine.models
 import pytest
 import pytest_django.live_server_helper
@@ -149,62 +151,78 @@ def test_classification_browser_get_teams_score_integration_non_default_race_tim
 
 
 @pytest.mark.parametrize("computation_rate_prefix", ["00:00:0", ""])
-def test_classification_browser_get_teams_score_integration_non_default_computation_rate(  # type: ignore[no-any-unimported]
+def test_classification_browser_get_teams_score_integration_over_time(  # type: ignore[no-any-unimported]
     live_server: pytest_django.live_server_helper.LiveServer, simple_turing_race: engine.models.Gara,
     admin_user: engine.models.User, computation_rate_prefix: str
 ) -> None:
-    """Test team score computation with non default computation."""
+    """Test team score computation with non default computation rate and freeze/unfreeze time."""
     simple_turing_race.admin = admin_user
     simple_turing_race.save()
 
-    # Open two browsers
+    # Open three browsers
     browser1 = Browser(live_server, simple_turing_race.pk)
     browser1.login(admin_user)
     browser2 = Browser(live_server, simple_turing_race.pk)
     browser2.login(admin_user)
+    browser3 = Browser(live_server, simple_turing_race.pk)
+    browser3.login(admin_user)
 
     # Set race time to a time which is just before the first answer submission
     base_querystring = {"race_time": "00:05:28", "ended": "false"}
 
-    # Set a computation rate of 1 second in the first browser, and higher than 1 seconds in the second browser.
+    # Set a computation rate of 1 second in the first browser, and higher than 1 seconds in the other two browsers.
     querystring1 = {"computation_rate": computation_rate_prefix + "1"} | base_querystring
-    querystring2 = {"computation_rate": computation_rate_prefix + "8"} | base_querystring
+    querystring23 = {"computation_rate": computation_rate_prefix + "8"} | base_querystring
     browser1.go_to_classification_page("squadre", querystring1)
-    browser2.go_to_classification_page("squadre", querystring2)
+    browser2.go_to_classification_page("squadre", querystring23)
+    browser3.go_to_classification_page("squadre", querystring23)
 
     # Compute scores before the first answer submission
     browser1.lock()
     browser2.lock()
+    browser3.lock()
     scores1 = browser1.get_teams_score()
     scores2 = browser2.get_teams_score()
+    scores3 = browser2.get_teams_score()
     assert scores1 == [70, 70, 70, 70, 70, 70, 70, 70, 70, 70]
     assert scores2 == [70, 70, 70, 70, 70, 70, 70, 70, 70, 70]
+    assert scores3 == [70, 70, 70, 70, 70, 70, 70, 70, 70, 70]
     browser1.unlock()
     browser2.unlock()
+    browser3.unlock()
 
     # Wait until the first browser registers the first answer submission
     browser1._wait_for_classification_timer("00:05:31")
 
-    # Ensure that the second browser has not registered yet the first answer submission
+    # Ensure that the second and third browser have not registered yet the first answer submission
     timer_to_int = mathrace_interaction.time.convert_timestamp_to_number_of_seconds
     assert timer_to_int(
         browser2.find_element(selenium.webdriver.common.by.By.ID, "orologio").text) < timer_to_int("00:05:30")
+    assert timer_to_int(
+        browser3.find_element(selenium.webdriver.common.by.By.ID, "orologio").text) < timer_to_int("00:05:30")
 
-    # Lock scores at the time of the first answer submission.
+    # Freeze time for the third browser (but not for the second)
+    browser3.freeze_time(datetime.datetime.now(), force_classification_update=False)
+
+    # Lock page content at the time of the first answer submission.
     # Only the first browser will see the difference in the scores.
     browser1.lock()
     browser2.lock()
+    browser3.lock()
     scores1 = browser1.get_teams_score()
     scores2 = browser2.get_teams_score()
+    scores3 = browser3.get_teams_score()
     assert scores1 == [70, 70, 70, 70, 115, 70, 70, 70, 70, 70]
     assert scores2 == [70, 70, 70, 70, 70, 70, 70, 70, 70, 70]
+    assert scores3 == [70, 70, 70, 70, 70, 70, 70, 70, 70, 70]
     browser1.unlock()
     browser2.unlock()
+    browser3.unlock()
 
     # Wait for the second browser to register the first answer submission as well
-    browser1._wait_for_classification_timer("00:05:40")
+    browser2._wait_for_classification_timer("00:05:32")
 
-    # Lock scores at this final time: both browser will see the updated scores.
+    # Lock page content at this final time: browser 1 and 2 will see now the same scores.
     browser1.lock()
     browser2.lock()
     scores1 = browser1.get_teams_score()
@@ -213,6 +231,20 @@ def test_classification_browser_get_teams_score_integration_non_default_computat
     assert scores2 == [70, 70, 70, 70, 115, 70, 70, 70, 70, 70]
     browser1.unlock()
     browser2.unlock()
+
+    # Browser 3 instead will still see the scores before the first submission.
+    browser3.lock()
+    scores3 = browser3.get_teams_score()
+    assert scores3 == [70, 70, 70, 70, 70, 70, 70, 70, 70, 70]
+    browser3.unlock()
+
+    # Time needs to be unfrozen for the third browser to see the updated scores.
+    browser3.unfreeze_time(force_classification_update=False)
+    browser3._wait_for_classification_timer("00:05:32")
+    browser3.lock()
+    scores3 = browser3.get_teams_score()
+    assert scores3 == [70, 70, 70, 70, 115, 70, 70, 70, 70, 70]
+    browser3.unlock()
 
 
 def test_classification_browser_get_teams_position_integration(  # type: ignore[no-any-unimported]

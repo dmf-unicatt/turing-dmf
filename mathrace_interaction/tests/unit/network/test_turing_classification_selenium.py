@@ -5,6 +5,9 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """Test mathrace_interaction.network.TuringClassificationSelenium on mock web pages."""
 
+import datetime
+
+import prettytable
 import pytest
 import pytest_httpserver
 import selenium.webdriver.common.by
@@ -117,6 +120,32 @@ document.getElementById("qs").textContent =
     assert "Processing querystring" not in browser.page_source
     assert "username is admin and password is secret" in browser.page_source
     assert "Cambio password" in browser.page_source
+
+
+def test_classification_browser_login_error(
+    httpserver: pytest_httpserver.HTTPServer,
+    runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
+) -> None:
+    """Test mathrace_interaction.network.TuringClassificationSelenium.login raises errors."""
+    login_page = f"""<html>
+<body>
+<form action="{httpserver.url_for("/accounts/login-failure")}">
+    <input type="text" name="username">
+    <input type="password" name="password">
+    <input type="submit" id="submit" value="Login">
+</form>
+</body>
+</html>"""
+    post_login_page = """<html>
+<body>
+Inserisci nome utente e password corretti
+</body>
+</html>"""
+    httpserver.expect_request("/accounts/login").respond_with_data(login_page, content_type="text/html")
+    httpserver.expect_request("/accounts/login-failure").respond_with_data(post_login_page, content_type="text/html")
+
+    browser = Browser(httpserver)
+    runtime_error_contains(lambda: browser.login("admin", "secret"), "Could not login with the provided credentials")
 
 
 def test_classification_browser_go_to_classification_page(httpserver: pytest_httpserver.HTTPServer) -> None:
@@ -311,11 +340,11 @@ setTimeout(function(){
     runtime_error_contains(lambda: query_function(browser), "The current page is not a squadre classification")
 
 
-def test_classification_browser_get_css_sources(
+def test_classification_browser_get_auxiliary_files(
     httpserver: pytest_httpserver.HTTPServer,
     runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
 ) -> None:
-    """Test mathrace_interaction.network.TuringClassificationSelenium.get_css_sources."""
+    """Test mathrace_interaction.network.TuringClassificationSelenium.get_auxiliary_files."""
     index_page = """<html>
 <head>
     <link href="/folder1/style1.css" rel="stylesheet" type="text/css">
@@ -330,11 +359,18 @@ def test_classification_browser_get_css_sources(
 }"""
     style2_css = """span {
   color: #00ffff;
+}
+
+@font-face{
+    font-family:"My font family";
+    src:url(../../folder3/font.ttf);
 }"""
+    font3_raw = b"my font"
 
     httpserver.expect_request("/").respond_with_data(index_page, content_type="text/html")
     httpserver.expect_request("/folder1/style1.css").respond_with_data(style1_css, content_type="text/css")
     httpserver.expect_request("/folder2/subfolder2/style2.css").respond_with_data(style2_css, content_type="text/css")
+    httpserver.expect_request("/folder3/font.ttf").respond_with_data(font3_raw, content_type="font/ttf")
 
     browser = Browser(httpserver)
     browser.get(httpserver.url_for("/"))
@@ -350,12 +386,15 @@ def test_classification_browser_get_css_sources(
 
     # Get a dictionary containing the sources of all CSS files
     browser.lock()
-    all_css = browser.get_css_sources()
+    all_css, all_fonts = browser.get_auxiliary_files()
     assert len(all_css) == 2
+    assert len(all_fonts) == 1
     assert "style1.css" in all_css
     assert "style2.css" in all_css
+    assert "font.ttf" in all_fonts
     assert all_css["style1.css"] == style1_css
-    assert all_css["style2.css"] == style2_css
+    assert all_css["style2.css"] == style2_css.replace("../../folder3/font.ttf", "font.ttf")
+    assert all_fonts["font.ttf"] == font3_raw
 
 
 def test_classification_browser_get_cleaned_html_source_replaces_css(httpserver: pytest_httpserver.HTTPServer) -> None:
@@ -514,3 +553,161 @@ setTimeout(function(){
     browser._wait_for_classification_timer("00:00:01")
     assert "00:00:00" not in browser.page_source
     assert "00:00:01" in browser.page_source
+
+
+def test_classification_browser_freeze_unfreeze_time(
+    httpserver: pytest_httpserver.HTTPServer,
+    runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
+) -> None:
+    """Test mathrace_interaction.network.TuringClassificationSelenium.freeze_time/unfreeze_time."""
+    classification_page = """<html>
+<body>
+<script>
+document.updated = false;
+setTimeout(function(){
+    document.updated = true;
+}, 10);
+setInterval(function(){
+    document.updated = true;
+}, 1000);
+
+class Gara {
+    constructor() {
+        this.time = 0;
+    }
+}
+
+class Timer {
+    constructor() {
+        this.called = 0;
+    }
+
+    now() {
+        return this.called;
+    }
+}
+
+class Client {
+    constructor() {
+        this.gara = new Gara();
+        this.timer = new Timer();
+    }
+}
+
+document.client = new Client();
+
+function incrementTime() {
+    document.client.timer.called += 1;
+    document.client.gara.time = document.client.timer.now();
+    document.getElementById("orologio").textContent = "Current time is " + document.client.gara.time.toString();
+};
+</script>
+<span id="orologio">Current time is 0</span>
+<button id="increment" onclick="incrementTime()">Increment time</button>
+</body>
+</html>"""
+    httpserver.expect_request("/engine/classifica/0/unica").respond_with_data(
+        classification_page, content_type="text/html")
+
+    browser = Browser(httpserver)
+    browser.go_to_classification_page("unica", {})
+    assert "Current time is 0" in browser.page_source
+
+    # Click the button, and verify that the time increases
+    increment_button = browser.find_element(selenium.webdriver.common.by.By.ID, "increment")
+    increment_button.click()  # causes time to increment to 1
+    assert "Current time is 0" not in browser.page_source
+    assert "Current time is 1" in browser.page_source
+
+    # Now freeze the time, click the button, and check that the time has not increased
+    browser.freeze_time(datetime.datetime.now())
+    increment_button.click()  # causes time to increment to 2
+    assert "Current time is 0" not in browser.page_source
+    assert "Current time is 1" in browser.page_source
+
+    # Now unfreeze the time, click the button, and check that the time increases again
+    browser.unfreeze_time()
+    increment_button.click()  # causes time to increment to 3
+    assert "Current time is 0" not in browser.page_source
+    assert "Current time is 1" not in browser.page_source
+    assert "Current time is 2" not in browser.page_source
+    assert "Current time is 3" in browser.page_source
+
+    # Cannot unfreeze the time again
+    runtime_error_contains(lambda: browser.unfreeze_time(), "Did you forget to freeze the time?")
+
+
+def test_classification_browser_get_table(httpserver: pytest_httpserver.HTTPServer) -> None:
+    """Test mathrace_interaction.network.TuringClassificationSelenium.get_table."""
+    classification_page = """<html>
+<body>
+<script>
+document.updated = false;
+setTimeout(function(){
+    document.updated = true;
+}, 10);
+</script>
+<h3 id="orologio">00:00:00</h3>
+<table>
+<tr>
+    <th>Position</th>
+    <th>Team ID</th>
+    <th>Team name</th>
+    <th>Score</th>
+    <th id="pr-1">
+        Question 1
+        1+1
+    </th>
+    <th id="pr-2">
+        Question 2
+        2+2
+    </th>
+    <th id="pr-3">Question 3</th>
+    <th id="pr-4">
+        Question 4
+        4+4
+    </th>
+    <th>Bonus</th>
+</tr>
+<tr>
+    <th id="pos-1">1*</th>
+    <th id="num-1">-1</th>
+    <th id="nome-1">Team 1</th>
+    <th id="punt-1">10</th>
+    <td id="cell-1-1">11</td>
+    <td id="cell-1-2">12</td>
+    <td id="cell-1-3">13</td>
+    <td id="cell-1-4">14</td>
+    <td id="cell-1-bonus">15</td>
+</tr>
+<tr>
+    <th id="pos-2">2*</th>
+    <th id="num-2">-2</th>
+    <th id="nome-2">Team 2</th>
+    <th id="punt-2">20</th>
+    <td id="cell-2-1">21</td>
+    <td id="cell-2-2">22</td>
+    <td id="cell-2-3">23</td>
+    <td id="cell-2-4"></td>
+    <td id="cell-2-bonus"></td>
+</tr>
+</table>
+</body>
+</html>"""
+    httpserver.expect_request("/engine/classifica/0/unica").respond_with_data(
+        classification_page, content_type="text/html")
+
+    browser = Browser(httpserver)
+    browser.go_to_classification_page("unica", {})
+    browser.lock()
+    actual_table = browser.get_table()
+
+    expected_table = prettytable.PrettyTable()
+    expected_table.field_names = [
+        "Position", "Team ID", "Team name", "Score", "Question 1", "Question 2", "Question 3", "Question 4", "Bonus"]
+    expected_table.add_row(["", "", "00:00:00", "", "1+1", "2+2", "", "4+4", ""])
+    expected_table.add_row(["1", "-1", "Team 1", "10", "11", "12", "13", "14", "15"])
+    expected_table.add_row(["2", "-2", "Team 2", "20", "21", "22", "23", "", ""])
+    assert actual_table.get_string() == expected_table.get_string(), (
+        f"Tables are different.\nActual table is\n{actual_table.get_string()}\n"
+        f"Expected table is\n{expected_table.get_string()}")

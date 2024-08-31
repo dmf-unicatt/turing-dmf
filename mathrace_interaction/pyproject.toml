@@ -32,8 +32,10 @@ dependencies = [
     "bs4",
     "jsondiff",
     "paramiko",
+    "prettytable",
     "requests",
-    "selenium"
+    "selenium",
+    "tinycss2"
 ]
 
 [project.urls]
@@ -91,6 +93,7 @@ module = [
     "engine.models",
     "jsondiff",
     "simpleeval",
+    "tinycss2",
     "Turing"
 ]
 ignore_missing_imports = true
