@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (C) 2024 by the Turing @ DMF authors
+# Copyright (C) 2024-2025 by the Turing @ DMF authors
 #
 # This file is part of Turing @ DMF.
 #
