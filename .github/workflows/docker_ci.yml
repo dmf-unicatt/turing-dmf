@@ -13,11 +13,20 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
     strategy:
       matrix:
-        database-type: [PostgreSQL, SQLite3]
+        include:
+          - arch: amd64
+            os: ubuntu-latest
+            database-type: PostgreSQL
+          - arch: amd64
+            os: ubuntu-latest
+            database-type: SQLite3
+          - arch: arm64
+            os: ubuntu-24.04-arm
+            database-type: PostgreSQL
       fail-fast: false
+    runs-on: ${{ matrix.os }}
     permissions:
       contents: read
       packages: write
@@ -52,7 +61,8 @@ jobs:
         if: matrix.database-type != 'SQLite3' && github.repository == 'dmf-unicatt/turing-dmf' && github.ref == 'refs/heads/main'
         run: |
           echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-          docker push ghcr.io/dmf-unicatt/turing-dmf:latest
+          docker tag ghcr.io/dmf-unicatt/turing-dmf:latest ghcr.io/dmf-unicatt/turing-dmf:latest-${{ matrix.arch }}
+          docker push ghcr.io/dmf-unicatt/turing-dmf:latest-${{ matrix.arch }}
 
   warn:
     runs-on: ubuntu-latest
