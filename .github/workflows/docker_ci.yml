@@ -27,9 +27,6 @@ jobs:
             database-type: PostgreSQL
       fail-fast: false
     runs-on: ${{ matrix.os }}
-    permissions:
-      contents: read
-      packages: write
     defaults:
       run:
         working-directory: docker
