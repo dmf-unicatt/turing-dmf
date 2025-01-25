@@ -228,7 +228,19 @@ Actual: {actual_time}""")
         # Print out table
         print("\t" + table[LIVE].get_string(fields=print_fields[LIVE]).replace("\n", "\n\t"))
         if warn_table:
-            print("\tWARNING: live and comparison tables are different")
+            print("\tWARNING: live and comparison tables are different:")
+            print("\t\tlive table is")
+            print(table[LIVE].get_string())
+            print("\t\tcomparison table is")
+            print(table[COMPARISON].get_string())
+            print(
+                "\t\tThis warning typically happens when a team answers a question a fraction (less than 1) "
+                "of a second after the live browser has taken the snapshot of the html page: the live browser "
+                "will not have the answer, but the comparison browser will have it. If this is the case, "
+                "the warning will disappear in the next time iteration. If not, you may also want to compare "
+                f"html_files/{time_counter}.html and html_files_comparison/{time_counter}.html in the output "
+                "directory."
+            )
         # Break out of the loop if the race has ended
         if termination_condition(time_counter):
             break
