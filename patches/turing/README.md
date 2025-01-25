@@ -25,3 +25,4 @@ This directory contains some local patches. A few of them are related to changes
 20. `0020_logging_datetime_ip.patch`: add date and IP address to the log file.
 21. `0021_logout_django_5.patch`: log out needs to be carried out via a POST request since django 5.
 22. `0022_drop_favicon.patch`: drop usage of favicon, since it does not seem to be served correctly.
+23. `0023_new_classification_type_final_proclamation.patch`: add a new classification type, typically used for proclamation of the final results.
