@@ -133,7 +133,7 @@ index 3cae582..7713ff6 100644
  
  class UploadGaraForm(forms.Form):
 diff --git a/engine/models.py b/engine/models.py
-index 45c8b8b..ed8f6d7 100644
+index 45c8b8b..d323373 100644
 --- a/engine/models.py
 +++ b/engine/models.py
 @@ -13,6 +13,7 @@ from dateutil.parser import parse
@@ -292,10 +292,30 @@ index 45c8b8b..ed8f6d7 100644
                  d[k] = v
              if k == 'orario':
                  d[k] = v.isoformat()
-@@ -580,6 +638,56 @@ class Jolly(Evento):
+@@ -538,7 +596,7 @@ class Consegna(Evento):
+     def maybe_save(self):
+         res = super().maybe_save()
+ 
+-        if (res[0]):
++        if res[0]:
+             self.save()
+ 
+             sol = self.gara.soluzioni.get(problema=self.problema)
+@@ -572,6 +630,9 @@ class Jolly(Evento):
+     def maybe_save(self):
+         res = super().maybe_save()
+ 
++        if not res[0]:
++            return res
++
+         if not self.gara.jolly:
+             return (False, "Questa gara non prevede l'inserimento di jolly")
+ 
+@@ -580,7 +641,57 @@ class Jolly(Evento):
              if self.creatore == self.squadra.consegnatore:
                  return (False, "Non puoi inserire un jolly dopo 10 minuti")
  
+-        if (res[0]):
 +        qs = self.gara.eventi.all()
 +        events = [x.as_child() for x in qs]
 +
@@ -312,7 +332,7 @@ index 45c8b8b..ed8f6d7 100644
 +            if len(consegne_esatte) > 0:
 +                return (False, f"Solo l'amministratore può inserire il jolly ad una risposta a cui la squadra ha già risposto correttamente: {consegne_esatte}")
 +
-+        if (res[0]):
++        if res[0]:
 +            self.save()
 +            res = (res[0], res[1] + f". Il numero di protocollo è {self.pk} e la data di inserimento è {self.orario.astimezone(TIME_ZONE_SETTING)}.")
 +        return res
@@ -346,9 +366,10 @@ index 45c8b8b..ed8f6d7 100644
 +    def maybe_save(self):
 +        res = super().maybe_save()
 +
-         if (res[0]):
++        if res[0]:
              self.save()
              res = (res[0], res[1] + f". Il numero di protocollo è {self.pk} e la data di inserimento è {self.orario.astimezone(TIME_ZONE_SETTING)}.")
+         return res
 diff --git a/engine/static/engine/css/classifiche.css b/engine/static/engine/css/classifiche.css
 index dbcc06e..e082c17 100644
 --- a/engine/static/engine/css/classifiche.css
