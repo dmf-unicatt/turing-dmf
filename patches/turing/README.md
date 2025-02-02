@@ -26,3 +26,4 @@ This directory contains some local patches. A few of them are related to changes
 21. `0021_logout_django_5.patch`: log out needs to be carried out via a POST request since django 5.
 22. `0022_drop_favicon.patch`: drop usage of favicon, since it does not seem to be served correctly.
 23. `0023_new_classification_type_final_proclamation.patch`: add a new classification type, typically used for proclamation of the final results.
+24. `0024_team_selection_insertion_form.patch`: set `size` larger than one to the team `select` HTML element in the insertion form. The teams will be displayed in a scrollable list, rather than a dropdown, allowing to select a team with a single click (instead of two clicks in a dropdown).

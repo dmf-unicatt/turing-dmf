@@ -85,5 +85,6 @@ else
     apply_patch 0021_logout_django_5.patch
     apply_patch 0022_drop_favicon.patch
     apply_patch 0023_new_classification_type_final_proclamation.patch
+    apply_patch 0024_team_selection_insertion_form.patch
     echo "All patches have been applied successfully"
 fi
