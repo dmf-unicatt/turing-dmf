@@ -60,15 +60,24 @@ def live_turing_to_html(
     # Create the output directory if it does not exist yet
     output_directory.mkdir(parents=True, exist_ok=True)
 
-    # Constants associated to the two browsers we will open
-    LIVE = 0  # noqa: N806
-    COMPARISON = 1  # noqa: N806
+    # Constants associated to the browsers we will open
+    UNICA_LIVE = 0  # noqa: N806
+    UNICA_COMPARISON = 1  # noqa: N806
+    SQUADRE_LIVE = 2  # noqa: N806
+    PROBLEMI_LIVE = 3  # noqa: N806
+    STATO_LIVE = 4  # noqa: N806
+    browsers_name = [
+        ("unica", "live"), ("unica", "comparison"), ("squadre", "live"), ("problemi", "live"), ("stato", "live")]
 
     # Constants associated to the table we will create
     POSITION_COLUMN = 0  # noqa: N806
     TEAM_ID_COLUMN = 1  # noqa: N806
     TEAM_NAME_COLUMN = 2  # noqa: N806
     SCORE_COLUMN = 3  # noqa: N806
+
+    # Constants associated to the output directories
+    OUTPUT_LIVE = 0  # noqa: N806
+    OUTPUT_COMPARISON = 1  # noqa: N806
 
     # Create subdirectories in the output directory, if they do not exist yet
     datetime_files_directory = output_directory / "datetime_files"
@@ -81,6 +90,10 @@ def live_turing_to_html(
         podium_change_files_directory
     ):
         directory.mkdir(parents=True, exist_ok=True)
+    for INSTANCE in (UNICA_LIVE, SQUADRE_LIVE, PROBLEMI_LIVE, STATO_LIVE):  # noqa: N806
+        (html_files_directory[OUTPUT_LIVE] / browsers_name[INSTANCE][0]).mkdir(parents=True, exist_ok=True)
+    for INSTANCE in (UNICA_COMPARISON, ):  # noqa: N806
+        (html_files_directory[OUTPUT_COMPARISON] / browsers_name[INSTANCE][0]).mkdir(parents=True, exist_ok=True)
 
     # Read the current time counter if available, otherwise set it to zero
     time_counter = 0
@@ -90,26 +103,34 @@ def live_turing_to_html(
         time_counter += 1
 
     # Open two browsers to access the classification with querystring ?ended=False and ?ended=True
-    browsers = [TuringClassificationSelenium(turing_url, turing_race.pk, sleep // 2) for _ in range(2)]
+    browsers = [TuringClassificationSelenium(turing_url, turing_race.pk, sleep // 2) for _ in range(5)]
     for browser in browsers:
         browser.login(turing_race.admin.username, turing_race_admin_password)
-    # Connect the live browser to the live instance with ?ended=False
-    browsers[LIVE].go_to_classification_page("unica", {"ended": "false", "computation_rate": str(sleep // 4)})
+    # Connect the live browsers to the live instance with ?ended=False
+    for INSTANCE in (UNICA_LIVE, SQUADRE_LIVE, PROBLEMI_LIVE, STATO_LIVE):  # noqa: N806
+        browsers[INSTANCE].go_to_classification_page(
+            browsers_name[INSTANCE][0], {"ended": "false", "computation_rate": str(sleep // 4)})
 
     # Save CSS files for HTML export
     if time_counter == 0:
-        browsers[LIVE].lock()
-        css_files, font_files = browsers[LIVE].get_auxiliary_files()
+        browsers[UNICA_LIVE].lock()
+        css_files, font_files = browsers[UNICA_LIVE].get_auxiliary_files()
         for (auxiliary_files, write_content) in (
             (css_files, lambda path, content: path.write_text(content)),
             (font_files, lambda path, content: path.write_bytes(content))
         ):
             for (filename, content) in auxiliary_files.items():
-                write_content(html_files_directory[LIVE] / filename, content)  # type: ignore[no-untyped-call]
-                shutil.copy(
-                    html_files_directory[LIVE] / filename,
-                    html_files_directory[COMPARISON] / filename)
-        browsers[LIVE].unlock()
+                write_content(  # type: ignore[no-untyped-call]
+                    html_files_directory[OUTPUT_LIVE] / browsers_name[UNICA_LIVE][0] / filename, content
+                )
+                for (BROWSER_INSTANCE, OUTPUT_INSTANCE) in zip(  # noqa: N806
+                    (UNICA_COMPARISON, SQUADRE_LIVE, PROBLEMI_LIVE, STATO_LIVE),
+                    (OUTPUT_COMPARISON, OUTPUT_LIVE, OUTPUT_LIVE, OUTPUT_LIVE)
+                ):
+                    shutil.copy(
+                        html_files_directory[OUTPUT_LIVE] / browsers_name[UNICA_LIVE][0] / filename,
+                        html_files_directory[OUTPUT_INSTANCE] / browsers_name[BROWSER_INSTANCE][0] / filename)
+        browsers[UNICA_LIVE].unlock()
 
     # Continuously read the turing state
     previous_positions = None
@@ -138,11 +159,11 @@ Actual: {actual_time}""")
             live_turing_json_files_directory / f"{time_counter}.json",
             live_turing_json_files_directory / "latest.json")
         # Download browser content
-        html: list[str] = [None, None]  # type: ignore[list-item]
-        table: list[prettytable.PrettyTable] = [None, None]  # type: ignore[list-item]
+        html: list[str] = [None for _ in browsers]  # type: ignore[misc]
+        table: list[prettytable.PrettyTable] = [None for _ in browsers]  # type: ignore[misc]
         for (INSTANCE, browser) in enumerate(browsers):  # noqa: N806
-            print(f'\tupdating {"live" if INSTANCE == LIVE else "comparison"} browser')
-            if INSTANCE == LIVE:
+            print(f"\tupdating {browsers_name[INSTANCE][0]} {browsers_name[INSTANCE][1]} browser")
+            if browsers_name[INSTANCE][1] == "live":
                 # Freeze the browser at the current time
                 browser.freeze_time(current_time)
             else:
@@ -152,15 +173,21 @@ Actual: {actual_time}""")
             # Save the content of the browser
             browser.lock()
             html[INSTANCE] = browser.get_cleaned_html_source()
-            table[INSTANCE] = browser.get_table()
+            if INSTANCE in (UNICA_LIVE, UNICA_COMPARISON):
+                table[INSTANCE] = browser.get_table()
             browser.unlock()
             # Do not bother unfreezing time in the live browser, since it would immediately be frozen again
             # at the next iteration
         # Write out the html files
-        for INSTANCE in (LIVE, COMPARISON):  # noqa: N806
-            assert html[INSTANCE] is not None
-            (html_files_directory[INSTANCE] / f"{time_counter}.html").write_text(
-                html[INSTANCE])
+        for (BROWSER_INSTANCE, _) in enumerate(browsers):  # noqa: N806
+            if browsers_name[BROWSER_INSTANCE][1] == "live":
+                OUTPUT_INSTANCE = OUTPUT_LIVE  # noqa: N806
+            else:
+                OUTPUT_INSTANCE = OUTPUT_COMPARISON  # noqa: N806
+            assert html[BROWSER_INSTANCE] is not None
+            (html_files_directory[OUTPUT_INSTANCE] / browsers_name[BROWSER_INSTANCE][0]
+                / f"{time_counter}.html").write_text(
+                    html[BROWSER_INSTANCE])
             # Add livejs script to the latest page so that it refreshes automatically
             # when uploaded to an HTTP server.
             # Note: livejs will not work when opening the file locally, since the file:// is not supported:
@@ -168,51 +195,57 @@ Actual: {actual_time}""")
             # As a workaround, you can start a local HTTP server by running
             #   python3 -m http.server
             # in the local directory.
-            (html_files_directory[INSTANCE] / "latest.html").write_text(
-                (html_files_directory[INSTANCE] / f"{time_counter}.html").read_text().replace(
-                    "</head>", '<script src="https://livejs.com/live.js"></script></head>'))
-            with open(html_files_directory[INSTANCE] / "watch.txt", "a") as text_file:
+            (html_files_directory[OUTPUT_INSTANCE] / browsers_name[BROWSER_INSTANCE][0] / "latest.html").write_text(
+                (html_files_directory[OUTPUT_INSTANCE] / browsers_name[BROWSER_INSTANCE][0]
+                    / f"{time_counter}.html").read_text().replace(
+                        "</head>", '<script src="https://livejs.com/live.js"></script></head>'))
+            with open(
+                html_files_directory[OUTPUT_INSTANCE] / browsers_name[BROWSER_INSTANCE][0] / "watch.txt", "a"
+            ) as text_file:
                 text_file.write(f"updated at time counter {time_counter} ({current_time})\n")
         # Determine if the live table and the comparison one are the same or not
-        assert table[LIVE] is not None
-        warn_table = (table[LIVE].get_string() != table[COMPARISON].get_string())
+        assert table[UNICA_LIVE] is not None
+        warn_table = (table[UNICA_LIVE].get_string() != table[UNICA_COMPARISON].get_string())
         # Compute team positions/scores, as a dictionary from the team ID to the team position/score
-        positions = {r[TEAM_ID_COLUMN]: r[POSITION_COLUMN] for r in table[LIVE].rows[1:]}
-        scores = {r[TEAM_ID_COLUMN]: r[SCORE_COLUMN] for r in table[LIVE].rows[1:]}
+        positions = {r[TEAM_ID_COLUMN]: r[POSITION_COLUMN] for r in table[UNICA_LIVE].rows[1:]}
+        scores = {r[TEAM_ID_COLUMN]: r[SCORE_COLUMN] for r in table[UNICA_LIVE].rows[1:]}
         # Compute the difference between the scores at this time and at the previous time
         print_fields: list[list[str]] = [None, None]  # type: ignore[list-item]
-        print_fields[LIVE] = ["Position", "Team ID", "Team name", "Score"]
-        print_fields[COMPARISON] = ["Position", "Team ID", "Team name", "Score"]  # do not assign the LIVE one!
+        print_fields[UNICA_LIVE] = ["Position", "Team ID", "Team name", "Score"]
+        print_fields[UNICA_COMPARISON] = ["Position", "Team ID", "Team name", "Score"]  # do not assign the LIVE one!
         podium_change: list[tuple[int, str, int, int]] = []
         if previous_positions is not None:
             position_update = [
-                previous_positions[r[TEAM_ID_COLUMN]] - positions[r[TEAM_ID_COLUMN]] for r in table[LIVE].rows[1:]]
+                previous_positions[r[TEAM_ID_COLUMN]] - positions[r[TEAM_ID_COLUMN]]
+                for r in table[UNICA_LIVE].rows[1:]]
             for podium_position in (3, 2, 1):
                 if position_update[podium_position - 1] > 0:
-                    team_id = table[LIVE].rows[podium_position][TEAM_ID_COLUMN]
-                    team_name = table[LIVE].rows[podium_position][TEAM_NAME_COLUMN]
+                    team_id = table[UNICA_LIVE].rows[podium_position][TEAM_ID_COLUMN]
+                    team_name = table[UNICA_LIVE].rows[podium_position][TEAM_NAME_COLUMN]
                     podium_change.append((team_id, team_name, podium_position, previous_positions[team_id]))
-            table[LIVE].add_column("Position update", [""] + [u if u != 0 else "" for u in position_update])
-            print_fields[LIVE].append("Position update")
+            table[UNICA_LIVE].add_column("Position update", [""] + [u if u != 0 else "" for u in position_update])
+            print_fields[UNICA_LIVE].append("Position update")
         if previous_scores is not None:
             score_update = [
-                scores[r[TEAM_ID_COLUMN]] - previous_scores[r[TEAM_ID_COLUMN]] for r in table[LIVE].rows[1:]]
-            table[LIVE].add_column("Score update", [""] + [u if u != 0 else "" for u in score_update])
-            print_fields[LIVE].append("Score update")
+                scores[r[TEAM_ID_COLUMN]] - previous_scores[r[TEAM_ID_COLUMN]] for r in table[UNICA_LIVE].rows[1:]]
+            table[UNICA_LIVE].add_column("Score update", [""] + [u if u != 0 else "" for u in score_update])
+            print_fields[UNICA_LIVE].append("Score update")
         # Write out the table files
-        for INSTANCE in (LIVE, COMPARISON):  # noqa: N806
-            assert table[INSTANCE] is not None
-            (table_files_directory[INSTANCE] / f"{time_counter}.csv").write_text(
-                table[INSTANCE].get_formatted_string(out_format="csv"))
-            (table_files_directory[INSTANCE] / f"{time_counter}.html").write_text(
+        for BROWSER_INSTANCE in (UNICA_LIVE, UNICA_COMPARISON):  # noqa: N806
+            OUTPUT_INSTANCE = BROWSER_INSTANCE  # noqa: N806
+            assert table[BROWSER_INSTANCE] is not None
+            (table_files_directory[OUTPUT_INSTANCE] / f"{time_counter}.csv").write_text(
+                table[BROWSER_INSTANCE].get_formatted_string(out_format="csv"))
+            (table_files_directory[OUTPUT_INSTANCE] / f"{time_counter}.html").write_text(
                 "<html><head></head><body>"
-                + table[INSTANCE].get_formatted_string(fields=print_fields[INSTANCE], out_format="html", format=True)
+                + table[BROWSER_INSTANCE].get_formatted_string(
+                    fields=print_fields[BROWSER_INSTANCE], out_format="html", format=True)
                 + "</body>")
             shutil.copy(
-                table_files_directory[INSTANCE] / f"{time_counter}.csv",
-                table_files_directory[INSTANCE] / "latest.csv")
-            (table_files_directory[INSTANCE] / "latest.html").write_text(
-                (table_files_directory[INSTANCE] / f"{time_counter}.html").read_text().replace(
+                table_files_directory[OUTPUT_INSTANCE] / f"{time_counter}.csv",
+                table_files_directory[OUTPUT_INSTANCE] / "latest.csv")
+            (table_files_directory[OUTPUT_INSTANCE] / "latest.html").write_text(
+                (table_files_directory[OUTPUT_INSTANCE] / f"{time_counter}.html").read_text().replace(
                     "</head>", '<script src="https://livejs.com/live.js"></script></head>'))
         # Write out the podium change file
         for (text_filename, mode) in ((f"{time_counter}.txt", "w"), ("watch.txt", "a")):
@@ -226,13 +259,13 @@ Actual: {actual_time}""")
         # Write out the time counter
         time_counter_file.write_text(str(time_counter))
         # Print out table
-        print("\t" + table[LIVE].get_string(fields=print_fields[LIVE]).replace("\n", "\n\t"))
+        print("\t" + table[UNICA_LIVE].get_string(fields=print_fields[UNICA_LIVE]).replace("\n", "\n\t"))
         if warn_table:
             print("\tWARNING: live and comparison tables are different:")
             print("\t\tlive table is")
-            print(table[LIVE].get_string())
+            print(table[UNICA_LIVE].get_string())
             print("\t\tcomparison table is")
-            print(table[COMPARISON].get_string())
+            print(table[UNICA_COMPARISON].get_string())
             print(
                 "\t\tThis warning typically happens when a team answers a question a fraction (less than 1) "
                 "of a second after the live browser has taken the snapshot of the html page: the live browser "
