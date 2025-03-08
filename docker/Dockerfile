@@ -26,7 +26,7 @@ RUN rm /usr/lib/python3.11/EXTERNALLY-MANAGED
 
 # Part 1: turing
 RUN apt update -y -q && \
-    apt install -y -qq libpq-dev postgresql postgresql-client postgresql-contrib python3-psycopg2 python3-selenium
+    apt install -y -qq chromium chromium-driver libpq-dev postgresql postgresql-client postgresql-contrib python3-psycopg2 python3-selenium
 
 # postgres has created a new user, which should be allowed read-only access to /root
 RUN chmod go+rx /root
