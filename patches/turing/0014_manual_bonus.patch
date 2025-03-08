@@ -426,6 +426,18 @@ index dbcc06e..e082c17 100644
  
  /* Following */
  div.following {
+diff --git a/engine/static/engine/css/main.css b/engine/static/engine/css/main.css
+index 66619b2..45cd715 100644
+--- a/engine/static/engine/css/main.css
++++ b/engine/static/engine/css/main.css
+@@ -33,3 +33,7 @@ a.nohover:hover {
+     display: inline-block;
+     width: auto;
+ }
++
++.alert {
++  font-size: 1.2rem;
++}
 diff --git a/engine/static/engine/js/client.js b/engine/static/engine/js/client.js
 index f16e15d..b9d778d 100644
 --- a/engine/static/engine/js/client.js

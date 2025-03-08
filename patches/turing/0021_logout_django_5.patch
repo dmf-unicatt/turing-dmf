@@ -1,10 +1,10 @@
 diff --git a/engine/static/engine/css/main.css b/engine/static/engine/css/main.css
-index 66619b2..a8d94cd 100644
+index 45cd715..4e5622d 100644
 --- a/engine/static/engine/css/main.css
 +++ b/engine/static/engine/css/main.css
-@@ -33,3 +33,24 @@ a.nohover:hover {
-     display: inline-block;
-     width: auto;
+@@ -37,3 +37,24 @@ a.nohover:hover {
+ .alert {
+   font-size: 1.2rem;
  }
 +
 +#logout-form {
