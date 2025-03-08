@@ -65,7 +65,7 @@ index 0000000..5d03bee
 +      <h3 id="orologio">##:##:##</h3>
 +  </div>
 +    {% for sq in object.get_squadre_order %}
-+    <div class="table-responsive" style="height: 100vh;" id="card-{{sq.num}}">
++    <div class="table-responsive" style="height: 150vh;" id="card-{{sq.num}}">
 +    <table class="table table-striped table-bordered table-sm maybe-fixed text-center">
 +        <tbody>
 +            <tr id="header-{{sq.num}}">
