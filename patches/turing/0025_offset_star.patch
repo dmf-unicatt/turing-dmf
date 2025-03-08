@@ -1,0 +1,55 @@
+diff --git a/engine/static/engine/css/classifiche.css b/engine/static/engine/css/classifiche.css
+index e082c17..1d224d7 100644
+--- a/engine/static/engine/css/classifiche.css
++++ b/engine/static/engine/css/classifiche.css
+@@ -35,6 +35,7 @@ td.wrong-answer {
+     padding-bottom: 0.1em;
+     vertical-align: middle;
+     color: white;
++    position: relative;
+ }
+ 
+ td.right-answer {
+@@ -42,6 +43,7 @@ td.right-answer {
+     padding-bottom: 0.1em;
+     vertical-align: middle;
+     color: white;
++    position: relative;
+ }
+ 
+ td.bonus {
+@@ -79,6 +81,21 @@ tr:nth-child(odd) .right-answer {
+     display: inline-block;
+ }
+ 
++.punteggio_unica {
++    position: relative;
++    top: 0;
++    left: 0;
++    z-index: 2;
++}
++
++td.wrong-answer .my-fa-stack,
++td.right-answer .my-fa-stack {
++    position: absolute;
++    bottom: 3px;
++    right: 1px;
++    z-index: 1;
++}
++
+ 
+ /* Following */
+ div.following {
+diff --git a/engine/static/engine/js/client.js b/engine/static/engine/js/client.js
+index ae53947..850b687 100644
+--- a/engine/static/engine/js/client.js
++++ b/engine/static/engine/js/client.js
+@@ -685,7 +685,7 @@ class ClassificaClient {
+                   $("#cell-"+riga+"-"+j).addClass("wrong-answer");
+               }
+               if(r.risolto || r.errori)
+-                text += '<span><b>'+r.punteggio+'</b></span>'
++                text += '<span class="punteggio_unica"><b>'+r.punteggio+'</b></span>'
+ 
+               if (r.is_jolly) {
+                   text += ClassificaClient.stella_jolly;

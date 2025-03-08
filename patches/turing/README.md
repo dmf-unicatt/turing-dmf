@@ -27,3 +27,4 @@ This directory contains some local patches. A few of them are related to changes
 22. `0022_drop_favicon.patch`: drop usage of favicon, since it does not seem to be served correctly.
 23. `0023_new_classification_type_final_proclamation.patch`: add a new classification type, typically used for proclamation of the final results.
 24. `0024_team_selection_insertion_form.patch`: set `size` larger than one to the team `select` HTML element in the insertion form. The teams will be displayed in a scrollable list, rather than a dropdown, allowing to select a team with a single click (instead of two clicks in a dropdown).
+25. `0025_offset_star.patch`: in the unica classification, move the star representing the jolly to the bottom right of the cell, otherwise the text would be broken in two lines (score first, then a new line and the star) if the score is higher than 100.
