@@ -145,10 +145,10 @@ index 049e2d0..ab4f395 100644
      <div class="form-row">
          <div class="col-md-4 form-group">
 diff --git a/engine/tests.py b/engine/tests.py
-index a988125..bd45a5c 100644
+index 21220be..7aff97f 100644
 --- a/engine/tests.py
 +++ b/engine/tests.py
-@@ -914,7 +914,7 @@ class HtmlTests(StaticLiveServerTestCase, TuringTests):
+@@ -939,7 +939,7 @@ class HtmlTests(StaticLiveServerTestCase, TuringTests):
          self.assertEqual(len(c), 0)
  
      def test_modifica_parametri(self):
@@ -157,7 +157,7 @@ index a988125..bd45a5c 100644
          gara = Gara.objects.first()
  
          url = self.get_url("engine:gara-parametri", pk=gara.pk)
-@@ -923,6 +923,8 @@ class HtmlTests(StaticLiveServerTestCase, TuringTests):
+@@ -949,6 +949,8 @@ class HtmlTests(StaticLiveServerTestCase, TuringTests):
          self.selenium.find_element(By.NAME, "nome").send_keys("prova")
          self.selenium.find_element(By.NAME, "durata").clear()
          self.selenium.find_element(By.NAME, "durata").send_keys("02:30:00")
@@ -166,7 +166,7 @@ index a988125..bd45a5c 100644
          self.selenium.find_element(By.NAME, "k_blocco").clear()
          self.selenium.find_element(By.NAME, "k_blocco").send_keys("6")
          self.selenium.find_element(By.NAME, "num_problemi").clear()
-@@ -931,13 +933,14 @@ class HtmlTests(StaticLiveServerTestCase, TuringTests):
+@@ -958,13 +960,14 @@ class HtmlTests(StaticLiveServerTestCase, TuringTests):
  
          gara = Gara.objects.first()
          self.assertEqual(gara.durata, timedelta(hours=2,minutes=30))
@@ -182,7 +182,7 @@ index a988125..bd45a5c 100644
          gara = Gara.objects.first()
  
          url = self.get_url("engine:gara-parametri", pk=gara.pk)
-@@ -983,7 +986,7 @@ class ValidationTests(MyTestCase, TuringTests):
+@@ -1012,7 +1015,7 @@ class ValidationTests(MyTestCase, TuringTests):
      def test_crea_gara_bonus_negativi(self):
          self.url = reverse('engine:gara-new')
          self.data = {
@@ -191,7 +191,7 @@ index a988125..bd45a5c 100644
              "fixed_bonus_0": "20", "fixed_bonus_1": "15", "fixed_bonus_2": "10", "fixed_bonus_3": "8", "fixed_bonus_4": "6",
              "fixed_bonus_5": "5", "fixed_bonus_6": "4", "fixed_bonus_7": "3", "fixed_bonus_8": "2", "fixed_bonus_9": "-1",
              "super_mega_bonus_0": "100", "super_mega_bonus_1": "60", "super_mega_bonus_2": "40", "super_mega_bonus_3": "30",
-@@ -1134,7 +1137,7 @@ class PermissionTests(MyTestCase, TuringTests):
+@@ -1163,7 +1166,7 @@ class PermissionTests(MyTestCase, TuringTests):
      def test_crea_gara_permission(self):
          self.url = reverse('engine:gara-new')
          self.data = {
@@ -200,7 +200,7 @@ index a988125..bd45a5c 100644
              "fixed_bonus_0": "20", "fixed_bonus_1": "+15", "fixed_bonus_2": "+10", "fixed_bonus_3": "+8", "fixed_bonus_4": "+6",
              "fixed_bonus_5": "+5", "fixed_bonus_6": "+4", "fixed_bonus_7": "+3", "fixed_bonus_8": "+2", "fixed_bonus_9": "+1",
              "super_mega_bonus_0": "100", "super_mega_bonus_1": "+60", "super_mega_bonus_2": "+40", "super_mega_bonus_3": "+30",
-@@ -1160,7 +1163,7 @@ class PermissionTests(MyTestCase, TuringTests):
+@@ -1189,7 +1192,7 @@ class PermissionTests(MyTestCase, TuringTests):
          gara = Gara.objects.first()
          self.url = reverse('engine:gara-parametri', kwargs={'pk':gara.pk})
          self.data = {

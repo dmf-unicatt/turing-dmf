@@ -1,8 +1,8 @@
 diff --git a/engine/tests.py b/engine/tests.py
-index 502e58d..0a6c86d 100644
+index b863963..7b1ca0e 100644
 --- a/engine/tests.py
 +++ b/engine/tests.py
-@@ -1070,7 +1070,7 @@ class ValidationTests(MyTestCase, TuringTests):
+@@ -1101,7 +1101,7 @@ class ValidationTests(MyTestCase, TuringTests):
          self.assertTrue(self.user.is_inseritore(self.gara))
  
          self.view_helper(200, 200,
@@ -11,7 +11,7 @@ index 502e58d..0a6c86d 100644
                           form_errors={'__all__': ['Il problema deve esistere']})
  
          self.assertFalse(self.gara.eventi.exists())
-@@ -1089,7 +1089,7 @@ class ValidationTests(MyTestCase, TuringTests):
+@@ -1120,7 +1120,7 @@ class ValidationTests(MyTestCase, TuringTests):
          self.assertTrue(self.user.is_inseritore(self.gara))
  
          self.view_helper(200, 200,

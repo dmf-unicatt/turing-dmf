@@ -16,14 +16,14 @@ index a843c59..76406cc 100644
                                                  help_text="Numero di risposte errate che aumentano il punteggio di un problema")
      durata_blocco = models.DurationField(default=timedelta(minutes=20), help_text="Il punteggio dei problemi viene bloccato quando il tempo rimanente è quello indicato in questo campo nel formato hh:mm:ss")
 diff --git a/engine/tests.py b/engine/tests.py
-index bd45a5c..8224a35 100644
+index 7aff97f..1f801d9 100644
 --- a/engine/tests.py
 +++ b/engine/tests.py
-@@ -790,6 +790,7 @@ class HtmlTests(StaticLiveServerTestCase, TuringTests):
-         self.selenium.get(url)
+@@ -798,6 +798,7 @@ class HtmlTests(StaticLiveServerTestCase, TuringTests):
+         wait_for_element(self.selenium, By.NAME, "nome")
          self.selenium.find_element(By.NAME, "nome").send_keys("prova")
          self.selenium.find_element(By.NAME, "cutoff").send_keys("3")
 +        self.selenium.find_element(By.NAME, "k_blocco").clear()
          self.selenium.find_element(By.NAME, "k_blocco").send_keys("5")
          self.selenium.find_element(By.ID, "submit").click()
- 
+         wait_for_element(self.selenium, By.CSS_SELECTOR, "div[class*='alert-success']")

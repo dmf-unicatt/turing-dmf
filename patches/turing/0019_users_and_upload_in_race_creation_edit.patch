@@ -161,10 +161,10 @@ index ab4f395..17b8f79 100644
 +    {{ form.admin|as_crispy_field }}
 +    {{ form.inseritori|as_crispy_field }}
 diff --git a/engine/tests.py b/engine/tests.py
-index 8dab23d..2b7a3af 100644
+index e453d3d..d343f29 100644
 --- a/engine/tests.py
 +++ b/engine/tests.py
-@@ -1153,7 +1153,7 @@ class ValidationTests(MyTestCase, TuringTests):
+@@ -1196,7 +1196,7 @@ class ValidationTests(MyTestCase, TuringTests):
      def test_crea_gara_bonus_negativi(self):
          self.url = reverse('engine:gara-new')
          self.data = {
@@ -173,7 +173,7 @@ index 8dab23d..2b7a3af 100644
              "fixed_bonus_0": "20", "fixed_bonus_1": "15", "fixed_bonus_2": "10", "fixed_bonus_3": "8", "fixed_bonus_4": "6",
              "fixed_bonus_5": "5", "fixed_bonus_6": "4", "fixed_bonus_7": "3", "fixed_bonus_8": "2", "fixed_bonus_9": "-1",
              "super_mega_bonus_0": "100", "super_mega_bonus_1": "60", "super_mega_bonus_2": "40", "super_mega_bonus_3": "30",
-@@ -1357,7 +1357,7 @@ class PermissionTests(MyTestCase, TuringTests):
+@@ -1400,7 +1400,7 @@ class PermissionTests(MyTestCase, TuringTests):
      def test_crea_gara_permission(self):
          self.url = reverse('engine:gara-new')
          self.data = {

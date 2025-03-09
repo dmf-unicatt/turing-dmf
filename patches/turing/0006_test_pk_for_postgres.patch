@@ -1,10 +1,10 @@
 diff --git a/engine/tests.py b/engine/tests.py
-index cb53ca9..a988125 100644
+index cf1d68e..21220be 100644
 --- a/engine/tests.py
 +++ b/engine/tests.py
-@@ -850,7 +850,11 @@ class HtmlTests(StaticLiveServerTestCase, TuringTests):
-         self.selenium.find_element(By.NAME, "jolly").send_keys(" ")
+@@ -867,7 +867,11 @@ class HtmlTests(StaticLiveServerTestCase, TuringTests):
          self.selenium.find_element(By.ID, "submit").click()
+         wait_for_element(self.selenium, By.CSS_SELECTOR, "div[class*='alert-info']")
  
 -        self.assertEqual(self.gara.get_jolly(), [{'id': 1, 'squadra': 1, 'problema': 1}])
 +        jolly = self.gara.get_jolly()
@@ -15,7 +15,7 @@ index cb53ca9..a988125 100644
  
      def test_inserimento_risposta(self):
          self.crea_gara(5, [0, 0, 0])
-@@ -998,7 +1002,8 @@ class ValidationTests(MyTestCase, TuringTests):
+@@ -1027,7 +1031,8 @@ class ValidationTests(MyTestCase, TuringTests):
      def test_inserimento_pregara(self):
          self.crea_gara(5, [0,0,0], iniziata=False)
          self.url = reverse('engine:inserimento', kwargs={'pk': self.gara.pk})
@@ -25,7 +25,7 @@ index cb53ca9..a988125 100644
  
          self.gara.inseritori.add(self.user)
          self.assertTrue(self.user.is_inseritore(self.gara))
-@@ -1009,7 +1014,8 @@ class ValidationTests(MyTestCase, TuringTests):
+@@ -1038,7 +1043,8 @@ class ValidationTests(MyTestCase, TuringTests):
      def test_inserimento_gara_futura(self):
          self.crea_gara(5, [0,0,0])
          self.url = reverse('engine:inserimento', kwargs={'pk': self.gara.pk})
@@ -35,7 +35,7 @@ index cb53ca9..a988125 100644
  
          self.gara.inseritori.add(self.user)
          self.assertTrue(self.user.is_inseritore(self.gara))
-@@ -1020,7 +1026,8 @@ class ValidationTests(MyTestCase, TuringTests):
+@@ -1049,7 +1055,8 @@ class ValidationTests(MyTestCase, TuringTests):
      def test_inserimento_problema_inesistente(self):
          self.crea_gara(5, [0,0,0])
          self.url = reverse('engine:inserimento', kwargs={'pk': self.gara.pk})
@@ -45,7 +45,7 @@ index cb53ca9..a988125 100644
  
          self.view_helper(403, 403)
          self.assertFalse(self.gara.eventi.exists())
-@@ -1056,7 +1063,8 @@ class ValidationTests(MyTestCase, TuringTests):
+@@ -1085,7 +1092,8 @@ class ValidationTests(MyTestCase, TuringTests):
      def test_inserimento_jolly_inesistente(self):
          self.crea_gara(5, [0,0,0], jolly=False)
          self.url = reverse('engine:inserimento', kwargs={'pk': self.gara.pk})
@@ -55,7 +55,7 @@ index cb53ca9..a988125 100644
  
          self.gara.inseritori.add(self.user)
          self.assertTrue(self.user.is_inseritore(self.gara))
-@@ -1101,11 +1109,11 @@ class ValidationTests(MyTestCase, TuringTests):
+@@ -1130,11 +1138,11 @@ class ValidationTests(MyTestCase, TuringTests):
          self.data = {'jolly': 2}
  
          res = self.gara.get_jolly()
@@ -69,7 +69,7 @@ index cb53ca9..a988125 100644
  
      def test_modifica_jolly_vuoto(self):
          self.crea_gara(5, [0,0,0])
-@@ -1115,11 +1123,11 @@ class ValidationTests(MyTestCase, TuringTests):
+@@ -1144,11 +1152,11 @@ class ValidationTests(MyTestCase, TuringTests):
          self.data = {'jolly': ""}
  
          res = self.gara.get_jolly()
@@ -83,7 +83,7 @@ index cb53ca9..a988125 100644
  
  
  class PermissionTests(MyTestCase, TuringTests):
-@@ -1164,7 +1172,7 @@ class PermissionTests(MyTestCase, TuringTests):
+@@ -1193,7 +1201,7 @@ class PermissionTests(MyTestCase, TuringTests):
      def test_inserimento_soluzioni(self):
          self.crea_gara(2, [0, 0, 0])
          self.url = reverse('engine:gara-risposte', kwargs={'pk': self.gara.pk})
@@ -92,7 +92,7 @@ index cb53ca9..a988125 100644
  
          # Un utente a caso non può leggere le soluzioni
          self.view_helper(403, 403)
-@@ -1183,11 +1191,14 @@ class PermissionTests(MyTestCase, TuringTests):
+@@ -1212,11 +1220,14 @@ class PermissionTests(MyTestCase, TuringTests):
  
          self.view_helper(200, 200, messages_post=[{"tag": "success", "message": "Soluzioni inserite con successo!"}])
          self.assertEqual(self.gara.soluzioni.get(nome="Problema 1").risposta, 76)
@@ -108,7 +108,7 @@ index cb53ca9..a988125 100644
  
          self.gara.inseritori.add(self.user)
          self.assertTrue(self.user.is_inseritore(self.gara))
-@@ -1200,7 +1211,6 @@ class PermissionTests(MyTestCase, TuringTests):
+@@ -1229,7 +1240,6 @@ class PermissionTests(MyTestCase, TuringTests):
      def test_inserimento_postgara_consegnatore(self):
          self.crea_gara(5, [0,0,0])
          self.url = reverse('engine:inserimento', kwargs={'pk': self.gara.pk})
@@ -116,7 +116,7 @@ index cb53ca9..a988125 100644
  
          sq = self.gara.squadre.all()[0]
          sq.consegnatore = self.user
-@@ -1208,13 +1218,15 @@ class PermissionTests(MyTestCase, TuringTests):
+@@ -1237,13 +1247,15 @@ class PermissionTests(MyTestCase, TuringTests):
          self.assertTrue(self.user.can_insert_squadra(sq))
  
          self.go_to_minute(130)
@@ -133,7 +133,7 @@ index cb53ca9..a988125 100644
  
          self.view_helper(403, 403)
          self.assertFalse(self.gara.eventi.exists())
-@@ -1231,7 +1243,8 @@ class PermissionTests(MyTestCase, TuringTests):
+@@ -1260,7 +1272,8 @@ class PermissionTests(MyTestCase, TuringTests):
      def test_inserimento_jolly(self):
          self.crea_gara(5, [0,0,0])
          self.url = reverse('engine:inserimento', kwargs={'pk': self.gara.pk})
@@ -143,7 +143,7 @@ index cb53ca9..a988125 100644
  
          self.view_helper(403, 403)
          self.assertEqual(self.gara.get_jolly(), [])
-@@ -1241,18 +1254,22 @@ class PermissionTests(MyTestCase, TuringTests):
+@@ -1270,18 +1283,22 @@ class PermissionTests(MyTestCase, TuringTests):
  
          self.view_helper(200, 200, messages_post=[{"tag": "info", "message": "Inserimento avvenuto"}])
  
@@ -168,7 +168,7 @@ index cb53ca9..a988125 100644
          self.view_helper(200, 200, messages_post=[{"tag": "warning", "message": "Non puoi inserire un jolly dopo 10 minuti"}])
  
          self.assertEqual(self.gara.get_jolly(), [])
-@@ -1260,11 +1277,13 @@ class PermissionTests(MyTestCase, TuringTests):
+@@ -1289,11 +1306,13 @@ class PermissionTests(MyTestCase, TuringTests):
      def test_consegnatore(self):
          self.crea_gara(5, [0,0,0])
          self.url = reverse('engine:inserimento', kwargs={'pk': self.gara.pk})
@@ -186,7 +186,7 @@ index cb53ca9..a988125 100644
  
          # Status code ok, ma la risposta non è stata validata
          err = {'squadra': ["Scegli un'opzione valida. La scelta effettuata non compare tra quelle disponibili."]}
-@@ -1272,9 +1291,8 @@ class PermissionTests(MyTestCase, TuringTests):
+@@ -1301,9 +1320,8 @@ class PermissionTests(MyTestCase, TuringTests):
  
          self.assertFalse(self.gara.eventi.exists())
  
@@ -198,7 +198,7 @@ index cb53ca9..a988125 100644
  
          # Stavolta va bene
          self.view_helper(200, 200, messages_post=[{"tag": "info", "message": "Inserimento avvenuto"}])
-@@ -1284,7 +1302,6 @@ class PermissionTests(MyTestCase, TuringTests):
+@@ -1313,7 +1331,6 @@ class PermissionTests(MyTestCase, TuringTests):
      def test_filtered_eventi(self):
          self.crea_gara(5, [0,0,0])
          self.url = reverse('engine:inserimento', kwargs={'pk': self.gara.pk})
@@ -206,7 +206,7 @@ index cb53ca9..a988125 100644
  
          u2 = User.objects.create_user('test2','test2@fuffa.com','test2')
  
-@@ -1297,6 +1314,7 @@ class PermissionTests(MyTestCase, TuringTests):
+@@ -1326,6 +1343,7 @@ class PermissionTests(MyTestCase, TuringTests):
          s2.save()
  
          # Inserisce la risposta per la squadra 1
@@ -214,7 +214,7 @@ index cb53ca9..a988125 100644
          self.view_helper(200, 200, messages_post=[{"tag": "info", "message": "La risposta che hai consegnato è errata."}])
  
          # Controlla gli eventi visibili
-@@ -1313,7 +1331,7 @@ class PermissionTests(MyTestCase, TuringTests):
+@@ -1342,7 +1360,7 @@ class PermissionTests(MyTestCase, TuringTests):
          self.assertEqual(len(eventi), 0)
  
          # Inserisce una nuova consegna
@@ -223,7 +223,7 @@ index cb53ca9..a988125 100644
          self.view_helper(200, 200, messages_post=[{"tag": "info", "message": "Inserimento avvenuto"}])
  
          # Controlla gli eventi visibili
-@@ -1402,10 +1420,16 @@ class PermissionTests(MyTestCase, TuringTests):
+@@ -1431,10 +1449,16 @@ class PermissionTests(MyTestCase, TuringTests):
          self.gara.inseritori.add(self.user)
          self.assertTrue(self.user.is_inseritore(self.gara))
  

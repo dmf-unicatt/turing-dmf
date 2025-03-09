@@ -17,10 +17,10 @@ index 2908688..45c8b8b 100644
 +            res = (res[0], res[1] + f". Il numero di protocollo è {self.pk} e la data di inserimento è {self.orario.astimezone(TIME_ZONE_SETTING)}.")
          return res
 diff --git a/engine/tests.py b/engine/tests.py
-index 8224a35..95ead6d 100644
+index 1f801d9..8a9ce47 100644
 --- a/engine/tests.py
 +++ b/engine/tests.py
-@@ -975,7 +975,10 @@ class MyTestCase(TestCase):
+@@ -1004,7 +1004,10 @@ class MyTestCase(TestCase):
                  messages = list(response.context["messages"])
                  for i, m in enumerate(messages_post):
                      self.assertEqual(messages[i].tags, m["tag"])
@@ -32,7 +32,7 @@ index 8224a35..95ead6d 100644
              if form_errors is not None:
                  form = response.context_data["form"]
                  self.assertEqual(dict(form.errors), form_errors)
-@@ -1208,7 +1211,7 @@ class PermissionTests(MyTestCase, TuringTests):
+@@ -1237,7 +1240,7 @@ class PermissionTests(MyTestCase, TuringTests):
          self.assertTrue(self.user.is_inseritore(self.gara))
  
          self.go_to_minute(130)
@@ -41,7 +41,7 @@ index 8224a35..95ead6d 100644
          e = self.gara.eventi.get()
          self.assertEqual(e.as_child().risposta, 76)
  
-@@ -1238,7 +1241,7 @@ class PermissionTests(MyTestCase, TuringTests):
+@@ -1267,7 +1270,7 @@ class PermissionTests(MyTestCase, TuringTests):
          self.gara.inseritori.add(self.user)
          self.assertTrue(self.user.is_inseritore(self.gara))
  
@@ -50,7 +50,7 @@ index 8224a35..95ead6d 100644
  
          self.assertTrue(self.gara.eventi.exists())
          e = self.gara.eventi.get()
-@@ -1256,7 +1259,7 @@ class PermissionTests(MyTestCase, TuringTests):
+@@ -1285,7 +1288,7 @@ class PermissionTests(MyTestCase, TuringTests):
          self.gara.inseritori.add(self.user)
          self.assertTrue(self.user.is_inseritore(self.gara))
  
@@ -59,7 +59,7 @@ index 8224a35..95ead6d 100644
  
          jolly = self.gara.get_jolly()
          assert len(jolly) == 1
-@@ -1299,7 +1302,7 @@ class PermissionTests(MyTestCase, TuringTests):
+@@ -1328,7 +1331,7 @@ class PermissionTests(MyTestCase, TuringTests):
          s1.save()
  
          # Stavolta va bene
@@ -68,7 +68,7 @@ index 8224a35..95ead6d 100644
          self.assertTrue(self.gara.eventi.exists())
          self.assertEqual(self.gara.get_jolly(), [{'id': 1, 'squadra': 1, 'problema': 2}])
  
-@@ -1319,7 +1322,7 @@ class PermissionTests(MyTestCase, TuringTests):
+@@ -1348,7 +1351,7 @@ class PermissionTests(MyTestCase, TuringTests):
  
          # Inserisce la risposta per la squadra 1
          self.data = {'squadra': s1.pk, 'problema': 2, 'risposta': 76}
@@ -77,7 +77,7 @@ index 8224a35..95ead6d 100644
  
          # Controlla gli eventi visibili
          eventi = self.view_helper(200).context['eventi']
-@@ -1336,7 +1339,7 @@ class PermissionTests(MyTestCase, TuringTests):
+@@ -1365,7 +1368,7 @@ class PermissionTests(MyTestCase, TuringTests):
  
          # Inserisce una nuova consegna
          self.data = {'squadra': s2.pk, 'problema': 3, 'jolly': True}
@@ -86,7 +86,7 @@ index 8224a35..95ead6d 100644
  
          # Controlla gli eventi visibili
          eventi = self.view_helper(200).context['eventi']
-@@ -1427,7 +1430,7 @@ class PermissionTests(MyTestCase, TuringTests):
+@@ -1456,7 +1459,7 @@ class PermissionTests(MyTestCase, TuringTests):
          sq = self.gara.squadre.all()[0]
  
          self.data = {'squadra': sq.pk, 'problema': 1, 'jolly': True}
