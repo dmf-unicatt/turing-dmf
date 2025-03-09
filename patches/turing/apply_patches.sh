@@ -24,7 +24,7 @@ HEAD_DETACHED=$(git branch --show-current | wc -l)
 if [[ ${HEAD_DETACHED} -eq 1 ]]; then
     echo "Currently on a branch, assuming that it already contains the required patches."
     echo "If this is not the case you may want to return to the detached HEAD state with"
-    echo "    git submodule update --recursive"
+    echo "    patches/turing/reset_submodule.sh"
 else
     echo "On a detached HEAD, applying patches"
 
@@ -49,10 +49,14 @@ else
         )
         if grep -q "offset" "$TMP_DIR/out-$1"; then
             echo "Patch $1 requires offset, which is not allowed. Exiting with error."
+            echo "You can refresh the patch by running"
+            echo "    patches/turing/refresh_patch.sh $1"
             return 1
         fi
         if grep -q "fuzz" "$TMP_DIR/out-$1"; then
             echo "Patch $1 requires fuzz, which is not allowed. Exiting with error."
+            echo "You can refresh the patch by running"
+            echo "    patches/turing/refresh_patch.sh $1"
             return 1
         fi
         if [[ $GIT_CONFIGURED == "yes" ]]; then
