@@ -15,11 +15,11 @@ index a2ee9be..3c164ef 100644
                <th scope="row" class="text-truncate squadra" style="white-space:pre" id="nome-{{sq.num}}">{{sq.nome}}</th>
                <th scope="row" style="display: none;" id="num-{{sq.num}}">{{sq.num}}</th>
 diff --git a/engine/templates/gara/detail.html b/engine/templates/gara/detail.html
-index 831ffc8..e2ecc26 100644
+index ec5675c..448ff9e 100644
 --- a/engine/templates/gara/detail.html
 +++ b/engine/templates/gara/detail.html
-@@ -62,6 +62,13 @@
-     {% endif %}
+@@ -38,6 +38,13 @@
+     <b>Visualizzazione unica</b>
  </a>
  {% if is_admin %}
 +<ul>
