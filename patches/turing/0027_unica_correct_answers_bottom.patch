@@ -1,0 +1,122 @@
+diff --git a/engine/static/engine/css/classifiche.css b/engine/static/engine/css/classifiche.css
+index 1d224d7..95834f8 100644
+--- a/engine/static/engine/css/classifiche.css
++++ b/engine/static/engine/css/classifiche.css
+@@ -5,6 +5,18 @@
+     border-radius: 1px;
+ }
+ 
++.progress-bar-dark {
++    background-color: #004cc5;
++}
++
++.progress-bar-light {
++    background-color: #71afff;
++}
++
++.progress-bar-zero {
++    background-color: #495057;
++}
++
+ .ospite {
+     background-color: gray;
+ }
+@@ -67,6 +79,16 @@ tr:nth-child(odd) .right-answer {
+     background-color: darkgreen;
+ }
+ 
++td.unica_giuste {
++    padding-top: 0.1em;
++    padding-bottom: 0.1em;
++    vertical-align: middle;
++    color: white;
++    position: relative;
++    font-style: italic;
++    font-weight: bold;
++}
++
+ .points-value {
+     font-family: "Roboto";
+     font-weight: bold;
+diff --git a/engine/static/engine/js/client.js b/engine/static/engine/js/client.js
+index 661f4fb..d6002d7 100644
+--- a/engine/static/engine/js/client.js
++++ b/engine/static/engine/js/client.js
+@@ -607,10 +607,14 @@ class ClassificaClient {
+             $("#label-"+id).text((id)+" - "+this.gara.problemi[id].nome);
+             $("#punti-"+id).css('width', Math.round(punti_problemi[k].base*100./max)+'%');
+             $("#label-punti-"+id).text(punti_problemi[k].base);
+-            if (this.gara.problemi[id].bloccato)
+-                $("#punti-"+id).removeClass("progress-bar-striped progress-bar-animated");
+-            else
+-                $("#punti-"+id).addClass("progress-bar-striped progress-bar-animated");
++            if (this.gara.problemi[id].bloccato) {
++                $("#punti-"+id).removeClass("progress-bar-light");
++                $("#punti-"+id).addClass("progress-bar-dark");
++            }
++            else {
++                $("#punti-"+id).removeClass("progress-bar-dark");
++                $("#punti-"+id).addClass("progress-bar-light");
++            }
+             $("#bonus-"+id).css('width', Math.round(punti_problemi[k].bonus*100./max)+'%');
+             if (punti_problemi[k].bonus) $("#label-bonus-"+id).text(punti_problemi[k].bonus);
+             $("#label-punti-mobile-"+id).text(punti_problemi[k].base+" + "+punti_problemi[k].bonus);
+@@ -654,6 +658,24 @@ class ClassificaClient {
+           var problema = (parseInt(i)+1)
+           text+="#"+("0"+problema).slice(-2)+"\n"+punti_problemi[i].base+"+"+punti_problemi[i].bonus
+           $("#pr-"+problema).html(text)
++          var id = punti_problemi[i].id;
++          $("#giuste-"+problema).html(this.gara.problemi[id]._risposte_corrette);
++          if (this.gara.problemi[id].bloccato) {
++              $("#giuste-"+problema).removeClass("progress-bar-light");
++              $("#giuste-"+problema).removeClass("progress-bar-zero");
++              $("#giuste-"+problema).addClass("progress-bar-dark");
++          }
++          else if (this.gara.problemi[id]._risposte_corrette === 0) {
++              $("#giuste-"+problema).removeClass("progress-bar-light");
++              $("#giuste-"+problema).removeClass("progress-bar-dark");
++              $("#giuste-"+problema).addClass("progress-bar-zero");
++          }
++          else {
++              // almeno una risposta corretta, ma non ancora bloccato
++              $("#giuste-"+problema).removeClass("progress-bar-dark");
++              $("#giuste-"+problema).removeClass("progress-bar-zero");
++              $("#giuste-"+problema).addClass("progress-bar-light");
++          }
+       }
+       this._mostraUnicaOScorrimento();
+     }
+diff --git a/engine/templates/classifiche/punti_problemi.html b/engine/templates/classifiche/punti_problemi.html
+index f913a7b..06f7969 100644
+--- a/engine/templates/classifiche/punti_problemi.html
++++ b/engine/templates/classifiche/punti_problemi.html
+@@ -17,7 +17,7 @@
+         <td class="col-7 col-sm-4 col-lg-2 text-truncate font-weight-bold"><span id="label-{{s.problema}}"></span></span></td>
+         <td class="col-sm-8 col-lg-10 small-padding d-none d-sm-block">
+             <div class="progress">
+-                <div id="punti-{{s.problema}}" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="animation-direction:reverse"><span id="label-punti-{{s.problema}}" class="points-value"></span></div>
++                <div id="punti-{{s.problema}}" class="progress-bar progress-bar-light" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="animation-direction:reverse"><span id="label-punti-{{s.problema}}" class="points-value"></span></div>
+                 <div id="bonus-{{s.problema}}" class="progress-bar bg-warning" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"><span id="label-bonus-{{s.problema}}" class="points-value"></span></div>
+             </div>
+         </td>
+diff --git a/engine/templates/classifiche/unica.html b/engine/templates/classifiche/unica.html
+index 3c164ef..fd1ba57 100644
+--- a/engine/templates/classifiche/unica.html
++++ b/engine/templates/classifiche/unica.html
+@@ -40,6 +40,16 @@
+             </tr>
+             {% endfor %}
+         </tbody>
++        <thead class="thead-light"><tr>
++            <th scope="row"></th>
++            <th scope="row"></th>
++            <th scope="row" style="display: none;"></th>
++            <th scope="row"></th>
++            {% for s in soluzioni %}
++            <td class="progress-bar-zero unica_giuste" id="giuste-{{s.problema}}"></td>
++            {% endfor %}
++            <th scope="row"></th>
++        </tr></thead>
+     </table>
+     </div>
+ 

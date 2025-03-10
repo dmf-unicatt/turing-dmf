@@ -92,5 +92,6 @@ else
     apply_patch 0024_team_selection_insertion_form.patch
     apply_patch 0025_offset_star.patch
     apply_patch 0026_unica_position_range.patch
+    apply_patch 0027_unica_correct_answers_bottom.patch
     echo "All patches have been applied successfully"
 fi
