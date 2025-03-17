@@ -233,8 +233,7 @@ class LiveTuringToLiveJournalTester(LiveConversionTester):
                 event_dict_copy["squadra"] = Squadra.objects.get(gara=turing_race, num=event_dict["squadra_id"])
                 del event_dict_copy["squadra_id"]
                 # Drop fields associated to conversion from mathrace
-                if "mathrace_id" in event_dict_copy:
-                    del event_dict_copy["mathrace_id"]
+                event_dict_copy.pop("mathrace_id", None)
                 # Create an object of the event subclass
                 event_subclass = event_dict_copy.pop("subclass")
                 assert event_subclass in ("Consegna", "Jolly", "Bonus"), f"Invalid event subclass {event_subclass}"
