@@ -124,7 +124,7 @@ index 95834f8..a7e8423 100644
      bottom: 3px;
      right: 1px;
 diff --git a/engine/static/engine/js/client.js b/engine/static/engine/js/client.js
-index 62e4def..e6a4312 100644
+index 0090345..97a8625 100644
 --- a/engine/static/engine/js/client.js
 +++ b/engine/static/engine/js/client.js
 @@ -70,6 +70,8 @@ class Gara {
@@ -269,15 +269,15 @@ index 62e4def..e6a4312 100644
      }
  
      _mostraPuntiProblemi() {
-@@ -682,28 +699,72 @@ class ClassificaClient {
+@@ -682,29 +699,73 @@ class ClassificaClient {
                $("#giuste-"+problema).addClass("progress-bar-light");
            }
        }
--      this._mostraUnicaOScorrimento();
+-      this._mostraUnicaOScorrimento(false);
 +      // Chiama l'implementazione comune
 +      var classifica = this.gara.classifica;
 +      var classifica_posizioni = this.gara.get_classifica_posizioni(classifica);
-+      this._mostraUnicaOScorrimento(classifica, classifica_posizioni);
++      this._mostraUnicaOScorrimento(classifica, classifica_posizioni, false);
 +      // Aggiungi lampeggio alla risposta
 +      var passato_length = this.gara.passato_consegne.length;
 +      var oldest_blink = Math.min(this.blink, passato_length);
@@ -321,18 +321,19 @@ index 62e4def..e6a4312 100644
      }
  
      _mostraScorrimento() {
--      this._mostraUnicaOScorrimento();
+-      this._mostraUnicaOScorrimento(true);
 +      var classifica = this.gara.classifica;
 +      var classifica_posizioni = this.gara.get_classifica_posizioni(classifica);
-+      this._mostraUnicaOScorrimento(classifica, classifica_posizioni);
++      this._mostraUnicaOScorrimento(classifica, classifica_posizioni, true);
      }
  
--    _mostraUnicaOScorrimento() {
--      var classifica = this.gara.classifica
-+    _mostraUnicaOScorrimento(classifica, classifica_posizioni) {
+-    _mostraUnicaOScorrimento(reverse) {
+-      var classifica = this.gara.classifica;
++    _mostraUnicaOScorrimento(classifica, classifica_posizioni, reverse) {
+       var length = classifica.length;
        for (var i in classifica) {
-           var sq = classifica[i].squadra;
-           var riga = parseInt(i)+1;
+           var sq = classifica[reverse ? length - 1 - parseInt(i) : parseInt(i)].squadra;
+           var riga = parseInt(i) + 1;
            if (sq.ospite) $("#riga-"+riga).addClass("text-muted");
            else $("#riga-"+riga).removeClass("text-muted");
 -          $("#pos-"+riga).html(sq.posizione(classifica)+"° ");
@@ -348,7 +349,7 @@ index 62e4def..e6a4312 100644
  
                if (r.risolto) {
                    $("#cell-"+riga+"-"+j).addClass("right-answer");
-@@ -744,7 +805,19 @@ class ClassificaClient {
+@@ -745,7 +806,19 @@ class ClassificaClient {
      }
  }
  
@@ -370,7 +371,7 @@ index 62e4def..e6a4312 100644
 +    <i class="fas fa-equals" style="color:#212529"></i>
 +</span>`;
 diff --git a/engine/templates/classifiche/unica.html b/engine/templates/classifiche/unica.html
-index fd1ba57..c0f37bd 100644
+index 98f5a5e..b9875fe 100644
 --- a/engine/templates/classifiche/unica.html
 +++ b/engine/templates/classifiche/unica.html
 @@ -14,6 +14,7 @@
@@ -384,9 +385,9 @@ index fd1ba57..c0f37bd 100644
 @@ -30,6 +31,7 @@
              <tr id="riga-{{sq.num}}" style="display: none;" >
              {% endif %}
-               <th scope="row" style="white-space:pre" id="pos-{{sq.num}}">1°</th>
+               <th scope="row" style="white-space:pre" id="pos-{{sq.num}}">°</th>
 +              <th scope="row" style="display: none;" id="freccia-{{sq.num}}"></th>
-               <th scope="row" class="text-truncate squadra" style="white-space:pre" id="nome-{{sq.num}}">{{sq.nome}}</th>
+               <th scope="row" class="text-truncate squadra" style="white-space:pre" id="nome-{{sq.num}}"></th>
                <th scope="row" style="display: none;" id="num-{{sq.num}}">{{sq.num}}</th>
                <th scope="row" style="white-space:pre" id="punt-{{sq.num}}"></th>
 @@ -42,6 +44,7 @@

@@ -39,7 +39,7 @@ index 1d224d7..95834f8 100644
      font-family: "Roboto";
      font-weight: bold;
 diff --git a/engine/static/engine/js/client.js b/engine/static/engine/js/client.js
-index 661f4fb..d6002d7 100644
+index a3a859a..b174dbf 100644
 --- a/engine/static/engine/js/client.js
 +++ b/engine/static/engine/js/client.js
 @@ -607,10 +607,14 @@ class ClassificaClient {
@@ -84,7 +84,7 @@ index 661f4fb..d6002d7 100644
 +              $("#giuste-"+problema).addClass("progress-bar-light");
 +          }
        }
-       this._mostraUnicaOScorrimento();
+       this._mostraUnicaOScorrimento(false);
      }
 diff --git a/engine/templates/classifiche/punti_problemi.html b/engine/templates/classifiche/punti_problemi.html
 index f913a7b..06f7969 100644
@@ -100,7 +100,7 @@ index f913a7b..06f7969 100644
              </div>
          </td>
 diff --git a/engine/templates/classifiche/unica.html b/engine/templates/classifiche/unica.html
-index 3c164ef..fd1ba57 100644
+index 9e6738b..98f5a5e 100644
 --- a/engine/templates/classifiche/unica.html
 +++ b/engine/templates/classifiche/unica.html
 @@ -40,6 +40,16 @@

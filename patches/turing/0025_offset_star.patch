@@ -41,10 +41,10 @@ index e082c17..1d224d7 100644
  /* Following */
  div.following {
 diff --git a/engine/static/engine/js/client.js b/engine/static/engine/js/client.js
-index ae53947..850b687 100644
+index 1fb9dc8..a3a859a 100644
 --- a/engine/static/engine/js/client.js
 +++ b/engine/static/engine/js/client.js
-@@ -685,7 +685,7 @@ class ClassificaClient {
+@@ -686,7 +686,7 @@ class ClassificaClient {
                    $("#cell-"+riga+"-"+j).addClass("wrong-answer");
                }
                if(r.risolto || r.errori)

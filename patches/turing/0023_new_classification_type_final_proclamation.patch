@@ -1,5 +1,5 @@
 diff --git a/engine/static/engine/js/client.js b/engine/static/engine/js/client.js
-index a4d18eb..a4d1832 100644
+index a4d18eb..1fb9dc8 100644
 --- a/engine/static/engine/js/client.js
 +++ b/engine/static/engine/js/client.js
 @@ -548,6 +548,7 @@ class ClassificaClient {
@@ -18,22 +18,28 @@ index a4d18eb..a4d1832 100644
        var punti_problemi = this.gara.punti_problemi
        for (var i in punti_problemi){
            var text = ""
-@@ -655,6 +655,15 @@ class ClassificaClient {
+@@ -655,9 +655,19 @@ class ClassificaClient {
            text+="#"+("0"+problema).slice(-2)+"\n"+punti_problemi[i].base+"+"+punti_problemi[i].bonus
            $("#pr-"+problema).html(text)
        }
-+      this._mostraUnicaOScorrimento();
++      this._mostraUnicaOScorrimento(false);
 +    }
 +
 +    _mostraScorrimento() {
-+      this._mostraUnicaOScorrimento();
++      this._mostraUnicaOScorrimento(true);
 +    }
 +
-+    _mostraUnicaOScorrimento() {
-+      var classifica = this.gara.classifica
++    _mostraUnicaOScorrimento(reverse) {
++      var classifica = this.gara.classifica;
++      var length = classifica.length;
        for (var i in classifica) {
-           var sq = classifica[i].squadra;
-           var riga = parseInt(i)+1;
+-          var sq = classifica[i].squadra;
+-          var riga = parseInt(i)+1;
++          var sq = classifica[reverse ? length - 1 - parseInt(i) : parseInt(i)].squadra;
++          var riga = parseInt(i) + 1;
+           if (sq.ospite) $("#riga-"+riga).addClass("text-muted");
+           else $("#riga-"+riga).removeClass("text-muted");
+           $("#pos-"+riga).html(sq.posizione(classifica)+"° ");
 diff --git a/engine/templates/basegara.html b/engine/templates/basegara.html
 index e56b9f2..f05c801 100644
 --- a/engine/templates/basegara.html
@@ -48,7 +54,7 @@ index e56b9f2..f05c801 100644
  </li>
 diff --git a/engine/templates/classifiche/scorrimento.html b/engine/templates/classifiche/scorrimento.html
 new file mode 100644
-index 0000000..d6f1836
+index 0000000..3ccc6c4
 --- /dev/null
 +++ b/engine/templates/classifiche/scorrimento.html
 @@ -0,0 +1,46 @@
@@ -69,8 +75,8 @@ index 0000000..d6f1836
 +    <table class="table table-striped table-bordered table-sm maybe-fixed text-center">
 +        <tbody>
 +            <tr id="header-{{sq.num}}">
-+              <th scope="row" style="width: 15%; height: 15vh; vertical-align: middle; font-size: xx-large; white-space:pre" id="pos-{{sq.num}}">1°</th>
-+              <th scope="row" class="squadra" style="width: 70%; height: 15vh; vertical-align: middle; font-size: xx-large; white-space:pre" id="nome-{{sq.num}}">{{sq.nome}}</th>
++              <th scope="row" style="width: 15%; height: 15vh; vertical-align: middle; font-size: xx-large; white-space:pre" id="pos-{{sq.num}}">°</th>
++              <th scope="row" class="squadra" style="width: 70%; height: 15vh; vertical-align: middle; font-size: xx-large; white-space:pre" id="nome-{{sq.num}}"></th>
 +              <th scope="row" style="display: none;" id="num-{{sq.num}}">{{sq.num}}</th>
 +              <th scope="row" style="width: 15%; height: 15vh; vertical-align: middle; font-size: xx-large; white-space:pre" id="punt-{{sq.num}}"></th>
 +            </tr>
@@ -98,6 +104,47 @@ index 0000000..d6f1836
 +    {% include 'classifiche/replay_control.html' %}
 +</div>
 +{% endblock %}
+diff --git a/engine/templates/classifiche/squadre.html b/engine/templates/classifiche/squadre.html
+index fbbbb7e..d62ec59 100644
+--- a/engine/templates/classifiche/squadre.html
++++ b/engine/templates/classifiche/squadre.html
+@@ -17,7 +17,7 @@
+         <tr class="row no-gutters">
+             <td class="col-7 col-sm-4 col-lg-2 small-padding text-truncate font-weight-bold">
+                 <span id="label-pos-{{sq.num}}" style="display: inline-block; min-width: 3em;"></span>
+-                <span id="label-{{sq.num}}">{{sq.nome}}</span>
++                <span id="label-{{sq.num}}"></span>
+             </td>
+             <td class="col-sm-8 col-lg-10 small-padding d-none d-sm-block" >
+                 <div class="progress">
+diff --git a/engine/templates/classifiche/stato_problemi.html b/engine/templates/classifiche/stato_problemi.html
+index df301de..7f95252 100644
+--- a/engine/templates/classifiche/stato_problemi.html
++++ b/engine/templates/classifiche/stato_problemi.html
+@@ -22,7 +22,7 @@
+         <tbody>
+             {% for sq in object.get_squadre_order %}
+             <tr id="riga-{{sq.num}}">
+-                <th scope="row" class="text-truncate squadra {% if sq.ospite %}text-muted{% endif %}">{{sq.nome}}</th>
++                <th scope="row" class="text-truncate squadra {% if sq.ospite %}text-muted{% endif %}"></th>
+                 {% for s in soluzioni %}
+                   <td id="cell-{{sq.num}}-{{s.problema}}"></td>
+                 {% endfor %}
+diff --git a/engine/templates/classifiche/unica.html b/engine/templates/classifiche/unica.html
+index a2ee9be..55e6ce6 100644
+--- a/engine/templates/classifiche/unica.html
++++ b/engine/templates/classifiche/unica.html
+@@ -25,8 +25,8 @@
+         <tbody>
+             {% for sq in object.get_squadre_order %}
+             <tr id="riga-{{sq.num}}">
+-              <th scope="row" style="white-space:pre" id="pos-{{sq.num}}">1°</th>
+-              <th scope="row" class="text-truncate squadra" style="white-space:pre" id="nome-{{sq.num}}">{{sq.nome}}</th>
++              <th scope="row" style="white-space:pre" id="pos-{{sq.num}}">°</th>
++              <th scope="row" class="text-truncate squadra" style="white-space:pre" id="nome-{{sq.num}}"></th>
+               <th scope="row" style="display: none;" id="num-{{sq.num}}">{{sq.num}}</th>
+               <th scope="row" style="white-space:pre" id="punt-{{sq.num}}"></th>
+                 {% for s in soluzioni %}
 diff --git a/engine/templates/gara/detail.html b/engine/templates/gara/detail.html
 index d6d2b37..ec5675c 100644
 --- a/engine/templates/gara/detail.html
