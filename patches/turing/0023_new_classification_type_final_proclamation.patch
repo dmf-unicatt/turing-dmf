@@ -104,32 +104,6 @@ index 0000000..3ccc6c4
 +    {% include 'classifiche/replay_control.html' %}
 +</div>
 +{% endblock %}
-diff --git a/engine/templates/classifiche/squadre.html b/engine/templates/classifiche/squadre.html
-index fbbbb7e..d62ec59 100644
---- a/engine/templates/classifiche/squadre.html
-+++ b/engine/templates/classifiche/squadre.html
-@@ -17,7 +17,7 @@
-         <tr class="row no-gutters">
-             <td class="col-7 col-sm-4 col-lg-2 small-padding text-truncate font-weight-bold">
-                 <span id="label-pos-{{sq.num}}" style="display: inline-block; min-width: 3em;"></span>
--                <span id="label-{{sq.num}}">{{sq.nome}}</span>
-+                <span id="label-{{sq.num}}"></span>
-             </td>
-             <td class="col-sm-8 col-lg-10 small-padding d-none d-sm-block" >
-                 <div class="progress">
-diff --git a/engine/templates/classifiche/stato_problemi.html b/engine/templates/classifiche/stato_problemi.html
-index df301de..7f95252 100644
---- a/engine/templates/classifiche/stato_problemi.html
-+++ b/engine/templates/classifiche/stato_problemi.html
-@@ -22,7 +22,7 @@
-         <tbody>
-             {% for sq in object.get_squadre_order %}
-             <tr id="riga-{{sq.num}}">
--                <th scope="row" class="text-truncate squadra {% if sq.ospite %}text-muted{% endif %}">{{sq.nome}}</th>
-+                <th scope="row" class="text-truncate squadra {% if sq.ospite %}text-muted{% endif %}"></th>
-                 {% for s in soluzioni %}
-                   <td id="cell-{{sq.num}}-{{s.problema}}"></td>
-                 {% endfor %}
 diff --git a/engine/templates/classifiche/unica.html b/engine/templates/classifiche/unica.html
 index a2ee9be..55e6ce6 100644
 --- a/engine/templates/classifiche/unica.html
