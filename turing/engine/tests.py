@@ -112,13 +112,14 @@ class LiveTests(StaticLiveServerTestCase, TuringTests):
 
     def setUp(self):
         super(LiveTests, self).setUp()
+        chrome_service = webdriver.ChromeService(executable_path="/usr/bin/chromedriver")
         chrome_options = webdriver.ChromeOptions()
         chrome_options.add_argument('--no-sandbox')
         chrome_options.add_argument('--window-size=1420,1080')
         chrome_options.add_argument('--headless')
         chrome_options.add_argument('--disable-gpu')
         chrome_options.add_argument("--disable-dev-shm-usage")
-        self.selenium = webdriver.Chrome(options=chrome_options)
+        self.selenium = webdriver.Chrome(service=chrome_service, options=chrome_options)
         self.updated = False
 
         self.user = User.objects.create_user('test', 't@e.st', 'test')
@@ -129,10 +130,11 @@ class LiveTests(StaticLiveServerTestCase, TuringTests):
 
     def debug(self):  # pragma: no cover
         '''Ferma l'esecuzione del test e apre una finestra per il debug.'''
+        chrome_service = webdriver.ChromeService(executable_path="/usr/bin/chromedriver")
         chrome_options = webdriver.ChromeOptions()
         chrome_options.add_argument('--no-sandbox')
         chrome_options.add_argument('--window-size=1420,1080')
-        chrome = webdriver.Chrome(options=chrome_options)
+        chrome = webdriver.Chrome(service=chrome_service, options=chrome_options)
         url = '{}/engine/'.format(self.live_server_url)
         chrome.get(url)
         input('Premi Invio per continuare...')
@@ -770,13 +772,14 @@ class HtmlTests(StaticLiveServerTestCase, TuringTests):
 
     def setUp(self):
         super(HtmlTests, self).setUp()
+        chrome_service = webdriver.ChromeService(executable_path="/usr/bin/chromedriver")
         chrome_options = webdriver.ChromeOptions()
         chrome_options.add_argument('--no-sandbox')
         chrome_options.add_argument('--window-size=1420,1080')
         chrome_options.add_argument('--headless')
         chrome_options.add_argument('--disable-gpu')
         chrome_options.add_argument("--disable-dev-shm-usage")
-        self.selenium = webdriver.Chrome(options=chrome_options)
+        self.selenium = webdriver.Chrome(service=chrome_service, options=chrome_options)
 
         # Crea un utente di test
         self.user = User.objects.create_user('test', 't@e.st', 'test')

@@ -59,13 +59,14 @@ class TuringClassificationSelenium:
     """
 
     def __init__(self, root_url: str, race_id: int, max_wait: float) -> None:
+        service = selenium.webdriver.ChromeService(executable_path="/usr/bin/chromedriver")
         options = selenium.webdriver.ChromeOptions()
         options.add_argument("--no-sandbox")
         options.add_argument("--window-size=1920,1080")
         options.add_argument("--headless")
         options.add_argument("--disable-gpu")
         options.add_argument("--disable-dev-shm-usage")
-        self._browser = selenium.webdriver.Chrome(options=options)
+        self._browser = selenium.webdriver.Chrome(service=service, options=options)
         self._root_url = root_url
         self._race_id = race_id
         self._max_wait = max_wait
