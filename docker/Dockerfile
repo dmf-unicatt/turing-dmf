@@ -42,7 +42,6 @@ RUN apt update -y -q && \
 COPY turing turing
 
 RUN python3 -m pip install -r turing/requirements.txt && \
-    python3 -m pip install -r turing/requirements-dev.txt && \
     sed -i '1s/^/import warnings\nwarnings.filterwarnings("ignore", module="django.http.request")\n/' /usr/local/lib/python3.13/dist-packages/django/http/request.py && \
     sed -i '1s/^/import warnings\nwarnings.filterwarnings("ignore", module="django.utils.encoding")\n/' /usr/local/lib/python3.13/dist-packages/django/utils/encoding.py
 

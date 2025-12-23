@@ -1,4 +1,0 @@
--r requirements.txt
-coverage==7.13.0
-# la versione di selenium qui sotto deve essere la stessa di quella di "apt install python3-selenium"
-selenium==4.24.4
