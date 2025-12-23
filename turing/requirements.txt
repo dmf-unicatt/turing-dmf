@@ -8,5 +8,6 @@ python-decouple==3.8
 pytz==2025.2
 six==1.17.0
 sqlparse==0.5.5
-typing_extensions==4.15.0
+# la versione di typing_extensions qui sotto deve essere la stessa di quella di "apt install python3-typing-extensions"
+typing_extensions==4.13.2
 whitenoise==6.11.0
