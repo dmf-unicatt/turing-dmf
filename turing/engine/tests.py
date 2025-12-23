@@ -798,6 +798,7 @@ class HtmlTests(StaticLiveServerTestCase, TuringTests):
         wait_for_element(self.selenium, By.NAME, "nome")
         self.selenium.find_element(By.NAME, "nome").send_keys("prova")
         self.selenium.find_element(By.NAME, "cutoff").send_keys("3")
+        self.selenium.find_element(By.NAME, "k_blocco").clear()
         self.selenium.find_element(By.NAME, "k_blocco").send_keys("5")
         self.selenium.find_element(By.ID, "submit").click()
         wait_for_element(self.selenium, By.CSS_SELECTOR, "div[class*='alert-success']")
