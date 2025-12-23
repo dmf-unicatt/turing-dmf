@@ -64,7 +64,7 @@ class SignUpClosedView(TemplateView):
 class CreaOModificaGaraView(SuccessMessageMixin):
     """ Superclasse per astrarre metodi comuni a CreaGaraView e ModificaGaraView"""
     model = Gara
-    fields = ['nome', 'durata', 'n_blocco', 'k_blocco',
+    fields = ['nome', 'durata', 'durata_blocco', 'n_blocco', 'k_blocco',
               'num_problemi', 'cutoff', 'fixed_bonus', 'super_mega_bonus', 'jolly', 'testo']
 
     def get_form(self):
@@ -428,6 +428,7 @@ class StatusView(DetailView):
             return JsonResponse(resp)
 
         resp['fine'] = gara.get_ora_fine()
+        resp['tempo_blocco'] = gara.get_ora_blocco()
 
         resp['consegne'] = gara.get_consegne()
         resp['jolly'] = gara.get_jolly()

@@ -476,14 +476,14 @@ class LiveTests(StaticLiveServerTestCase, TuringTests):
 
         self.consegna(squadra=1, problema=1, risposta=0)
 
-        self.go_to_minute(10)
+        self.go_to_minute(12)
 
         self.consegna(squadra=2, problema=2, risposta=1)
         self.consegna(squadra=3, problema=3, risposta=0)
 
-        self.check_punti_squadra(squadra=1, expected=30+2*(20+30))
+        self.check_punti_squadra(squadra=1, expected=30+2*(20+32))
         self.check_punti_squadra(squadra=2, expected=30+2*(-10))
-        self.check_punti_squadra(squadra=3, expected=30+2*(20+30))
+        self.check_punti_squadra(squadra=3, expected=30+2*(20+32))
 
     def test_jolly_absence(self):
         self.crea_gara(num_squadre=5, num_ospiti=0, soluzioni=[0, 0, 0], jolly=False)
@@ -493,14 +493,14 @@ class LiveTests(StaticLiveServerTestCase, TuringTests):
 
         self.consegna(squadra=1, problema=1, risposta=0)
 
-        self.go_to_minute(10)
+        self.go_to_minute(12)
 
         self.consegna(squadra=2, problema=2, risposta=1)
         self.consegna(squadra=3, problema=3, risposta=0)
 
-        self.check_punti_squadra(squadra=1, expected=30+1*(20+30))
+        self.check_punti_squadra(squadra=1, expected=30+1*(20+32))
         self.check_punti_squadra(squadra=2, expected=30+1*(-10))
-        self.check_punti_squadra(squadra=3, expected=30+1*(20+30))
+        self.check_punti_squadra(squadra=3, expected=30+1*(20+32))
 
     def test_gara_full_statica(self):
         """ Test if full static gara works: fixed points to problems, no increments, no bonuses, no jolly"""
@@ -939,7 +939,7 @@ class HtmlTests(StaticLiveServerTestCase, TuringTests):
         self.assertEqual(len(c), 0)
 
     def test_modifica_parametri(self):
-        self.crea_gara(num_squadre=3, soluzioni=[1,], num_ospiti=0, n_blocco=2, k_blocco=5, iniziata=True, admin=self.user, durata=timedelta(hours=2))
+        self.crea_gara(num_squadre=3, soluzioni=[1,], num_ospiti=0, n_blocco=2, k_blocco=5, iniziata=True, admin=self.user, durata=timedelta(hours=2), durata_blocco=timedelta(minutes=20))
         gara = Gara.objects.first()
 
         url = self.get_url("engine:gara-parametri", pk=gara.pk)
@@ -949,6 +949,8 @@ class HtmlTests(StaticLiveServerTestCase, TuringTests):
         self.selenium.find_element(By.NAME, "nome").send_keys("prova")
         self.selenium.find_element(By.NAME, "durata").clear()
         self.selenium.find_element(By.NAME, "durata").send_keys("02:30:00")
+        self.selenium.find_element(By.NAME, "durata_blocco").clear()
+        self.selenium.find_element(By.NAME, "durata_blocco").send_keys("00:30:00")
         self.selenium.find_element(By.NAME, "k_blocco").clear()
         self.selenium.find_element(By.NAME, "k_blocco").send_keys("6")
         self.selenium.find_element(By.NAME, "num_problemi").clear()
@@ -958,13 +960,14 @@ class HtmlTests(StaticLiveServerTestCase, TuringTests):
 
         gara = Gara.objects.first()
         self.assertEqual(gara.durata, timedelta(hours=2,minutes=30))
+        self.assertEqual(gara.durata_blocco, timedelta(minutes=30))
         self.assertEqual(gara.k_blocco, 6)
         self.assertEqual(gara.num_problemi, 7)
         self.assertEqual(len(Soluzione.objects.filter(gara=gara)), 7)
         self.assertEqual(gara.nome, "prova")
 
     def test_riduci_problemi(self):
-        self.crea_gara(num_squadre=3, soluzioni=[1,2,3,4,5], num_ospiti=0, n_blocco=2, k_blocco=5, iniziata=True, admin=self.user, durata=timedelta(hours=2))
+        self.crea_gara(num_squadre=3, soluzioni=[1,2,3,4,5], num_ospiti=0, n_blocco=2, k_blocco=5, iniziata=True, admin=self.user, durata=timedelta(hours=2), durata_blocco=timedelta(minutes=20))
         gara = Gara.objects.first()
 
         url = self.get_url("engine:gara-parametri", pk=gara.pk)
@@ -1012,7 +1015,7 @@ class ValidationTests(MyTestCase, TuringTests):
     def test_crea_gara_bonus_negativi(self):
         self.url = reverse('engine:gara-new')
         self.data = {
-            "nome": "Prova", "num_problemi": "20", "durata": "02:00:00", "n_blocco": "2", "cutoff": "", "k_blocco": "5",
+            "nome": "Prova", "num_problemi": "20", "durata": "02:00:00", "durata_blocco": "00:20:00", "n_blocco": "2", "cutoff": "", "k_blocco": "5",
             "fixed_bonus_0": "20", "fixed_bonus_1": "15", "fixed_bonus_2": "10", "fixed_bonus_3": "8", "fixed_bonus_4": "6",
             "fixed_bonus_5": "5", "fixed_bonus_6": "4", "fixed_bonus_7": "3", "fixed_bonus_8": "2", "fixed_bonus_9": "-1",
             "super_mega_bonus_0": "100", "super_mega_bonus_1": "60", "super_mega_bonus_2": "40", "super_mega_bonus_3": "30",
@@ -1163,7 +1166,7 @@ class PermissionTests(MyTestCase, TuringTests):
     def test_crea_gara_permission(self):
         self.url = reverse('engine:gara-new')
         self.data = {
-            "nome": "Prova", "num_problemi": "20", "durata": "02:00:00", "n_blocco": "2", "cutoff": "", "k_blocco": "5",
+            "nome": "Prova", "num_problemi": "20", "durata": "02:00:00", "durata_blocco": "00:20:00", "n_blocco": "2", "cutoff": "", "k_blocco": "5",
             "fixed_bonus_0": "20", "fixed_bonus_1": "+15", "fixed_bonus_2": "+10", "fixed_bonus_3": "+8", "fixed_bonus_4": "+6",
             "fixed_bonus_5": "+5", "fixed_bonus_6": "+4", "fixed_bonus_7": "+3", "fixed_bonus_8": "+2", "fixed_bonus_9": "+1",
             "super_mega_bonus_0": "100", "super_mega_bonus_1": "+60", "super_mega_bonus_2": "+40", "super_mega_bonus_3": "+30",
@@ -1189,7 +1192,7 @@ class PermissionTests(MyTestCase, TuringTests):
         gara = Gara.objects.first()
         self.url = reverse('engine:gara-parametri', kwargs={'pk':gara.pk})
         self.data = {
-            "nome": "Prova", "num_problemi": "20", "durata": "02:00:00", "n_blocco": "2", "cutoff": "", "k_blocco": "5",
+            "nome": "Prova", "num_problemi": "20", "durata": "02:00:00", "durata_blocco": "00:20:00", "n_blocco": "2", "cutoff": "", "k_blocco": "5",
             "fixed_bonus_0": "20", "fixed_bonus_1": "+15", "fixed_bonus_2": "+10", "fixed_bonus_3": "+8", "fixed_bonus_4": "+6",
             "fixed_bonus_5": "+5", "fixed_bonus_6": "+4", "fixed_bonus_7": "+3", "fixed_bonus_8": "+2", "fixed_bonus_9": "+1",
             "super_mega_bonus_0": "100", "super_mega_bonus_1": "+60", "super_mega_bonus_2": "+40", "super_mega_bonus_3": "+30",

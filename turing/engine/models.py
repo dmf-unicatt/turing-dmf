@@ -76,6 +76,7 @@ class Gara(models.Model):
     k_blocco = models.PositiveSmallIntegerField(blank=True, null=True,  # Il valore NULL fa aumentare sempre il punteggio
                                                 verbose_name="Parametro K",
                                                 help_text="Numero di risposte errate che aumentano il punteggio di un problema")
+    durata_blocco = models.DurationField(default=timedelta(minutes=20), help_text="Il punteggio dei problemi viene bloccato quando il tempo rimanente è quello indicato in questo campo nel formato hh:mm:ss")
     num_problemi = models.PositiveSmallIntegerField(default=20,
                                                     verbose_name="Problemi",
                                                     help_text="Numero di problemi")
@@ -140,6 +141,11 @@ class Gara(models.Model):
         if not self.inizio:
             return None
         return self.inizio + self.durata
+
+    def get_ora_blocco(self):
+        if not self.inizio:
+            return None
+        return self.inizio + self.durata - self.durata_blocco
 
     def finished(self):
         return (self.inizio is not None) and (timezone.now() > self.get_ora_fine())
@@ -299,6 +305,7 @@ class Gara(models.Model):
 
         this.inizio = parse(data['inizio'])
         this.durata = timedelta(minutes=data['durata'])
+        this.durata_blocco = timedelta(minutes=data.get('durata_blocco', 20))
         this.num_problemi = len(data['soluzioni'])
         this.save()
 
@@ -325,7 +332,7 @@ class Gara(models.Model):
 
     def to_dict(self):
         d = {}
-        for k in {'nome', 'inizio', 'durata', 'n_blocco', 'k_blocco', 'num_problemi', 'cutoff', 'num_problemi', 'fixed_bonus', 'super_mega_bonus'}:
+        for k in {'nome', 'inizio', 'durata', 'durata_blocco', 'n_blocco', 'k_blocco', 'num_problemi', 'cutoff', 'num_problemi', 'fixed_bonus', 'super_mega_bonus'}:
             d[k] = getattr(self, k)
 
         d.update({
