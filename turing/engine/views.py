@@ -14,7 +14,7 @@ from django.db.models import F
 
 from engine.models import User, Gara, Soluzione, Squadra, Evento, Consegna, Jolly, Bonus
 from engine.forms import SignUpForm, RispostaFormset, SquadraFormset, InserimentoForm,\
-    ModificaConsegnaForm, ModificaJollyForm, ModificaBonusForm, UploadGaraForm, QueryForm
+    ModificaConsegnaForm, ModificaJollyForm, ModificaBonusForm, UploadGaraForm, QueryForm, CreaGaraForm, ModificaGaraForm
 from engine.formfields import IntegerMultiField
 
 import logging
@@ -66,10 +66,8 @@ class SignUpClosedView(TemplateView):
 #####################
 
 class CreaOModificaGaraView(SuccessMessageMixin):
-    """ Superclasse per astrarre metodi comuni a CreaGaraView e ModificaGaraView"""
+    """ Superclasse per astrarre metodi comuni a CreaGaraView e GaraParametriView"""
     model = Gara
-    fields = ['nome', 'durata', 'durata_blocco', 'n_blocco', 'k_blocco',
-              'num_problemi', 'cutoff', 'fixed_bonus', 'super_mega_bonus', 'jolly', 'testo']
 
     def get_form(self):
         form = super().get_form()
@@ -90,19 +88,29 @@ class CreaOModificaGaraView(SuccessMessageMixin):
         return reverse("engine:gara-admin", kwargs={'pk': self.object.pk})
 
 
-class CreaGaraView(PermissionRequiredMixin, CreaOModificaGaraView, CreateView):
+class CreaGaraView(PermissionRequiredMixin, CreaOModificaGaraView, FormView, CreateView):
     """ View per la creazione di una gara """
-
+    form_class = CreaGaraForm
     template_name = "gara/create.html"
     success_message = 'Gara creata con successo!'
     permission_required = "engine.add_gara"
+
+    def get_form_kwargs(self):
+        kwargs = super(CreaGaraView, self).get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
 
     def form_valid(self, form):
         form.instance.admin = self.request.user
         response = super().form_valid(form)
         gara = form.instance
-        for i in range(1, gara.num_problemi+1):
-            Soluzione.objects.create(gara=gara, problema=i, nome="Problema {}".format(i))
+        nomi_squadre = form.cleaned_data.get("nomi_squadre")
+        nomi_problemi = form.cleaned_data.get("nomi_problemi")
+        risposte_problemi = form.cleaned_data.get("risposte_problemi")
+        for (i, nome) in enumerate(nomi_squadre):
+            Squadra.objects.create(gara=gara, num=i + 1, nome=nome)
+        for i in range(gara.num_problemi):
+            Soluzione.objects.create(gara=gara, problema=i + 1, nome=nomi_problemi[i], risposta=risposte_problemi[i])
         return response
 
     def form_invalid(self, form):
@@ -110,10 +118,16 @@ class CreaGaraView(PermissionRequiredMixin, CreaOModificaGaraView, CreateView):
         return super().form_invalid(form)
 
 
-class GaraParametriView(CheckPermissionsMixin, CreaOModificaGaraView, UpdateView):
+class GaraParametriView(CheckPermissionsMixin, CreaOModificaGaraView, FormView, UpdateView):
     """ View per cambiare i parametri di una gara """
+    form_class = ModificaGaraForm
     template_name = "gara/modify.html"
     success_message = 'Parametri di gara salvati con successo!'
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['num_squadre'] = len(self.get_object().squadre.all())
+        return kwargs
 
     def test_func(self):
         # Salva la gara dentro self.object, così siamo sicuri
@@ -126,13 +140,27 @@ class GaraParametriView(CheckPermissionsMixin, CreaOModificaGaraView, UpdateView
         gara_nuova = form.instance
         gara_vecchia = self.get_object()
 
-        if gara_nuova.num_problemi > gara_vecchia.num_problemi:
+        num_squadre_nuova = form.cleaned_data.get("num_squadre")
+        num_squadre_vecchia = len(gara_vecchia.squadre.all())
+        num_problemi_nuova = gara_nuova.num_problemi
+        num_problemi_vecchia = gara_vecchia.num_problemi
+
+        if num_squadre_nuova > num_squadre_vecchia:
+            # dobbiamo creare nuove squadre
+            for i in range(num_squadre_vecchia+1, num_squadre_nuova+1):
+                Squadra.objects.create(gara=gara_vecchia, num=i, nome="Squadra {}".format(i))
+        elif num_squadre_nuova < num_squadre_vecchia:
+            # dobbiamo cancellare squadre
+            Squadra.objects.filter(gara=gara_vecchia, num__range=(num_squadre_nuova+1, num_squadre_vecchia)).delete()
+
+        if num_problemi_nuova > num_problemi_vecchia:
             # dobbiamo creare nuovi problemi
-            for i in range(gara_vecchia.num_problemi+1, gara_nuova.num_problemi+1):
+            for i in range(num_problemi_vecchia+1, num_problemi_nuova+1):
                 Soluzione.objects.create(gara=gara_vecchia, problema=i, nome="Problema {}".format(i))
-        elif gara_nuova.num_problemi < gara_vecchia.num_problemi:
+        elif num_problemi_nuova < num_problemi_vecchia:
             # dobbiamo cancellare problemi
-            Soluzione.objects.filter(gara=gara_vecchia, problema__range=(gara_nuova.num_problemi+1, gara_vecchia.num_problemi)).delete()
+            Soluzione.objects.filter(gara=gara_vecchia, problema__range=(num_problemi_nuova+1, num_problemi_vecchia)).delete()
+
         response = super().form_valid(form) # committa le modifiche
         return response
 

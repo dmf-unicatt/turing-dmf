@@ -1196,7 +1196,7 @@ class ValidationTests(MyTestCase, TuringTests):
     def test_crea_gara_bonus_negativi(self):
         self.url = reverse('engine:gara-new')
         self.data = {
-            "nome": "Prova", "num_problemi": "20", "durata": "02:00:00", "durata_blocco": "00:20:00", "n_blocco": "2", "cutoff": "", "k_blocco": "5",
+            "nome": "Prova", "num_problemi": "20", "num_squadre": "10", "durata": "02:00:00", "durata_blocco": "00:20:00", "n_blocco": "2", "cutoff": "", "k_blocco": "5",
             "fixed_bonus_0": "20", "fixed_bonus_1": "15", "fixed_bonus_2": "10", "fixed_bonus_3": "8", "fixed_bonus_4": "6",
             "fixed_bonus_5": "5", "fixed_bonus_6": "4", "fixed_bonus_7": "3", "fixed_bonus_8": "2", "fixed_bonus_9": "-1",
             "super_mega_bonus_0": "100", "super_mega_bonus_1": "60", "super_mega_bonus_2": "40", "super_mega_bonus_3": "30",
@@ -1400,7 +1400,7 @@ class PermissionTests(MyTestCase, TuringTests):
     def test_crea_gara_permission(self):
         self.url = reverse('engine:gara-new')
         self.data = {
-            "nome": "Prova", "num_problemi": "20", "durata": "02:00:00", "durata_blocco": "00:20:00", "n_blocco": "2", "cutoff": "", "k_blocco": "5",
+            "nome": "Prova", "num_problemi": "20", "num_squadre": "10", "durata": "02:00:00", "durata_blocco": "00:20:00", "n_blocco": "2", "cutoff": "", "k_blocco": "5",
             "fixed_bonus_0": "20", "fixed_bonus_1": "+15", "fixed_bonus_2": "+10", "fixed_bonus_3": "+8", "fixed_bonus_4": "+6",
             "fixed_bonus_5": "+5", "fixed_bonus_6": "+4", "fixed_bonus_7": "+3", "fixed_bonus_8": "+2", "fixed_bonus_9": "+1",
             "super_mega_bonus_0": "100", "super_mega_bonus_1": "+60", "super_mega_bonus_2": "+40", "super_mega_bonus_3": "+30",

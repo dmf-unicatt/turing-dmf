@@ -5,7 +5,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.utils import timezone
 from crispy_forms.helper import FormHelper
 
-from engine.models import Squadra, Soluzione, Jolly, Consegna, Bonus
+from engine.models import Squadra, Soluzione, Jolly, Consegna, Bonus, Gara
 from dateutil.parser import parse
 from mathrace_interaction.journal_reader import journal_reader
 from mathrace_interaction.filter.strip_mathrace_only_attributes_from_imported_turing import (
@@ -188,6 +188,86 @@ class ModificaJollyForm(SquadraChoiceUserSubsetForm):
 class ModificaBonusForm(SquadraChoiceUserSubsetForm):
     risposta = forms.IntegerField()
 
+
+class ModificaGaraForm(forms.ModelForm):
+    num_squadre = forms.IntegerField(initial=10, label="Squadre", help_text="Numero di squadre")
+
+    class Meta:
+        model = Gara
+        fields = ['nome', 'durata', 'durata_blocco', 'n_blocco', 'k_blocco',
+                 'num_problemi', 'cutoff', 'fixed_bonus', 'super_mega_bonus', 'jolly', 'testo',
+                 'admin', 'inseritori']
+
+    def __init__(self, *args, **kwargs):
+        num_squadre = kwargs.pop('num_squadre', None)
+        super(ModificaGaraForm, self).__init__(*args, **kwargs)
+        if num_squadre is not None:
+            self.fields["num_squadre"].initial = num_squadre
+        self.fields["admin"].required = False
+        self.fields["admin"].queryset = User.objects.filter(is_staff=True)
+        self.fields["inseritori"].queryset = User.objects.filter(is_staff=False)
+
+class CreaGaraForm(ModificaGaraForm):
+    nomi_squadre_upload = forms.FileField(
+        label="Nomi delle squadre", help_text="Scegli il file .txt contente i nomi delle squadre (opzionale)",
+        validators=[FileExtensionValidator(allowed_extensions=["txt"])], required=False)
+    nomi_problemi_upload = forms.FileField(
+        label="Nomi dei problemi", help_text="Scegli il file .txt contente i nomi dei problemi (opzionale)",
+        validators=[FileExtensionValidator(allowed_extensions=["txt"])], required=False)
+    risposte_problemi_upload = forms.FileField(
+        label="Risposte ai problemi", help_text="Scegli il file .txt contente le risposte ai problemi (opzionale)",
+        validators=[FileExtensionValidator(allowed_extensions=["txt"])], required=False)
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super(CreaGaraForm, self).__init__(*args, **kwargs)
+        self.fields["admin"].initial = user.id
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if self.errors:
+            return cleaned_data
+
+        nomi_squadre = self._read_text_upload(cleaned_data["nomi_squadre_upload"])
+        nomi_problemi = self._read_text_upload(cleaned_data["nomi_problemi_upload"])
+        risposte_problemi = self._read_text_upload(cleaned_data["risposte_problemi_upload"])
+
+        num_squadre = cleaned_data["num_squadre"]
+        has_nomi_squadre = (nomi_squadre is not None)
+        if has_nomi_squadre:
+            if len(nomi_squadre) != num_squadre:
+                raise forms.ValidationError("Il numero di righe nel file contenente i nomi delle squadre deve essere uguale al numero di squadre")
+        else:
+            nomi_squadre = [f"Squadra {i + 1}" for i in range(num_squadre)]
+
+        num_problemi = cleaned_data["num_problemi"]
+        has_nomi_problemi = (nomi_problemi is not None)
+        has_risposte_problemi = (risposte_problemi is not None)
+        if has_nomi_problemi != has_risposte_problemi:
+            raise forms.ValidationError("Devi caricare sia i nomi dei problemi sia le loro risposte")
+        if has_nomi_problemi:  # and also has_risposte_problemi
+            if len(risposte_problemi) != len(risposte_problemi):
+                raise forms.ValidationError("Il numero di righe nel file contenente le risposte ai problemi deve essere uguale al numero di righe nel file contenente le risposte ai problemi")
+            if len(nomi_problemi) != num_problemi:
+                raise forms.ValidationError("Il numero di righe nel file contenente i nomi dei problemi deve essere uguale al numero dei problemi")
+            if len(risposte_problemi) != num_problemi:
+                raise forms.ValidationError("Il numero di righe nel file contenente le risposte ai problemi deve essere uguale al numero dei problemi")
+        else:
+            nomi_problemi = [f"Problema {i + 1}" for i in range(num_problemi)]
+            risposte_problemi = [0 for _ in range(num_problemi)]
+
+        cleaned_data["nomi_squadre"] = nomi_squadre
+        cleaned_data["nomi_problemi"] = nomi_problemi
+        cleaned_data["risposte_problemi"] = risposte_problemi
+        return cleaned_data
+
+    @staticmethod
+    def _read_text_upload(text_file):
+        if text_file is None:
+            return None
+        else:
+            all_lines = [line.strip() for line in text_file.read().decode("utf-8").splitlines()]
+            return [line for line in all_lines if line != ""]
 
 class UploadGaraForm(forms.Form):
     gara = forms.FileField(
