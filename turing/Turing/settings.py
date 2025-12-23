@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
+import logging
 import os
 from decouple import config
 from django.contrib.messages import constants as messages
@@ -149,14 +150,43 @@ AUTH_PASSWORD_VALIDATORS = [
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 
+# Logging
+class IPAddressFilter(logging.Filter):
+
+    def filter(self, record):
+        if hasattr(record, 'request'):
+            x_forwarded_for = record.request.META.get('HTTP_X_FORWARDED_FOR')
+            if x_forwarded_for:
+                record.ip = x_forwarded_for.split(',')[0]
+            else:
+                record.ip = record.request.META.get('REMOTE_ADDR')
+        else:
+            record.ip = None
+        return True
+
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'filters': {
+        'add_ip_address': {
+            '()': 'Turing.settings.IPAddressFilter'
+        }
+    },
+    'formatters': {
+        'log_formatter': {
+            'format': '{asctime} {name} {ip} {levelname} {message}',
+            'style': '{',
+            "datefmt": "%Y-%m-%d %H:%M:%S",
+        },
+    },
     'handlers': {
         'file': {
             'level': 'WARNING',
             'class': 'logging.FileHandler',
-            'filename': LOG_FILE
+            'filename': LOG_FILE,
+            'filters': ['add_ip_address'],
+            'formatter': 'log_formatter',
         }
     },
     'loggers': {
