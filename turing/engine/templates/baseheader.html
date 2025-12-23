@@ -41,7 +41,10 @@
                 <li><a class="text-white" href="{% url 'engine:gara-new' %}">Nuova gara  <i class="fas fa-plus-circle"></i></a></li>
                 {% endif %}
                 <li><a class="text-white" href="{% url 'password_change' %}">Cambio password <i class="fas fa-key"></i></a></li>
-                <li><a class="text-white" href="{% url 'logout' %}">Logout <i class="fas fa-sign-out-alt"></i></a></li>
+                <li><form id="logout-form" action="{% url 'logout' %}" method="post">
+                    {% csrf_token %}
+                    <button class="text-white" type="submit">Logout <i class="fas fa-sign-out-alt"></i></button>
+                </form>
               </ul>
             {% else %}
             {% if registration_open %}
