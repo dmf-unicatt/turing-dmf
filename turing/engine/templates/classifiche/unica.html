@@ -40,6 +40,16 @@
             </tr>
             {% endfor %}
         </tbody>
+        <thead class="thead-light"><tr>
+            <th scope="row"></th>
+            <th scope="row"></th>
+            <th scope="row" style="display: none;"></th>
+            <th scope="row"></th>
+            {% for s in soluzioni %}
+            <td class="progress-bar-zero unica_giuste" id="giuste-{{s.problema}}"></td>
+            {% endfor %}
+            <th scope="row"></th>
+        </tr></thead>
     </table>
     </div>
 

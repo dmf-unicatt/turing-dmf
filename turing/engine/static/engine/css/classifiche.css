@@ -5,6 +5,18 @@
     border-radius: 1px;
 }
 
+.progress-bar-dark {
+    background-color: #004cc5;
+}
+
+.progress-bar-light {
+    background-color: #71afff;
+}
+
+.progress-bar-zero {
+    background-color: #495057;
+}
+
 .ospite {
     background-color: gray;
 }
@@ -65,6 +77,16 @@ tr:nth-child(even) .right-answer {
 }
 tr:nth-child(odd) .right-answer {
     background-color: darkgreen;
+}
+
+td.unica_giuste {
+    padding-top: 0.1em;
+    padding-bottom: 0.1em;
+    vertical-align: middle;
+    color: white;
+    position: relative;
+    font-style: italic;
+    font-weight: bold;
 }
 
 .points-value {

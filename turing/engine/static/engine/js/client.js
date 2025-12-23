@@ -607,10 +607,14 @@ class ClassificaClient {
             $("#label-"+id).text((id)+" - "+this.gara.problemi[id].nome);
             $("#punti-"+id).css('width', Math.round(punti_problemi[k].base*100./max)+'%');
             $("#label-punti-"+id).text(punti_problemi[k].base);
-            if (this.gara.problemi[id].bloccato)
-                $("#punti-"+id).removeClass("progress-bar-striped progress-bar-animated");
-            else
-                $("#punti-"+id).addClass("progress-bar-striped progress-bar-animated");
+            if (this.gara.problemi[id].bloccato) {
+                $("#punti-"+id).removeClass("progress-bar-light");
+                $("#punti-"+id).addClass("progress-bar-dark");
+            }
+            else {
+                $("#punti-"+id).removeClass("progress-bar-dark");
+                $("#punti-"+id).addClass("progress-bar-light");
+            }
             $("#bonus-"+id).css('width', Math.round(punti_problemi[k].bonus*100./max)+'%');
             if (punti_problemi[k].bonus) $("#label-bonus-"+id).text(punti_problemi[k].bonus);
             $("#label-punti-mobile-"+id).text(punti_problemi[k].base+" + "+punti_problemi[k].bonus);
@@ -654,6 +658,24 @@ class ClassificaClient {
           var problema = (parseInt(i)+1)
           text+="#"+("0"+problema).slice(-2)+"\n"+punti_problemi[i].base+"+"+punti_problemi[i].bonus
           $("#pr-"+problema).html(text)
+          var id = punti_problemi[i].id;
+          $("#giuste-"+problema).html(this.gara.problemi[id]._risposte_corrette);
+          if (this.gara.problemi[id].bloccato) {
+              $("#giuste-"+problema).removeClass("progress-bar-light");
+              $("#giuste-"+problema).removeClass("progress-bar-zero");
+              $("#giuste-"+problema).addClass("progress-bar-dark");
+          }
+          else if (this.gara.problemi[id]._risposte_corrette === 0) {
+              $("#giuste-"+problema).removeClass("progress-bar-light");
+              $("#giuste-"+problema).removeClass("progress-bar-dark");
+              $("#giuste-"+problema).addClass("progress-bar-zero");
+          }
+          else {
+              // almeno una risposta corretta, ma non ancora bloccato
+              $("#giuste-"+problema).removeClass("progress-bar-dark");
+              $("#giuste-"+problema).removeClass("progress-bar-zero");
+              $("#giuste-"+problema).addClass("progress-bar-light");
+          }
       }
       this._mostraUnicaOScorrimento(false);
     }
