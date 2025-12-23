@@ -32,7 +32,8 @@ jobs:
               export DEBIAN_FRONTEND="noninteractive"
               echo "#!/bin/bash" > docker/dockerfile.sh
               echo "set -e" >> docker/dockerfile.sh
-              dkr2sh/dkr2sh.sed < docker/Dockerfile >> docker/dockerfile.sh
+              wget https://raw.githubusercontent.com/dsschneidermann/dkr2sh/refs/heads/master/dkr2sh.sed
+              dkr2sh.sed < docker/Dockerfile >> docker/dockerfile.sh
               sed -i "s/rsync/echo rsync/g" docker/dockerfile.sh
               sed -i 's|sed -i "/worktree =/d" turing/.git/config|echo "Already a git repo"|g' docker/dockerfile.sh
               sed -i "s|/root|${PWD}|g" docker/dockerfile.sh
