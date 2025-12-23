@@ -24,7 +24,11 @@
         </tr></thead>
         <tbody>
             {% for sq in object.get_squadre_order %}
+            {% if sq.num >= start_pos and sq.num <= end_pos %}
             <tr id="riga-{{sq.num}}">
+            {% else %}
+            <tr id="riga-{{sq.num}}" style="display: none;" >
+            {% endif %}
               <th scope="row" style="white-space:pre" id="pos-{{sq.num}}">°</th>
               <th scope="row" class="text-truncate squadra" style="white-space:pre" id="nome-{{sq.num}}"></th>
               <th scope="row" style="display: none;" id="num-{{sq.num}}">{{sq.num}}</th>

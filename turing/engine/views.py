@@ -635,6 +635,15 @@ class ClassificaBaseView(UserPassesTestMixin, DetailView):
         else:
             qs[variable_name] = None
 
+    def _convert_integer(self, variable_name, qs):
+        variable_value = self.request.GET.get(variable_name, None)
+        if variable_value is None:
+            qs[variable_name] = None
+        elif variable_value.isdecimal():
+            qs[variable_name] = int(variable_value)
+        else:
+            qs[variable_name] = None
+
     def _convert_querystring(self):
         qs = {}
         self._convert_time("race_time", qs)
@@ -698,9 +707,19 @@ class UnicaView(ClassificaBaseView):
     model = Gara
     template_name = "classifiche/unica.html"
 
+    def _convert_querystring(self):
+        qs = super()._convert_querystring()
+        self._convert_integer("start_pos", qs)
+        self._convert_integer("end_pos", qs)
+        return qs
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['soluzioni'] = self.object.soluzioni.all().order_by("problema")
+        if context["start_pos"] is None:
+            context["start_pos"] = 1
+        if context["end_pos"] is None:
+            context["end_pos"] = len(self.object.squadre.all())
+        context["soluzioni"] = self.object.soluzioni.all().order_by("problema")
         return context
 
 class ScorrimentoView(ClassificaBaseView):

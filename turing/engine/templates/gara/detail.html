@@ -38,6 +38,13 @@
     <b>Visualizzazione unica</b>
 </a>
 {% if is_admin %}
+<ul>
+<li>
+<a class="nohover" href="{% url 'engine:classifica-unica' object.pk %}?start_pos=2&end_pos=5" target="_blank">
+    Visualizzazione unica per un range specifico di posizioni (querystring <code>?start_pos=2&end_pos=5</code>)
+</a>
+</li>
+</ul>
 {% include 'gara/link_querystring.html' with engine_name='engine:classifica-unica' prefix='Visualizzazione unica' %}
 {% endif %}
 </li>
