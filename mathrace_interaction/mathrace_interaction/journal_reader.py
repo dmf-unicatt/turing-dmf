@@ -530,7 +530,7 @@ class JournalReaderR11189(JournalReaderR11184):
 
     def _process_race_event_line(self, line: str, turing_dict: TuringDict) -> None:
         """Process a race event line. Ignore any event assiocated to the update of the second timer."""
-        timestamp_str, event_type, event_content = line.split(" ", maxsplit=2)
+        _timestamp_str, event_type, _event_content = line.split(" ", maxsplit=2)
         if event_type == self.TIMER_UPDATE_OTHER_TIMER:
             # Ignore the event
             pass

@@ -20,5 +20,5 @@ def test_list_journal_versions_entrypoint(
     run_entrypoint: mathrace_interaction.typing.RunEntrypointFixtureType
 ) -> None:
     """Test running list_journal_versions as entrypoint."""
-    stdout, stderr = run_entrypoint("mathrace_interaction.list_journal_versions", [])
+    stdout, _stderr = run_entrypoint("mathrace_interaction.list_journal_versions", [])
     assert len(stdout.split(", ")) == 10
