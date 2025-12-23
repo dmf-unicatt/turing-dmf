@@ -15,8 +15,6 @@ from engine.forms import SignUpForm, RispostaFormset, SquadraFormset, Inseriment
     ModificaConsegnaForm, ModificaJollyForm, UploadGaraForm
 from engine.formfields import IntegerMultiField
 
-import json
-import time
 import logging
 logger = logging.getLogger(__name__)
 
@@ -241,12 +239,13 @@ class UploadGaraView(PermissionRequiredMixin, SuccessMessageMixin, FormView):
     permission_required = "engine.add_gara"
 
     def get_success_url(self):
-        return reverse("engine:gara-detail", kwargs={'pk': self.gara.pk})
+        return reverse("engine:gara-detail", kwargs={'pk': self.object.pk})
 
     def form_valid(self, form):
-        gara_file = self.request.FILES['gara']
-        gara_json = json.load(gara_file)
-        self.gara = Gara.create_from_dict(gara_json)
+        self.object = Gara.create_from_dict(form.cleaned_data["gara_json"])
+        self.object.admin = self.request.user
+        self.object.eventi.update(creatore=self.request.user)
+        self.object.save()
         return super().form_valid(form)
 
 
