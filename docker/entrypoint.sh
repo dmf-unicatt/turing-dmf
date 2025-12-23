@@ -7,8 +7,8 @@
 
 set -e
 
-# Installed postgres version
-POSTGRES_VERSION=15
+# Installed postgres version. May change when upgrading debian from 13 to a newer release.
+POSTGRES_VERSION=17
 
 # Data directories
 POSTGRES_CLUSTER_DATA_DIRECTORY=/mnt/postgres_data
