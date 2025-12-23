@@ -536,9 +536,11 @@ class ClassificaClient {
 
     _stampaOrologio() {
         if (this.gara.inizio!=null) {
+            var inizio = new Date(this.gara.inizio);
             var fine = new Date(this.gara.fine);
-            var t_mancante = Math.max(fine - this.gara.time, 0); // Se la gara è finita, restituisce 0
-            var res = new Date(t_mancante).toISOString().substr(11, 8);
+            var durata = fine - inizio;
+            var t_trascorso = Math.min(this.gara.time - inizio, durata); // Se la gara è finita, restituisce la durata
+            var res = new Date(t_trascorso).toISOString().substr(11, 8);
             $("#orologio").text(res);
         }
     }
