@@ -32,131 +32,37 @@
 <li class="m-4">
 <a class="nohover" href="{% url 'engine:classifica-unica' object.pk %}" target="_blank">
     <b>Visualizzazione unica</b>
-    <div class="col-sm-6 col-lg-4 border" style="position: relative">
-    <table class="table table-striped table-bordered table-sm mt-2 mb-2">
-        <tbody>
-            <tr>
-              <th scope="row" style="white-space:pre">1°</th>
-              <th scope="row" class="text-truncate" style="white-space:pre">Squadra 5</th>
-              <th scope="row" style="white-space:pre">1245</th>
-                  <td style="text-align: center"></td>
-                  <td style="text-align: center" class="right-answer"><b>116</b></td>
-                  <td style="text-align: center"></td>
-            </tr>
-            <tr>
-              <th scope="row" style="white-space:pre">2°</th>
-              <th scope="row" class="text-truncate" style="white-space:pre">Squadra 2</th>
-              <th scope="row" style="white-space:pre">1136</th>
-                  <td style="text-align: center" class="right-answer"><b>75</b></td>
-                  <td style="text-align: center"></td>
-                  <td style="text-align: center" class="wrong-answer"><b>-20</b></td>
-            </tr>
-        </tbody>
-    </table>
-    </div>
 </a>
+{% if is_admin %}
+{% include 'gara/link_querystring.html' with engine_name='engine:classifica-unica' prefix='Visualizzazione unica' %}
+{% endif %}
 </li>
 
 <li class="m-4">
 <a class="nohover" href="{% url 'engine:classifica-squadre' object.pk %}" target="_blank">
     <b>Punteggi delle squadre</b>
-	    <div class="col-sm-6 col-lg-4 border" style="position: relative">
-        <table class="table table-borderless mt-2">
-        <tr class="row no-gutters">
-            <td class="col-6 small-padding text-truncate font-weight-bold"><span id="label-1">Squadra 1</span></td>
-            <td class="col-6 small-padding" >
-                <div class="progress">
-                    <div id="team-1" class="progress-bar" style="width:50%" role="progressbar"><span id="label-points-1" class="points-value">50</span></div>
-                </div>
-            </td>
-        </tr>
-
-        <tr class="row no-gutters">
-            <td class="col-6 small-padding text-truncate font-weight-bold"><span id="label-2">Squadra 2</span></td>
-            <td class="col-6 small-padding" >
-                <div class="progress">
-                    <div id="team-2" class="progress-bar" style="width:20%" role="progressbar"><span id="label-points-2" class="points-value">20</span></div>
-                </div>
-            </td>
-        </tr>
-
-        <tr class="row no-gutters">
-            <td class="col-6 small-padding text-truncate font-weight-bold"><span id="label-3">Squadra 3</span></td>
-            <td class="col-6 small-padding" >
-                <div class="progress">
-                    <div id="team-3" class="progress-bar" style="width:100%" role="progressbar"><span id="label-points-3" class="points-value">100</span></div>
-                </div>
-            </td>
-        </tr>
-	    </table>
-		</div>
 </a>
+{% if is_admin %}
+{% include 'gara/link_querystring.html' with engine_name='engine:classifica-squadre' prefix='Punteggi delle squadre' %}
+{% endif %}
 </li>
 
 <li class="m-4">
 <a class="nohover" href="{% url 'engine:classifica-problemi' object.pk %}" target="_blank">
     <b>Punteggi dei problemi</b>
-	<div class="col-sm-6 col-lg-4 border" style="position: relative">
-	<table class="table table-borderless mt-2">
-	<tr class="row no-gutters">
-	    <td class="col-6 small-padding text-truncate font-weight-bold"><span id="label-1">Problema 1</span></td>
-	    <td class="col-6 small-padding align-self-center">
-	        <div class="progress">
-	            <div id="punti-1" class="progress-bar progress-bar-striped" role="progressbar" style="width:50%"><span id="label-punti-1" class="points-value">50</span></div>
-	            <div id="bonus-1" class="progress-bar bg-warning" role="progressbar" style="width:20%"><span id="label-bonus-1" class="points-value">20</span></div>
-	        </div>
-	    </td>
-	</tr>
-
-	<tr class="row no-gutters">
-	    <td class="col-6 small-padding text-truncate font-weight-bold"><span id="label-2">Problema 2</span></td>
-	    <td class="col-6 small-padding align-self-center">
-	        <div class="progress">
-	            <div id="punti-2" class="progress-bar progress-bar-striped" role="progressbar" style="width:80%"><span id="label-punti-2" class="points-value">80</span></div>
-	            <div id="bonus-2" class="progress-bar bg-warning" role="progressbar" style="width:15%"><span id="label-bonus-2" class="points-value">15</span></div>
-	        </div>
-	    </td>
-	</tr>
-
-	<tr class="row no-gutters">
-	    <td class="col-6 small-padding text-truncate font-weight-bold"><span id="label-3">Problema 3</span></td>
-	    <td class="col-6 small-padding align-self-center">
-	        <div class="progress">
-	            <div id="punti-3" class="progress-bar progress-bar-striped" role="progressbar" style="width:40%"><span id="label-punti-3" class="points-value">40</span></div>
-	            <div id="bonus-3" class="progress-bar bg-warning" role="progressbar" style="width:10%"><span id="label-bonus-3" class="points-value">10</span></div>
-	        </div>
-	    </td>
-	</tr>
-	</table>
-	</div>
 </a>
+{% if is_admin %}
+{% include 'gara/link_querystring.html' with engine_name='engine:classifica-problemi' prefix='Punteggi dei problemi' %}
+{% endif %}
 </li>
 
 <li class="m-4">
 <a class="nohover" href="{% url 'engine:classifica-stato' object.pk %}" target="_blank">
     <b>Stato delle risposte</b>
-	    <div class="col-sm-6 col-lg-4 border" style="position: relative">
-	    <table class="table table-striped table-bordered table-sm mt-2 mb-2" style="table-layout:fixed">
-        <tbody>
-            <tr>
-                <th scope="row" class="small-padding text-truncate" style="width:35%">Squadra 1</th>
-                  <td class="wrong-answer text-center"><b>1</b><span class="my-fa-stack">
-                        <i class="fas fa-star fa-stack-1x fa-inverse" style="color:yellow"></i>
-                        <i class="far fa-star fa-stack-1x" style="color:black"></i>
-                    </span></td>
-                  <td class=""></td>
-                  <td class="right-answer"></td>
-            </tr>
-            <tr>
-                <th scope="row" class="small-padding text-truncate">Squadra 2</th>
-                  <td class=""></td>
-                  <td class="right-answer"></td>
-                  <td class="right-answer"></td>
-            </tr>
-        </tbody>
-        </table>
-	</div>
 </a>
+{% if is_admin %}
+{% include 'gara/link_querystring.html' with engine_name='engine:classifica-stato' prefix='Stato delle risposte' %}
+{% endif %}
 </li>
 </ul>
 

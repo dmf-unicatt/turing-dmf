@@ -35,6 +35,10 @@ class AboutView(TemplateView):
     """ Pagina 'chi siamo' """
     template_name = "about.html"
 
+class NowView(TemplateView):
+    """ Tempo corrente"""
+    template_name = "now.html"
+
 
 class SignUpView(FormView):
     """ Pagina di registrazione """
@@ -480,40 +484,100 @@ class StatusView(DetailView):
         return JsonResponse(resp)
 
 
-class ClassificaView(DetailView):
-    """ Visualizzazione classifica """
+class ClassificaBaseView(UserPassesTestMixin, DetailView):
+    """ Visualizzazione classifica - classe base """
+
+    @staticmethod
+    def _elapsed_time_to_integer(elapsed):
+        """Convert HH:MM:SS to the number of elapsed seconds"""
+        return sum(int(x) * 60 ** i for i, x in enumerate(reversed(elapsed.split(":"))))
+
+    def _convert_time(self, variable_name, qs):
+        variable_value = self.request.GET.get(variable_name, None)
+        if variable_value is None:
+            qs[variable_name] = None
+        elif variable_value.isdecimal():
+            qs[variable_name] = int(variable_value)
+        elif ":" in variable_value:
+            qs[variable_name] = self._elapsed_time_to_integer(variable_value)
+        else:
+            qs[variable_name] = None
+
+    def _convert_boolean(self, variable_name, qs):
+        variable_value = self.request.GET.get(variable_name, None)
+        if variable_value is None:
+            qs[variable_name] = None
+        elif variable_value.lower() == "true" or variable_value == "1":
+            qs[variable_name] = True
+        elif variable_value.lower() == "false" or variable_value == "0":
+            qs[variable_name] = False
+        else:
+            qs[variable_name] = None
+
+    def _convert_querystring(self):
+        qs = {}
+        self._convert_time("race_time", qs)
+        self._convert_boolean("ended", qs)
+        self._convert_time("computation_rate", qs)
+        return qs
+
+    def test_func(self):
+        self.object = self.get_object()
+        self.querystring = self._convert_querystring()
+        is_admin = (
+            self.request.user.is_authenticated and self.request.user.can_administrate(self.object))
+        if any(self.querystring[k] is not None for k in ("race_time", "ended", "computation_rate")) and not is_admin:
+            return False
+        else:
+            return True
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(self.querystring)
+        # Assign default values if querystring is not provided.
+        # This cannot be done in self._convert_querystring because otherwise it would
+        # not be possible to correctly check permissions.
+        if context["ended"] is None:
+            context["ended"] = self.object.finished
+        if context["computation_rate"] is None:
+            context["computation_rate"] = 3
+        return context
+
+
+class ClassificaView(ClassificaBaseView):
+    """ Visualizzazione classifica squadre """
     model = Gara
     template_name = "classifiche/squadre.html"
 
 
-class PuntiProblemiView(DetailView):
+class PuntiProblemiView(ClassificaBaseView):
     """ Visualizzazione punteggi problemi """
     model = Gara
     template_name = "classifiche/punti_problemi.html"
 
     def get_context_data(self, **kwargs):
-        context = super(PuntiProblemiView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         context['soluzioni'] = self.object.soluzioni.all().order_by("problema")
         return context
 
 
-class StatoProblemiView(DetailView):
+class StatoProblemiView(ClassificaBaseView):
     """ Visualizzazione stato problemi: quali sono stati risolti e quali no """
     model = Gara
     template_name = "classifiche/stato_problemi.html"
 
     def get_context_data(self, **kwargs):
-        context = super(StatoProblemiView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         context['soluzioni'] = self.object.soluzioni.all().order_by("problema")
         return context
 
 
-class UnicaView(DetailView):
+class UnicaView(ClassificaBaseView):
     """ Visualizzazione unica: tutte le informazioni """
     model = Gara
     template_name = "classifiche/unica.html"
 
     def get_context_data(self, **kwargs):
-        context = super(UnicaView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         context['soluzioni'] = self.object.soluzioni.all().order_by("problema")
         return context

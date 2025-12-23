@@ -26,7 +26,8 @@ urlpatterns = [
     path('classifica/<int:pk>/problemi', PuntiProblemiView.as_view(), name='classifica-problemi'),
     path('classifica/<int:pk>/stato', StatoProblemiView.as_view(), name='classifica-stato'),
     path('classifica/<int:pk>/unica', UnicaView.as_view(), name='classifica-unica'),
-    path('about', AboutView.as_view(), name="about")
+    path('about', AboutView.as_view(), name="about"),
+    path('now', NowView.as_view(), name="now")
 ]
 
 if settings.DEBUG:

@@ -7,16 +7,16 @@ function increaseSlider(slider, step) {
     slider[0].stepUp();
 }
 
-class Gara {
-    constructor(data) {
-        // Costruisce la gara a partire dai dati forniti dal server
-        console.log("start building Gara");
 
+class Gara {
+    constructor(data, client) {
+        // Costruisce la gara a partire dai dati forniti dal server
         this.inizio = new Date(data.inizio);
         if (data.inizio == null) {
             this.inizio = null;
             this._time = null;
         }
+        this.client = client;
 
         this.n_prob = data.n_prob;
         this.fixed_bonus = data.fixed_bonus;
@@ -148,16 +148,17 @@ class Gara {
     }
 
     get progess() {
-        return (this.time - this.inizio)/(this.fine-this.inizio)
+        if (this.inizio == null) return;
+        return (this.time - this.inizio)/(this.fine-this.inizio);
     }
 
     set progress(value) {
         if (this.inizio == null) return;
         // Si sposta al progress specificato, calcolando gli eventi in mezzo
         if (value==null)
-            this.time = Date.now();
-        else
-            this.time = new Date(this.inizio.getTime()+Math.floor((this.fine-this.inizio)*value));
+            value = this.client.timer.now();
+        this.time = new Date(value);
+        console.log("progress at time", this.time);
     }
 
     get soglia_blocco() {
@@ -199,7 +200,6 @@ class Gara {
     }
 
     get classifica() {
-        console.log("classifica");
         var ret = [];
         for (var i in this.squadre) {
             ret.push({
@@ -475,20 +475,21 @@ class Bonus {
 }
 
 class ClassificaClient {
-    constructor(url, view, following=[]) {
+    constructor(url, view, timer, following=[]) {
         this.url = url;
         this.view = view;
+        this.timer = timer;
         this.following = following;
         this.autoplay = 0;
         this.recalculating = false;
     }
 
     init() {
-        console.log("client init");
         var self = this;
         $.getJSON(this.url).done(function(data){
             self.recalculating = true;
-            self.gara = new Gara(data);
+            self.gara = new Gara(data, self);
+            self.timer.init(self.gara.inizio.getTime());
             self.following = data.consegnatore_per
             self.progress = null;
             self.recalculating = false;
@@ -661,6 +662,7 @@ class ClassificaClient {
           else $("#riga-"+riga).removeClass("text-muted");
           $("#pos-"+riga).html(sq.posizione(classifica)+"° ");
           $("#nome-"+riga).html(sq.nome);
+          $("#num-"+riga).html(sq.id);
           $("#punt-"+riga).html(""+sq.punteggio);
           for (var j in sq.risposte) {
               var r = sq.risposte[j];
@@ -692,11 +694,10 @@ class ClassificaClient {
 
     toggleReplay(button, slider_id) {
         this.autoplay = 1 - this.autoplay;
-        console.log(this.autoplay ? 'Autoplay started' : 'Autoplay stopped');
         if (this.autoplay) {
             button.innerHTML = '<i class="fas fa-pause"></i>';
             var slider = $("#"+slider_id);
-            if (slider[0].value == 1000) slider[0].value = 0;
+            if (slider[0].value == slider[0].max) slider[0].value = 0;
             increaseSlider(slider, 1);
             this.autoplayInterval = setInterval(increaseSlider, 100, slider, 1);
         }

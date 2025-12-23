@@ -15,6 +15,7 @@
         <thead class="thead-light"><tr>
             <th scope="col" style="width:2.5%">Pos.</th>
             <th scope="col" style="width:8%">Squadra</th>
+            <th scope="col" style="display: none;">Num. squadra</th>
             <th scope="col" style="width:3%">Punt.</th>
             {% for s in soluzioni %}
             <th scope="col" style="white-space:pre" id="pr-{{s.problema}}">#{{s.problema|stringformat:"02d"}}</th>
@@ -26,6 +27,7 @@
             <tr id="riga-{{sq.num}}">
               <th scope="row" style="white-space:pre" id="pos-{{sq.num}}">1°</th>
               <th scope="row" class="text-truncate squadra" style="white-space:pre" id="nome-{{sq.num}}">{{sq.nome}}</th>
+              <th scope="row" style="display: none;" id="num-{{sq.num}}">{{sq.num}}</th>
               <th scope="row" style="white-space:pre" id="punt-{{sq.num}}"></th>
                 {% for s in soluzioni %}
                   <td id="cell-{{sq.num}}-{{s.problema}}"></td>
@@ -37,13 +39,6 @@
     </table>
     </div>
 
-    {% if object.finished %}
-    <div class="row pt-3 no-gutters">
-        <input type="range" min="0" max="1000" value="1000"  id="myRange">
-        <button id="play" class="ml-2"><i class="fas fa-play"></i></button>
-        <input value="{{object.durata}}" id="elapsedTimeText">
-    </div>
-    {% endif %}
-
+    {% include 'classifiche/replay_control.html' %}
 </div>
 {% endblock %}
