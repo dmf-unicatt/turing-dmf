@@ -35,6 +35,7 @@ td.wrong-answer {
     padding-bottom: 0.1em;
     vertical-align: middle;
     color: white;
+    position: relative;
 }
 
 td.right-answer {
@@ -42,6 +43,7 @@ td.right-answer {
     padding-bottom: 0.1em;
     vertical-align: middle;
     color: white;
+    position: relative;
 }
 
 td.bonus {
@@ -77,6 +79,21 @@ tr:nth-child(odd) .right-answer {
     min-width: 1em;
     min-height: 1em;
     display: inline-block;
+}
+
+.punteggio_unica {
+    position: relative;
+    top: 0;
+    left: 0;
+    z-index: 2;
+}
+
+td.wrong-answer .my-fa-stack,
+td.right-answer .my-fa-stack {
+    position: absolute;
+    bottom: 3px;
+    right: 1px;
+    z-index: 1;
 }
 
 

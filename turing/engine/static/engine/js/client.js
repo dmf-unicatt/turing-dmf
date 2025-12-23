@@ -686,7 +686,7 @@ class ClassificaClient {
                   $("#cell-"+riga+"-"+j).addClass("wrong-answer");
               }
               if(r.risolto || r.errori)
-                text += '<span><b>'+r.punteggio+'</b></span>'
+                text += '<span class="punteggio_unica"><b>'+r.punteggio+'</b></span>'
 
               if (r.is_jolly) {
                   text += ClassificaClient.stella_jolly;
