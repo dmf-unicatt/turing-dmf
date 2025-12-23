@@ -24,9 +24,9 @@ jobs:
             setup_container: |
               export DEBIAN_FRONTEND="noninteractive"
               apt install -y -qq chromium chromium-driver python3-pip python3-selenium
-              rm /usr/lib/python3.11/EXTERNALLY-MANAGED
-              mkdir -p /usr/local/lib/python3.11/dist-packages/mockssh
-              touch /usr/local/lib/python3.11/dist-packages/mockssh/py.typed
+              rm /usr/lib/python3.13/EXTERNALLY-MANAGED
+              mkdir -p /usr/local/lib/python3.13/dist-packages/mockssh
+              touch /usr/local/lib/python3.13/dist-packages/mockssh/py.typed
           - name: with-turing
             setup_container: |
               export DEBIAN_FRONTEND="noninteractive"
@@ -43,7 +43,7 @@ jobs:
               echo "DJANGO_SETTINGS_MODULE=Turing.settings" >> $GITHUB_ENV
               echo "PYTHONPATH=${PWD}/turing" >> $GITHUB_ENV
       fail-fast: false
-    container: debian:12
+    container: debian:13
     name: test (${{ matrix.name }})
     defaults:
       run:

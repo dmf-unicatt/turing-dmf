@@ -4,8 +4,8 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-FROM debian:12
-# If upgrading the version number from 12 to the next debian release, make sure to do the same
+FROM debian:13
+# If upgrading the version number from 13 to the next debian release, make sure to do the same
 # also in the shell scripts stored in this directory.
 
 WORKDIR /root
@@ -22,7 +22,7 @@ RUN echo 'PS1='"'"'\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[
     echo "alias ll='ls -l'"  >> /root/.bashrc
 
 # Allow system-wide install Python packages via pip
-RUN rm /usr/lib/python3.11/EXTERNALLY-MANAGED
+RUN rm /usr/lib/python3.13/EXTERNALLY-MANAGED
 
 # Part 1: turing
 RUN apt update -y -q && \
@@ -47,8 +47,8 @@ RUN sed -i "/worktree =/d" turing/.git/config && patches/turing/apply_patches.sh
 
 RUN python3 -m pip install -r turing/requirements.txt && \
     python3 -m pip install -r turing/requirements-dev.txt && \
-    sed -i '1s/^/import warnings\nwarnings.filterwarnings("ignore", module="django.http.request")\n/' /usr/local/lib/python3.11/dist-packages/django/http/request.py && \
-    sed -i '1s/^/import warnings\nwarnings.filterwarnings("ignore", module="django.utils.encoding")\n/' /usr/local/lib/python3.11/dist-packages/django/utils/encoding.py
+    sed -i '1s/^/import warnings\nwarnings.filterwarnings("ignore", module="django.http.request")\n/' /usr/local/lib/python3.13/dist-packages/django/http/request.py && \
+    sed -i '1s/^/import warnings\nwarnings.filterwarnings("ignore", module="django.utils.encoding")\n/' /usr/local/lib/python3.13/dist-packages/django/utils/encoding.py
 
 ENV DJANGO_SETTINGS_MODULE="Turing.settings" \
     PYTHONPATH=/root/turing
@@ -58,7 +58,7 @@ COPY mathrace_interaction mathrace_interaction
 
 RUN cd /root/mathrace_interaction && \
     python3 -m pip install .[tests] && \
-    touch /usr/local/lib/python3.11/dist-packages/mockssh/py.typed
+    touch /usr/local/lib/python3.13/dist-packages/mockssh/py.typed
 
 ## Group C. Entrypoint setup.
 

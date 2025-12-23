@@ -10,4 +10,4 @@ set -e
 VOLUME_ID_FILE=".volume_id"
 VOLUME_ID=$(cat "${VOLUME_ID_FILE}")
 
-docker run -it --rm -v ${VOLUME_ID}:/mnt --workdir=/mnt debian:12
+docker run -it --rm -v ${VOLUME_ID}:/mnt --workdir=/mnt debian:13
