@@ -38,6 +38,7 @@ def test_classification_browser_login_integration(  # type: ignore[no-any-unimpo
     browser = Browser(live_server, 0)
     browser.login(authenticated_user)
     assert "Cambio password" in browser.page_source
+    browser.quit()
 
 
 def test_classification_browser_go_to_classification_page_integration(  # type: ignore[no-any-unimported]
@@ -51,6 +52,7 @@ def test_classification_browser_go_to_classification_page_integration(  # type: 
     assert (
         f'Gara: <a href="/engine/gara/{simple_turing_race.pk}">test race</a> - visualizzazione unica'
         in browser.page_source)
+    browser.quit()
 
 
 @pytest.mark.parametrize("classification_type", ["unica", "squadre"])
@@ -70,6 +72,7 @@ def test_classification_browser_go_to_classification_page_integration_non_defaul
     runtime_error_contains(
         lambda: browser.go_to_classification_page(classification_type, querystring),
         "The user does not have the permissions to see this classification")
+    browser.quit()
 
 
 @pytest.mark.parametrize("classification_type", ["unica", "squadre"])
@@ -88,6 +91,7 @@ def test_classification_browser_go_to_classification_page_integration_non_defaul
     runtime_error_contains(
         lambda: browser.go_to_classification_page(classification_type, querystring),
         "The user must be logged in to see this classification")
+    browser.quit()
 
 
 @pytest.mark.parametrize("classification_type", ["unica", "squadre"])
@@ -103,7 +107,7 @@ def test_classification_browser_go_to_classification_page_integration_ended_true
     browser.login(admin_user)
     browser.go_to_classification_page(classification_type, {"ended": str(true_value)})
     assert 'id="replayControl"' in browser.page_source
-
+    browser.quit()
 
 
 @pytest.mark.parametrize("classification_type", ["unica", "squadre"])
@@ -119,6 +123,7 @@ def test_classification_browser_go_to_classification_page_integration_ended_fals
     browser.login(admin_user)
     browser.go_to_classification_page(classification_type, {"ended": str(false_value)})
     assert 'id="replayControl"' not in browser.page_source
+    browser.quit()
 
 
 def test_classification_browser_get_teams_score_integration(  # type: ignore[no-any-unimported]
@@ -132,6 +137,7 @@ def test_classification_browser_get_teams_score_integration(  # type: ignore[no-
     browser.lock()
     scores = browser.get_teams_score()
     assert scores == [70, 166, 50, 70, 118, 60, 113, 60, 113, 70]
+    browser.quit()
 
 
 @pytest.mark.parametrize("race_time", ["00:06:00", "360"])
@@ -148,6 +154,7 @@ def test_classification_browser_get_teams_score_integration_non_default_race_tim
     browser.lock()
     scores = browser.get_teams_score()
     assert scores == [70, 70, 70, 70, 116, 60, 70, 70, 70, 70]
+    browser.quit()
 
 
 @pytest.mark.parametrize("computation_rate_prefix", ["00:00:0", ""])
@@ -246,6 +253,10 @@ def test_classification_browser_get_teams_score_integration_over_time(  # type: 
     assert scores3 == [70, 70, 70, 70, 115, 70, 70, 70, 70, 70]
     browser3.unlock()
 
+    browser1.quit()
+    browser2.quit()
+    browser3.quit()
+
 
 def test_classification_browser_get_teams_position_integration(  # type: ignore[no-any-unimported]
     live_server: pytest_django.live_server_helper.LiveServer, simple_turing_race: engine.models.Gara,
@@ -258,6 +269,7 @@ def test_classification_browser_get_teams_position_integration(  # type: ignore[
     browser.lock()
     positions = browser.get_teams_position()
     assert positions == [5, 1, 10, 6, 2, 8, 4, 9, 3, 7]
+    browser.quit()
 
 
 @pytest.mark.parametrize("race_time", ["00:06:00", "360"])
@@ -274,6 +286,7 @@ def test_classification_browser_get_teams_position_integration_non_default_race_
     browser.lock()
     positions = browser.get_teams_position()
     assert positions == [2, 3, 4, 5, 1, 10, 6, 7, 8, 9]
+    browser.quit()
 
 
 @pytest.mark.parametrize("query", ["score", "position"])
@@ -299,3 +312,4 @@ def test_classification_browser_get_teams_score_position_integration_wrong_class
     browser.go_to_classification_page("unica", {})
     browser.lock()
     runtime_error_contains(lambda: query_function(browser), "The current page is not a squadre classification")
+    browser.quit()

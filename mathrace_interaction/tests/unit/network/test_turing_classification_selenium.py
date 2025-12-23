@@ -31,6 +31,7 @@ def test_classification_browser_get(httpserver: pytest_httpserver.HTTPServer) ->
     browser = Browser(httpserver)
     browser.get(httpserver.url_for("/"))
     assert "Hello world!" in browser.page_source
+    browser.quit()
 
 
 def test_classification_browser_get_locked(
@@ -43,6 +44,7 @@ def test_classification_browser_get_locked(
     browser = Browser(httpserver)
     browser.lock()
     runtime_error_contains(lambda: browser.get(httpserver.url_for("/")), "Did you forget to unlock the browser?")
+    browser.quit()
 
 
 def test_classification_browser_lock_unlock_content(
@@ -89,6 +91,8 @@ function incrementTime() {
     assert "Current time is 1" in browser._browser.page_source
     assert "Current time is 1" in browser.page_soup.find_all("span")[0].text
 
+    browser.quit()
+
 
 def test_classification_browser_login(httpserver: pytest_httpserver.HTTPServer) -> None:
     """Test mathrace_interaction.network.TuringClassificationSelenium.login."""
@@ -120,6 +124,7 @@ document.getElementById("qs").textContent =
     assert "Processing querystring" not in browser.page_source
     assert "username is admin and password is secret" in browser.page_source
     assert "Cambio password" in browser.page_source
+    browser.quit()
 
 
 def test_classification_browser_login_error(
@@ -146,6 +151,7 @@ Inserisci nome utente e password corretti
 
     browser = Browser(httpserver)
     runtime_error_contains(lambda: browser.login("admin", "secret"), "Could not login with the provided credentials")
+    browser.quit()
 
 
 def test_classification_browser_go_to_classification_page(httpserver: pytest_httpserver.HTTPServer) -> None:
@@ -169,6 +175,7 @@ setTimeout(function(){
     browser.go_to_classification_page("unica", {})
     assert "Processing classification" not in browser.page_source
     assert "Classification has been computed" in browser.page_source
+    browser.quit()
 
 
 @pytest.mark.parametrize("page_content,expected_error", [
@@ -196,6 +203,7 @@ def test_classification_browser_go_to_classification_page_error(
 
     browser = Browser(httpserver)
     runtime_error_contains(lambda: browser.go_to_classification_page("unica", {}), expected_error)
+    browser.quit()
 
 
 @pytest.mark.parametrize("query", ["score", "position"])
@@ -302,6 +310,8 @@ Team 3: <span id="LABEL-3"></span>
     computed = query_function(browser)
     assert computed == [2, 5, 8]
 
+    browser.quit()
+
 
 @pytest.mark.parametrize("query", ["score", "position"])
 def test_classification_browser_get_teams_score_position_wrong_classification_type(
@@ -338,6 +348,8 @@ setTimeout(function(){
 
     browser.lock()
     runtime_error_contains(lambda: query_function(browser), "The current page is not a squadre classification")
+
+    browser.quit()
 
 
 def test_classification_browser_get_auxiliary_files(
@@ -396,6 +408,8 @@ def test_classification_browser_get_auxiliary_files(
     assert all_css["style2.css"] == style2_css.replace("../../folder3/font.ttf", "font.ttf")
     assert all_fonts["font.ttf"] == font3_raw
 
+    browser.quit()
+
 
 def test_classification_browser_get_cleaned_html_source_replaces_css(httpserver: pytest_httpserver.HTTPServer) -> None:
     """Test cleaning HTML source replaces css file names."""
@@ -443,6 +457,8 @@ def test_classification_browser_get_cleaned_html_source_replaces_css(httpserver:
     color_rgba = text.value_of_css_property("color")
     assert selenium.webdriver.support.color.Color.from_string(color_rgba).hex == "#00ffff"
 
+    browser.quit()
+
 
 def test_classification_browser_get_cleaned_html_source_strips_links(httpserver: pytest_httpserver.HTTPServer) -> None:
     """Test that cleaning HTML sources strips links from output."""
@@ -478,6 +494,8 @@ Success!
     # from the postprocessed source did not affect the live page.
     browser.find_element(selenium.webdriver.common.by.By.ID, "link").click()
     assert "Success!" in browser.page_source
+
+    browser.quit()
 
 
 def test_classification_browser_get_cleaned_html_source_strips_javascript(
@@ -526,6 +544,8 @@ function incrementTime() {
     assert "Current time is 2" in browser.page_source
     assert "<script>" in browser.page_source
 
+    browser.quit()
+
 
 def test_classification_browser_wait_for_classification_timer(httpserver: pytest_httpserver.HTTPServer) -> None:
     """Test mathrace_interaction.network.TuringClassificationSelenium._wait_for_classification_timer."""
@@ -553,6 +573,8 @@ setTimeout(function(){
     browser._wait_for_classification_timer("00:00:01")
     assert "00:00:00" not in browser.page_source
     assert "00:00:01" in browser.page_source
+
+    browser.quit()
 
 
 def test_classification_browser_freeze_unfreeze_time(
@@ -636,6 +658,8 @@ function incrementTime() {
     # Cannot unfreeze the time again
     runtime_error_contains(lambda: browser.unfreeze_time(), "Did you forget to freeze the time?")
 
+    browser.quit()
+
 
 def test_classification_browser_get_table(httpserver: pytest_httpserver.HTTPServer) -> None:
     """Test mathrace_interaction.network.TuringClassificationSelenium.get_table."""
@@ -711,3 +735,5 @@ setTimeout(function(){
     assert actual_table.get_string() == expected_table.get_string(), (
         f"Tables are different.\nActual table is\n{actual_table.get_string()}\n"
         f"Expected table is\n{expected_table.get_string()}")
+
+    browser.quit()

@@ -425,3 +425,9 @@ delete document.client.timer_backup;""")  # type: ignore[no-untyped-call]
     document.client.gara.time = document.client.timer.now()
     document.updated = false;""")  # type: ignore[no-untyped-call]
             self._wait_for_classification_computed()
+
+    def quit(self) -> None:
+        """Quit the underlying selenium browser."""
+        self._browser.quit()
+        del self._browser
+        self._browser = None  # type: ignore[assignment]

@@ -44,6 +44,7 @@ def test_journal_scores(
     # Compare the computed scores to the expected ones
     expected = read_score_file(data_dir, journal_name)
     assert actual == expected
+    browser.quit()
 
 
 def test_json_scores(
@@ -63,8 +64,7 @@ def test_json_scores(
     # Compare the computed scores to the expected ones
     expected = read_score_file(data_dir, json_name)
     assert actual == expected
-
-
+    browser.quit()
 
 
 @pytest.mark.parametrize("order_attribute_in_json,order_attribute_in_score,ended", [
@@ -191,3 +191,4 @@ def test_smartematica_2024_short_wrong_order_bug(  # type: ignore[no-any-unimpor
     assert browser.get_teams_score() == read_score_file(
         data_dir, f"bugs/smartematica_2024_short_{order_attribute_in_score}_order.json")
     browser.unlock()
+    browser.quit()
