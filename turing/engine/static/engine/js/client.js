@@ -631,15 +631,20 @@ class ClassificaClient {
 
                 if (r.risolto) {
                     $("#cell-"+i+"-"+j).addClass("right-answer");
+                    if (r.errori) {
+                        text += '<b>-'+r.errori+'</b>';
+                    }
+                    else {
+                        text += '<b>0</b>';
+                    }
                 }
                 else if (r.errori) {
                     $("#cell-"+i+"-"+j).addClass("wrong-answer");
-                    text += '<b>'+r.errori+'</b>'
+                    text += '<b>-'+r.errori+'</b>';
                 }
 
                 if (r.is_jolly) {
                     text += ClassificaClient.stella_jolly;
-                    //text0 = '<i class="fas fa-star float-right"></i>';
                 }
 
                 $("#cell-"+i+"-"+j).html(text);
