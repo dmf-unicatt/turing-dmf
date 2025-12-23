@@ -867,7 +867,11 @@ class HtmlTests(StaticLiveServerTestCase, TuringTests):
         self.selenium.find_element(By.ID, "submit").click()
         wait_for_element(self.selenium, By.CSS_SELECTOR, "div[class*='alert-info']")
 
-        self.assertEqual(self.gara.get_jolly(), [{'id': 1, 'squadra': 1, 'problema': 1}])
+        jolly = self.gara.get_jolly()
+        assert len(jolly) == 1
+        # cannot compare IDs reliably with postgres
+        jolly[0]['id'] = -1
+        self.assertEqual(jolly, [{'id': -1, 'squadra': 1, 'problema': 1}])
 
     def test_inserimento_risposta(self):
         self.crea_gara(5, [0, 0, 0])
@@ -1027,7 +1031,8 @@ class ValidationTests(MyTestCase, TuringTests):
     def test_inserimento_pregara(self):
         self.crea_gara(5, [0,0,0], iniziata=False)
         self.url = reverse('engine:inserimento', kwargs={'pk': self.gara.pk})
-        self.data = {'squadra': 1, 'problema': 1, 'risposta': 76}
+        sq = self.gara.squadre.all()[0]
+        self.data = {'squadra': sq.pk, 'problema': 1, 'risposta': 76}
 
         self.gara.inseritori.add(self.user)
         self.assertTrue(self.user.is_inseritore(self.gara))
@@ -1038,7 +1043,8 @@ class ValidationTests(MyTestCase, TuringTests):
     def test_inserimento_gara_futura(self):
         self.crea_gara(5, [0,0,0])
         self.url = reverse('engine:inserimento', kwargs={'pk': self.gara.pk})
-        self.data = {'squadra': 1, 'problema': 1, 'risposta': 76}
+        sq = self.gara.squadre.all()[0]
+        self.data = {'squadra': sq.pk, 'problema': 1, 'risposta': 76}
 
         self.gara.inseritori.add(self.user)
         self.assertTrue(self.user.is_inseritore(self.gara))
@@ -1049,7 +1055,8 @@ class ValidationTests(MyTestCase, TuringTests):
     def test_inserimento_problema_inesistente(self):
         self.crea_gara(5, [0,0,0])
         self.url = reverse('engine:inserimento', kwargs={'pk': self.gara.pk})
-        self.data = {'squadra': 1, 'problema': 100, 'risposta': 76}
+        sq = self.gara.squadre.all()[0]
+        self.data = {'squadra': sq.pk, 'problema': 100, 'risposta': 76}
 
         self.view_helper(403, 403)
         self.assertFalse(self.gara.eventi.exists())
@@ -1085,7 +1092,8 @@ class ValidationTests(MyTestCase, TuringTests):
     def test_inserimento_jolly_inesistente(self):
         self.crea_gara(5, [0,0,0], jolly=False)
         self.url = reverse('engine:inserimento', kwargs={'pk': self.gara.pk})
-        self.data = {'squadra': 1, 'problema': 1, 'jolly': True}
+        sq = self.gara.squadre.all()[0]
+        self.data = {'squadra': sq.pk, 'problema': 1, 'jolly': True}
 
         self.gara.inseritori.add(self.user)
         self.assertTrue(self.user.is_inseritore(self.gara))
@@ -1130,11 +1138,11 @@ class ValidationTests(MyTestCase, TuringTests):
         self.data = {'jolly': 2}
 
         res = self.gara.get_jolly()
-        self.assertEqual(res, [{'id': 1, 'squadra': 1, 'problema': 3}])
+        self.assertEqual(res, [{'id': e.pk, 'squadra': 1, 'problema': 3}])
 
         self.view_helper(post_code=200)
         res = self.gara.get_jolly()
-        self.assertEqual(res, [{'id': 1, 'squadra': 1, 'problema': 2}])
+        self.assertEqual(res, [{'id': e.pk, 'squadra': 1, 'problema': 2}])
 
     def test_modifica_jolly_vuoto(self):
         self.crea_gara(5, [0,0,0])
@@ -1144,11 +1152,11 @@ class ValidationTests(MyTestCase, TuringTests):
         self.data = {'jolly': ""}
 
         res = self.gara.get_jolly()
-        self.assertEqual(res, [{'id': 1, 'squadra': 1, 'problema': 3}])
+        self.assertEqual(res, [{'id': e.pk, 'squadra': 1, 'problema': 3}])
 
         self.view_helper(post_code=200, form_errors={'jolly': ['Questo campo è obbligatorio.']})
         res = self.gara.get_jolly()
-        self.assertEqual(res, [{'id': 1, 'squadra': 1, 'problema': 3}])
+        self.assertEqual(res, [{'id': e.pk, 'squadra': 1, 'problema': 3}])
 
 
 class PermissionTests(MyTestCase, TuringTests):
@@ -1193,7 +1201,7 @@ class PermissionTests(MyTestCase, TuringTests):
     def test_inserimento_soluzioni(self):
         self.crea_gara(2, [0, 0, 0])
         self.url = reverse('engine:gara-risposte', kwargs={'pk': self.gara.pk})
-        self.data = {"form-TOTAL_FORMS": 2, "form-INITIAL_FORMS": 2, "form-0-id": "1", "form-0-nome": "Problema 1", "form-0-problema": "1", "form-0-risposta": "76", "form-0-punteggio": "20", "form-1-id": "2", "form-1-nome": "Problema 2", "form-1-problema": "2", "form-1-risposta": "50", "form-1-punteggio": "20"}
+        self.data = {"form-TOTAL_FORMS": 2, "form-INITIAL_FORMS": 2, "form-0-id": self.gara.soluzioni.get(nome="Problema 1").pk, "form-0-nome": "Problema 1", "form-0-problema": "1", "form-0-risposta": "76", "form-0-punteggio": "20", "form-1-id": self.gara.soluzioni.get(nome="Problema 2").pk, "form-1-nome": "Problema 2", "form-1-problema": "2", "form-1-risposta": "50", "form-1-punteggio": "20"}
 
         # Un utente a caso non può leggere le soluzioni
         self.view_helper(403, 403)
@@ -1212,11 +1220,14 @@ class PermissionTests(MyTestCase, TuringTests):
 
         self.view_helper(200, 200, messages_post=[{"tag": "success", "message": "Soluzioni inserite con successo!"}])
         self.assertEqual(self.gara.soluzioni.get(nome="Problema 1").risposta, 76)
+        self.assertEqual(self.gara.soluzioni.get(nome="Problema 2").risposta, 50)
+        self.assertEqual(self.gara.soluzioni.get(nome="Problema 3").risposta, 0)
 
     def test_inserimento_postgara_inseritore(self):
         self.crea_gara(5, [0,0,0])
         self.url = reverse('engine:inserimento', kwargs={'pk': self.gara.pk})
-        self.data = {'squadra': 1, 'problema': 1, 'risposta': 76}
+        sq = self.gara.squadre.all()[0]
+        self.data = {'squadra': sq.pk, 'problema': 1, 'risposta': 76}
 
         self.gara.inseritori.add(self.user)
         self.assertTrue(self.user.is_inseritore(self.gara))
@@ -1229,7 +1240,6 @@ class PermissionTests(MyTestCase, TuringTests):
     def test_inserimento_postgara_consegnatore(self):
         self.crea_gara(5, [0,0,0])
         self.url = reverse('engine:inserimento', kwargs={'pk': self.gara.pk})
-        self.data = {'squadra': 1, 'problema': 1, 'risposta': 76}
 
         sq = self.gara.squadre.all()[0]
         sq.consegnatore = self.user
@@ -1237,13 +1247,15 @@ class PermissionTests(MyTestCase, TuringTests):
         self.assertTrue(self.user.can_insert_squadra(sq))
 
         self.go_to_minute(130)
+        self.data = {'squadra': sq.pk, 'problema': 1, 'risposta': 76}
         self.view_helper(200, 200, messages_post=[{"tag": "warning", "message": "Non puoi consegnare dopo la fine della gara"}])
         self.assertFalse(self.gara.eventi.exists())
 
     def test_inserimento_risposta(self):
         self.crea_gara(5, [0,0,0])
         self.url = reverse('engine:inserimento', kwargs={'pk': self.gara.pk})
-        self.data = {'squadra': 1, 'problema': 1, 'risposta': 76}
+        sq = self.gara.squadre.all()[0]
+        self.data = {'squadra': sq.pk, 'problema': 1, 'risposta': 76}
 
         self.view_helper(403, 403)
         self.assertFalse(self.gara.eventi.exists())
@@ -1260,7 +1272,8 @@ class PermissionTests(MyTestCase, TuringTests):
     def test_inserimento_jolly(self):
         self.crea_gara(5, [0,0,0])
         self.url = reverse('engine:inserimento', kwargs={'pk': self.gara.pk})
-        self.data = {'squadra': 1, 'problema': 1, 'jolly': True}
+        sq = self.gara.squadre.all()[0]
+        self.data = {'squadra': sq.pk, 'problema': 1, 'jolly': True}
 
         self.view_helper(403, 403)
         self.assertEqual(self.gara.get_jolly(), [])
@@ -1270,18 +1283,22 @@ class PermissionTests(MyTestCase, TuringTests):
 
         self.view_helper(200, 200, messages_post=[{"tag": "info", "message": "Inserimento avvenuto"}])
 
-        self.assertEqual(self.gara.get_jolly(), [{'id': 1, 'squadra': 1, 'problema': 1}])
+        jolly = self.gara.get_jolly()
+        assert len(jolly) == 1
+        # cannot compare IDs reliably with postgres
+        jolly[0]['id'] = -1
+        self.assertEqual(jolly, [{'id': -1, 'squadra': 1, 'problema': 1}])
 
     def test_inserimento_jolly_10min(self):
         self.crea_gara(5, [0,0,0])
         self.url = reverse('engine:inserimento', kwargs={'pk': self.gara.pk})
-        self.data = {'squadra': 1, 'problema': 1, 'jolly': True}
         sq = self.gara.squadre.get(num=1)
         sq.consegnatore = self.user
         sq.save()
         self.assertTrue(self.user.can_insert_squadra(sq))
 
         self.go_to_minute(15)
+        self.data = {'squadra': sq.pk, 'problema': 1, 'jolly': True}
         self.view_helper(200, 200, messages_post=[{"tag": "warning", "message": "Non puoi inserire un jolly dopo 10 minuti"}])
 
         self.assertEqual(self.gara.get_jolly(), [])
@@ -1289,11 +1306,13 @@ class PermissionTests(MyTestCase, TuringTests):
     def test_consegnatore(self):
         self.crea_gara(5, [0,0,0])
         self.url = reverse('engine:inserimento', kwargs={'pk': self.gara.pk})
-        self.data = {'squadra': 1, 'problema': 2, 'jolly': True}
 
-        s = Squadra.objects.get(num=2)
-        s.consegnatore = self.user
-        s.save()
+        s1 = Squadra.objects.get(num=1)
+        self.data = {'squadra': s1.pk, 'problema': 2, 'jolly': True}
+
+        s2 = Squadra.objects.get(num=2)
+        s2.consegnatore = self.user
+        s2.save()
 
         # Status code ok, ma la risposta non è stata validata
         err = {'squadra': ["Scegli un'opzione valida. La scelta effettuata non compare tra quelle disponibili."]}
@@ -1301,9 +1320,8 @@ class PermissionTests(MyTestCase, TuringTests):
 
         self.assertFalse(self.gara.eventi.exists())
 
-        s = Squadra.objects.get(num=1)
-        s.consegnatore = self.user
-        s.save()
+        s1.consegnatore = self.user
+        s1.save()
 
         # Stavolta va bene
         self.view_helper(200, 200, messages_post=[{"tag": "info", "message": "Inserimento avvenuto"}])
@@ -1313,7 +1331,6 @@ class PermissionTests(MyTestCase, TuringTests):
     def test_filtered_eventi(self):
         self.crea_gara(5, [0,0,0])
         self.url = reverse('engine:inserimento', kwargs={'pk': self.gara.pk})
-        self.data = {'squadra': 1, 'problema': 2, 'risposta': 76}
 
         u2 = User.objects.create_user('test2','test2@fuffa.com','test2')
 
@@ -1326,6 +1343,7 @@ class PermissionTests(MyTestCase, TuringTests):
         s2.save()
 
         # Inserisce la risposta per la squadra 1
+        self.data = {'squadra': s1.pk, 'problema': 2, 'risposta': 76}
         self.view_helper(200, 200, messages_post=[{"tag": "info", "message": "La risposta che hai consegnato è errata."}])
 
         # Controlla gli eventi visibili
@@ -1342,7 +1360,7 @@ class PermissionTests(MyTestCase, TuringTests):
         self.assertEqual(len(eventi), 0)
 
         # Inserisce una nuova consegna
-        self.data = {'squadra': 2, 'problema': 3, 'jolly': True}
+        self.data = {'squadra': s2.pk, 'problema': 3, 'jolly': True}
         self.view_helper(200, 200, messages_post=[{"tag": "info", "message": "Inserimento avvenuto"}])
 
         # Controlla gli eventi visibili
@@ -1431,10 +1449,16 @@ class PermissionTests(MyTestCase, TuringTests):
         self.gara.inseritori.add(self.user)
         self.assertTrue(self.user.is_inseritore(self.gara))
 
-        self.data = {'squadra': 1, 'problema': 1, 'jolly': True}
+        sq = self.gara.squadre.all()[0]
+
+        self.data = {'squadra': sq.pk, 'problema': 1, 'jolly': True}
         self.view_helper(200, 200, messages_post=[{"tag": "info", "message": "Inserimento avvenuto"}])
 
-        self.data = {'squadra': 1, 'problema': 2, 'jolly': True}
+        self.data = {'squadra': sq.pk, 'problema': 2, 'jolly': True}
         self.view_helper(200, 200, messages_post=[{"tag": "danger", "message": "Inserimento non riuscito"}])
 
-        self.assertEqual(self.gara.get_jolly(), [{'id': 1, 'squadra': 1, 'problema': 1}])
+        jolly = self.gara.get_jolly()
+        assert len(jolly) == 1
+        # cannot compare IDs reliably with postgres
+        jolly[0]['id'] = -1
+        self.assertEqual(jolly, [{'id': -1, 'squadra': 1, 'problema': 1}])
