@@ -24,7 +24,7 @@ The basic configuration is useful for local testing, but should not be used in p
 
 2. Clone the **Turing @ DMF** repository as follows:
 ```
-git clone --recurse-submodules https://github.com/dmf-unicatt/turing-dmf.git
+git clone https://github.com/dmf-unicatt/turing-dmf.git
 ```
 
 ### 2.2. Set up the docker container

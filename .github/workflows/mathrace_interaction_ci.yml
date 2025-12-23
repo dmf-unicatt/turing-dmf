@@ -57,8 +57,6 @@ jobs:
           apt install -y -qq git
         working-directory: .
       - uses: actions/checkout@v4
-        with:
-          submodules: true
       - name: Setup container
         run: ${{ matrix.setup_container }}
         working-directory: .

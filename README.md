@@ -7,7 +7,7 @@ This repository contains **Turing @ DMF**, the customized version of [**Turing**
 **Turing @ DMF** customizes the upstream version of **Turing** for the specific needs of the [Department of Mathematics and Physics](https://www.dmf.unicatt.it/), [Università Cattolica del Sacro Cuore](https://www.unicatt.it/), as follows:
 1. [Containerization using Docker](docker/README.md)
 2. [Interaction with **mathrace** in-house implementation](mathrace_interaction/README.md)
-3. [Local patches for compatibility with **mathrace** in-house implementation](patches/turing/README.md)
+3. Local patches for compatibility with **mathrace** in-house implementation
 
 **Turing @ DMF** is currently developed and maintained at [Università Cattolica del Sacro Cuore](https://www.unicatt.it/) by [Prof. Francesco Ballarin](https://www.francescoballarin.it).
 

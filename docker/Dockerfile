@@ -39,11 +39,7 @@ RUN apt update -y -q && \
 ## Group B. Copy and installation of turing and mathrace-interaction
 
 # Part 1: turing
-COPY patches patches
 COPY turing turing
-COPY .git/modules/turing turing/.git
-
-RUN sed -i "/worktree =/d" turing/.git/config && patches/turing/apply_patches.sh
 
 RUN python3 -m pip install -r turing/requirements.txt && \
     python3 -m pip install -r turing/requirements-dev.txt && \

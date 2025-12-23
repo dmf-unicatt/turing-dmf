@@ -32,8 +32,6 @@ jobs:
         working-directory: docker
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: true
       - name: Create image
         run: |
           ./create_image.sh
