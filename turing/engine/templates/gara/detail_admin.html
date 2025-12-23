@@ -8,12 +8,12 @@
 <h5><a href="{% url 'engine:gara-parametri' object.pk %}"> <i class="fas fa-cog"></i> Parametri</a></h5>
 <h5><a href="{% url 'engine:gara-risposte' object.pk %}"> <i class="fas fa-tasks"></i> Soluzioni</a><br/></h5>
 <h5><a href="{% url 'engine:gara-squadre' object.pk %}"> <i class="fas fa-users"></i> Squadre</a><br/></h5>
-{% if object.inizio is not null %}
+{% if object.inizio is not null and object.sospensione is null %}
 <h5><a href="{% url 'engine:query' object.pk %}"> <i class="fas fa-database"></i> Query</a><br/></h5>
 {% endif %}
 
 <p>
-{% if object.inizio is not null %}
+{% if object.inizio is not null and object.sospensione is null %}
 Iniziata {{object.inizio}};
 {% if not object.finished %}
 finisce {{object.get_ora_fine}}.
@@ -26,13 +26,18 @@ finita {{object.get_ora_fine}}.
 
 
 {% else %}
+    {% if object.sospensione is not null %}
+<p>Gara temporaneamente sospesa da {{object.sospensione}}</p>
+    {% else %}
 <p>
 Gara ancora da iniziare<br/>
+{% if num_eventi > 0 %}ATTENZIONE! Questa garà già contiene {{ num_eventi }} eventi. Sei sicuro di non dover fare un reset prima di iniziare la gara?<br/>{% endif %}
 <form method="post">{% csrf_token %}
     <input type="hidden" name="inizia" value=1>
     <input type="submit" value="Inizia la gara" id="submit">
 </form>
 </p>
+    {% endif %}
 {% endif %}
 
 {% endblock %}

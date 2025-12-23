@@ -9,6 +9,8 @@ from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
 from django.db import transaction
 from django.contrib.auth import login, authenticate
+from django import forms
+from django.db.models import F
 
 from engine.models import User, Gara, Soluzione, Squadra, Evento, Consegna, Jolly, Bonus
 from engine.forms import SignUpForm, RispostaFormset, SquadraFormset, InserimentoForm,\
@@ -163,6 +165,11 @@ class GaraAdminView(CheckPermissionsMixin, DetailView):
         self.object = self.get_object()
         return self.request.user.can_administrate(self.object)
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['num_eventi'] = len(self.object.eventi.all())
+        return context
+
     def post(self, request, *args, **kwargs):
         if "inizia" in request.POST:
             loraesatta = timezone.now()
@@ -259,14 +266,100 @@ class DownloadGaraView(DetailView):
 
     def get(self, request, *args, **kwargs):
         super().get(request, *args, **kwargs)
-        loraesatta = timezone.now()
-        if self.object.get_ora_fine() >= loraesatta:
-            return HttpResponse('Non puoi scaricare una gara in corso', status=404)
         data = self.object.dump_to_json()
         response = HttpResponse(data, content_type="application/json")
         response['Content-Disposition'] = 'attachment; filename={}.json'.format(self.object.nome)
         return response
 
+
+class GaraResetView(CheckPermissionsMixin, SuccessMessageMixin, FormView, DetailView):
+    """ View per il reset di una gara """
+    model = Gara
+    form_class = forms.Form
+    template_name = "gara/reset.html"
+    success_message = 'Reset gara avvenuto con successo!'
+
+    def test_func(self):
+        self.object = self.get_object()
+        return self.request.user.can_administrate(self.object)
+
+    @transaction.atomic
+    def form_valid(self, form):
+        gara = self.object
+        Jolly.objects.filter(gara=gara).delete()
+        Jolly.history.filter(gara=gara).delete()
+        Consegna.objects.filter(gara=gara).delete()
+        Consegna.history.filter(gara=gara).delete()
+        Bonus.objects.filter(gara=gara).delete()
+        Bonus.history.filter(gara=gara).delete()
+        gara.inizio = None
+        gara.save()
+        return super().form_valid(form)
+
+    def get_success_url(self, **kwargs):
+        return reverse("engine:gara-admin", kwargs={'pk': self.object.pk})
+
+
+class GaraDeleteView(CheckPermissionsMixin, SuccessMessageMixin, FormView, DeleteView):
+    """ View per la cancellazione di una gara """
+    model = Gara
+    form_class = forms.Form
+    template_name = "gara/delete.html"
+    success_message = 'Gara cancellata con successo!'
+
+    def test_func(self):
+        self.object = self.get_object()
+        return self.request.user.can_administrate(self.object)
+
+    def get_success_url(self, **kwargs):
+        return reverse("engine:index")
+
+
+class GaraPauseView(CheckPermissionsMixin, SuccessMessageMixin, FormView, DetailView):
+    """ View per la sospensione di una gara """
+    model = Gara
+    form_class = forms.Form
+    template_name = "gara/pause.html"
+    success_message = 'Gara sospesa con successo!'
+
+    def test_func(self):
+        self.object = self.get_object()
+        return self.request.user.can_administrate(self.object)
+
+    def form_valid(self, form):
+        gara = self.object
+        gara.sospensione = timezone.now()
+        gara.save()
+        return super().form_valid(form)
+
+    def get_success_url(self, **kwargs):
+        return reverse("engine:gara-resume", kwargs={'pk': self.object.pk})
+
+
+class GaraResumeView(CheckPermissionsMixin, SuccessMessageMixin, FormView, DetailView):
+    """ View per la ripresa di una gara """
+    model = Gara
+    form_class = forms.Form
+    template_name = "gara/resume.html"
+    success_message = 'Gara ripartita con successo!'
+
+    def test_func(self):
+        self.object = self.get_object()
+        return self.request.user.can_administrate(self.object)
+
+    @transaction.atomic
+    def form_valid(self, form):
+        gara = self.object
+        loraesatta = timezone.now()
+        shift = loraesatta - gara.sospensione
+        gara.inizio += shift
+        gara.eventi.update(orario=F("orario") + shift)
+        gara.sospensione = None
+        gara.save()
+        return super().form_valid(form)
+
+    def get_success_url(self, **kwargs):
+        return reverse("engine:gara-admin", kwargs={'pk': self.object.pk})
 
 #######################################
 #             VIEW QUERY              #

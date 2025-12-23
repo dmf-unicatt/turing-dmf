@@ -8,7 +8,7 @@
 {% block css %}<link href="{% static 'engine/css/classifiche.css' %}" rel="stylesheet" type="text/css" >{% endblock %}
 
 {% block content %}
-{% if object.inizio is not null %}
+{% if object.inizio is not null and object.sospensione is null %}
 {% block main %}{% endblock %}
 
 <script>
@@ -153,6 +153,10 @@ $(document).ready(function() {
 
 </script>
 {% else %}
+    {% if object.sospensione is not null %}
+<p>La classifica non è disponibile in caso di sospensione della gara</p>
+    {% else %}
 <p>La classifica non è disponibile prima dell'inizio della gara</p>
+    {% endif %}
 {% endif %}
 {% endblock %}

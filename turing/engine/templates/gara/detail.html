@@ -7,7 +7,7 @@
 {% block content %}
 <h3>Gara: {{ object.nome }}  {% if is_admin %}<a href="{% url 'engine:gara-admin' object.pk %}" title="Modifica impostazioni di gara"><i class="fas fa-cogs"></i></a>{% endif %}</h3>
 
-{% if object.inizio is not null %}
+{% if object.inizio is not null and object.sospensione is null %}
     <p>
     Iniziata {{object.inizio}};
     {% if not object.finished %}
@@ -23,7 +23,11 @@
     <p>Scarica il testo: <a href="{{object.testo}}" target=_blank><i class="fas fa-file-pdf"></i></a></p>
     {% endif %}
 {% else %}
+    {% if object.sospensione is not null %}
+<p>Gara temporaneamente sospesa da {{object.sospensione}}</p>
+    {% else %}
 <p>Gara ancora da iniziare</p>
+    {% endif %}
 {% endif %}
 
 <h5>Visualizza le classifiche:</h5>

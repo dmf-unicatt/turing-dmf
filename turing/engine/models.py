@@ -91,6 +91,7 @@ class Gara(models.Model):
     """
     nome = models.CharField(max_length=200, help_text="Nome della gara")
     inizio = models.DateTimeField(blank=True, null=True)
+    sospensione = models.DateTimeField(blank=True, null=True)
     durata = models.DurationField(default=timedelta(hours=2), help_text="Durata nel formato hh:mm:ss")
     n_blocco = models.PositiveSmallIntegerField(blank=True, default=2, null=True,  # Il valore NULL non fa bloccare mai il punteggio
                                                 verbose_name="Parametro N",
@@ -162,15 +163,19 @@ class Gara(models.Model):
     def get_ora_fine(self):
         if not self.inizio:
             return None
+        if self.sospensione:
+            return None
         return self.inizio + self.durata
 
     def get_ora_blocco(self):
         if not self.inizio:
             return None
+        if self.sospensione:
+            return None
         return self.inizio + self.durata - self.durata_blocco
 
     def finished(self):
-        return (self.inizio is not None) and (timezone.now() > self.get_ora_fine())
+        return (self.inizio is not None) and (self.sospensione is None) and (timezone.now() > self.get_ora_fine())
 
     def get_all_eventi(self, user, id_evento, num_squadra, problema, risposta):
         """Restituisce tutti gli eventi all'amministratore."""
@@ -565,8 +570,10 @@ class Evento(KnowsChild):
         loraesatta = timezone.now()
         if self.gara.inizio is None:
             return (False, "Gara non ancora iniziata")
+        if self.gara.sospensione is not None:
+            return (False, "Gara sospesa")
         if loraesatta < self.gara.inizio:
-            return (False, "Stai cercando di fare cose buffe")
+            return (False, "Non puoi consegnare con un orario precedente all'inizio della gara")
         if loraesatta > self.gara.get_ora_fine():
             if self.creatore == self.squadra.consegnatore:
                 return (False, "Non puoi consegnare dopo la fine della gara")

@@ -1010,6 +1010,154 @@ class HtmlTests(StaticLiveServerTestCase, TuringTests):
 
         self.assertEqual(len(Soluzione.objects.filter(gara=gara)), 3)
 
+    def test_reset_gara(self):
+        self.crea_gara(5, [0,0,0], admin=self.user)
+        gara = Gara.objects.first()
+
+        self.put_jolly(1, 3)
+        self.put_bonus(2, -98)
+        self.consegna(3, 1, 500)
+
+        self.assertEqual(len(Jolly.objects.filter(gara=gara)), 1)
+        self.assertEqual(len(Bonus.objects.filter(gara=gara)), 1)
+        self.assertEqual(len(Consegna.objects.filter(gara=gara)), 1)
+
+        url = self.get_url("engine:gara-reset", pk=gara.pk)
+        self.selenium.get(url)
+        wait_for_element(self.selenium, By.ID, "submit")
+        self.selenium.find_element(By.ID, "submit").click()
+        wait_for_element(self.selenium, By.CSS_SELECTOR, "div[class*='alert-success']")
+
+        self.assertEqual(len(Jolly.objects.filter(gara=gara)), 0)
+        self.assertEqual(len(Bonus.objects.filter(gara=gara)), 0)
+        self.assertEqual(len(Consegna.objects.filter(gara=gara)), 0)
+
+    def test_cancellazione_gara(self):
+        self.crea_gara(5, [0,0,0], admin=self.user)
+        gara = Gara.objects.first()
+
+        self.consegna(1, 1, 500)
+
+        self.assertEqual(len(Gara.objects.filter(pk=gara.pk)), 1)
+        self.assertEqual(len(Consegna.objects.filter(gara=gara)), 1)
+
+        url = self.get_url("engine:gara-delete", pk=gara.pk)
+        self.selenium.get(url)
+        wait_for_element(self.selenium, By.ID, "submit")
+        self.selenium.find_element(By.ID, "submit").click()
+        wait_for_element(self.selenium, By.CSS_SELECTOR, "div[class*='alert-success']")
+
+        self.assertEqual(len(Gara.objects.filter(pk=gara.pk)), 0)
+        self.assertEqual(len(Consegna.objects.filter(gara=gara)), 0)
+
+    def test_sospensione_ripresa_gara(self):
+        self.crea_gara(5, [0,0,0], admin=self.user)
+
+        gara = Gara.objects.first()
+        orario_inizio = gara.inizio
+        self.assertIsNotNone(orario_inizio)
+
+        sleep_before_events = 1.0
+        t.sleep(sleep_before_events)
+
+        orario_jolly = self.put_jolly(1, 3).orario
+        orario_bonus = self.put_bonus(2, -98).orario
+        orario_consegna = self.consegna(3, 1, 500).orario
+
+        self.assertGreaterEqual((orario_jolly - orario_inizio).total_seconds(), sleep_before_events)
+        self.assertGreaterEqual((orario_bonus - orario_inizio).total_seconds(), sleep_before_events)
+        self.assertGreaterEqual((orario_consegna - orario_inizio).total_seconds(), sleep_before_events)
+
+        self.assertIsNone(gara.sospensione)
+
+        sleep_before_race_pause = 1.0
+        t.sleep(sleep_before_race_pause)
+
+        url = self.get_url("engine:gara-pause", pk=gara.pk)
+        self.selenium.get(url)
+        wait_for_element(self.selenium, By.ID, "submit")
+        self.selenium.find_element(By.ID, "submit").click()
+        wait_for_element(self.selenium, By.CSS_SELECTOR, "div[class*='alert-success']")
+
+        # Aggiorna l'oggetto gara dopo la modifica dovuta alla sospensione
+        gara = Gara.objects.first()
+
+        self.assertIsNotNone(gara.inizio)
+        self.assertIsNotNone(gara.sospensione)
+        self.assertGreaterEqual(
+            (gara.sospensione - orario_inizio).total_seconds(), sleep_before_events + sleep_before_race_pause)
+
+        sleep_before_race_resume = 3.0
+        t.sleep(sleep_before_race_resume)
+
+        url = self.get_url("engine:gara-resume", pk=gara.pk)
+        self.selenium.get(url)
+        wait_for_element(self.selenium, By.ID, "submit")
+        self.selenium.find_element(By.ID, "submit").click()
+        wait_for_element(self.selenium, By.CSS_SELECTOR, "div[class*='alert-success']")
+
+        # Aggiorna l'oggetto gara dopo la modifica dovuta alla ripresa
+        gara = Gara.objects.first()
+
+        self.assertIsNone(gara.sospensione)
+
+        nuovo_orario_inizio = gara.inizio
+        self.assertIsNotNone(nuovo_orario_inizio)
+        self.assertGreaterEqual(
+            (nuovo_orario_inizio - orario_inizio).total_seconds(), sleep_before_race_resume)
+
+        nuovo_orario_jolly = Jolly.objects.filter(gara=gara).first().orario
+        nuovo_orario_bonus = Bonus.objects.filter(gara=gara).first().orario
+        nuovo_orario_consegna = Consegna.objects.filter(gara=gara).first().orario
+
+        self.assertEqual(
+            (nuovo_orario_jolly - orario_jolly).total_seconds(),
+            (nuovo_orario_inizio - orario_inizio).total_seconds())
+        self.assertEqual(
+            (nuovo_orario_bonus - orario_bonus).total_seconds(),
+            (nuovo_orario_inizio - orario_inizio).total_seconds())
+        self.assertEqual(
+            (nuovo_orario_consegna - orario_consegna).total_seconds(),
+            (nuovo_orario_inizio - orario_inizio).total_seconds())
+
+        self.assertEqual(
+            (nuovo_orario_jolly - nuovo_orario_inizio).total_seconds(),
+            (orario_jolly - orario_inizio).total_seconds())
+        self.assertEqual(
+            (nuovo_orario_bonus - nuovo_orario_inizio).total_seconds(),
+            (orario_bonus - orario_inizio).total_seconds())
+        self.assertEqual(
+            (nuovo_orario_consegna - nuovo_orario_inizio).total_seconds(),
+            (orario_consegna - orario_inizio).total_seconds())
+
+    def test_doppia_sospensione_gara(self):
+        self.crea_gara(5, [0,0,0], admin=self.user)
+
+        gara = Gara.objects.first()
+        self.assertIsNone(gara.sospensione)
+
+        url = self.get_url("engine:gara-pause", pk=gara.pk)
+        self.selenium.get(url)
+        wait_for_element(self.selenium, By.ID, "submit")
+        self.selenium.find_element(By.ID, "submit").click()
+        wait_for_element(self.selenium, By.CSS_SELECTOR, "div[class*='alert-success']")
+
+        # Interroga di nuovo la pagina di sospensione gara, e conferma che ora non è più presente il bottone
+        self.selenium.get(url)
+        t.sleep(0.5)
+        self.assertEqual(len(self.selenium.find_elements(By.ID, "submit")), 0)
+
+    def test_ripresa_senza_sospensione_gara(self):
+        self.crea_gara(5, [0,0,0], admin=self.user)
+
+        gara = Gara.objects.first()
+        self.assertIsNone(gara.sospensione)
+
+        url = self.get_url("engine:gara-resume", pk=gara.pk)
+        self.selenium.get(url)
+        t.sleep(0.5)
+        self.assertEqual(len(self.selenium.find_elements(By.ID, "submit")), 0)
+
     # TODO: test download and reupload
 
 
@@ -1086,7 +1234,22 @@ class ValidationTests(MyTestCase, TuringTests):
         self.assertTrue(self.user.is_inseritore(self.gara))
 
         self.go_to_minute(-5)
-        self.view_helper(200, 200, messages_post=[{"tag": "warning", "message": "Stai cercando di fare cose buffe"}])
+        self.view_helper(200, 200, messages_post=[{"tag": "warning", "message": "Non puoi consegnare con un orario precedente all'inizio della gara"}])
+
+    def test_inserimento_durante_sospensione_gara(self):
+        self.crea_gara(5, [0,0,0])
+        self.url = reverse('engine:inserimento', kwargs={'pk': self.gara.pk})
+        sq = self.gara.squadre.all()[0]
+        self.data = {'squadra': sq.pk, 'problema': 1, 'risposta': 76}
+
+        self.gara.inseritori.add(self.user)
+        self.assertTrue(self.user.is_inseritore(self.gara))
+
+        self.gara.sospensione = timezone.now()
+        self.gara.save()
+
+        self.view_helper(200, 200, messages_post=[{"tag": "warning", "message": "Gara sospesa"}])
+        self.assertFalse(self.gara.eventi.exists())
 
     def test_inserimento_problema_inesistente(self):
         self.crea_gara(5, [0,0,0])
@@ -1271,6 +1434,114 @@ class PermissionTests(MyTestCase, TuringTests):
             "super_mega_bonus_8": "", "super_mega_bonus_9": ""}
         self.view_helper(403, 403)
         self.assertEqual(gara.nome, 'GaraTest')
+
+    def test_reset_gara(self):
+        self.crea_gara(2, [0, 0, 0])
+        gara = self.gara
+        self.url = reverse('engine:gara-reset', kwargs={'pk': gara.pk})
+        self.data = {}
+
+        self.consegna(1, 1, 500)
+        self.assertEqual(len(Consegna.objects.filter(gara=gara)), 1)
+
+        # Un utente a caso non può fare il reset della gara
+        self.view_helper(403, 403)
+        self.assertEqual(len(Consegna.objects.filter(gara=gara)), 1)
+
+        # Un inseritore nemmeno
+        gara.inseritori.add(self.user)
+        self.assertTrue(self.user.is_inseritore(gara))
+
+        self.view_helper(403, 403)
+        self.assertEqual(len(Consegna.objects.filter(gara=gara)), 1)
+
+        # Solo l'admin può
+        gara.admin = self.user
+        gara.save()
+
+        self.view_helper(200, 200, messages_post=[{"tag": "success", "message": "Reset gara avvenuto con successo!"}])
+        self.assertEqual(len(Consegna.objects.filter(gara=gara)), 0)
+
+    def test_cancellazione_gara(self):
+        self.crea_gara(2, [0, 0, 0])
+        gara = self.gara
+        self.url = reverse('engine:gara-delete', kwargs={'pk': gara.pk})
+        self.data = {}
+
+        self.assertEqual(len(Gara.objects.filter(pk=gara.pk)), 1)
+
+        # Un utente a caso non può cancellare la gara
+        self.view_helper(403, 403)
+        self.assertEqual(len(Gara.objects.filter(pk=gara.pk)), 1)
+
+        # Un inseritore nemmeno
+        gara.inseritori.add(self.user)
+        self.assertTrue(self.user.is_inseritore(gara))
+
+        self.view_helper(403, 403)
+        self.assertEqual(len(Gara.objects.filter(pk=gara.pk)), 1)
+
+        # Solo l'admin può
+        gara.admin = self.user
+        gara.save()
+
+        self.view_helper(200, 200, messages_post=[{"tag": "success", "message": "Gara cancellata con successo!"}])
+        self.assertEqual(len(Gara.objects.filter(pk=gara.pk)), 0)
+
+    def test_sospensione_gara(self):
+        self.crea_gara(2, [0, 0, 0])
+        gara = self.gara
+        self.url = reverse('engine:gara-pause', kwargs={'pk': gara.pk})
+        self.data = {}
+
+        self.assertIsNone(Gara.objects.filter(pk=gara.pk).first().sospensione)
+
+        # Un utente a caso non può sospendere la gara
+        self.view_helper(403, 403)
+        self.assertIsNone(Gara.objects.filter(pk=gara.pk).first().sospensione)
+
+        # Un inseritore nemmeno
+        gara.inseritori.add(self.user)
+        self.assertTrue(self.user.is_inseritore(gara))
+
+        self.view_helper(403, 403)
+        self.assertIsNone(Gara.objects.filter(pk=gara.pk).first().sospensione)
+
+        # Solo l'admin può
+        gara.admin = self.user
+        gara.save()
+
+        self.view_helper(200, 200, messages_post=[{"tag": "success", "message": "Gara sospesa con successo!"}])
+        self.assertIsNotNone(Gara.objects.filter(pk=gara.pk).first().sospensione)
+
+    def test_ripresa_gara(self):
+        self.crea_gara(2, [0, 0, 0])
+        gara = self.gara
+        self.url = reverse('engine:gara-resume', kwargs={'pk': gara.pk})
+        self.data = {}
+
+        gara.sospensione = timezone.now()
+        gara.save()
+
+        self.assertIsNotNone(Gara.objects.filter(pk=gara.pk).first().sospensione)
+
+        # Un utente a caso non può sospendere la gara
+        self.view_helper(403, 403)
+        self.assertIsNotNone(Gara.objects.filter(pk=gara.pk).first().sospensione)
+
+        # Un inseritore nemmeno
+        gara.inseritori.add(self.user)
+        self.assertTrue(self.user.is_inseritore(gara))
+
+        self.view_helper(403, 403)
+        self.assertIsNotNone(Gara.objects.filter(pk=gara.pk).first().sospensione)
+
+        # Solo l'admin può
+        gara.admin = self.user
+        gara.save()
+
+        self.view_helper(200, 200, messages_post=[{"tag": "success", "message": "Gara ripartita con successo!"}])
+        self.assertIsNone(Gara.objects.filter(pk=gara.pk).first().sospensione)
 
     def test_inserimento_soluzioni(self):
         self.crea_gara(2, [0, 0, 0])
