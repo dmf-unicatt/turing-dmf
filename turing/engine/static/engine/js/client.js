@@ -548,6 +548,7 @@ class ClassificaClient {
             case 'problemi': this._mostraPuntiProblemi(); break;
             case 'stato': this._mostraStatoProblemi(); break;
             case 'unica': this._mostraUnica(); break;
+            case 'scorrimento': this._mostraScorrimento(); break;
         }
         document.dispatchEvent(new Event('updated'));
     }
@@ -647,7 +648,6 @@ class ClassificaClient {
     }
 
     _mostraUnica() {
-      var classifica = this.gara.classifica
       var punti_problemi = this.gara.punti_problemi
       for (var i in punti_problemi){
           var text = ""
@@ -655,9 +655,19 @@ class ClassificaClient {
           text+="#"+("0"+problema).slice(-2)+"\n"+punti_problemi[i].base+"+"+punti_problemi[i].bonus
           $("#pr-"+problema).html(text)
       }
+      this._mostraUnicaOScorrimento(false);
+    }
+
+    _mostraScorrimento() {
+      this._mostraUnicaOScorrimento(true);
+    }
+
+    _mostraUnicaOScorrimento(reverse) {
+      var classifica = this.gara.classifica;
+      var length = classifica.length;
       for (var i in classifica) {
-          var sq = classifica[i].squadra;
-          var riga = parseInt(i)+1;
+          var sq = classifica[reverse ? length - 1 - parseInt(i) : parseInt(i)].squadra;
+          var riga = parseInt(i) + 1;
           if (sq.ospite) $("#riga-"+riga).addClass("text-muted");
           else $("#riga-"+riga).removeClass("text-muted");
           $("#pos-"+riga).html(sq.posizione(classifica)+"° ");

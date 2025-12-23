@@ -68,6 +68,15 @@
 {% include 'gara/link_querystring.html' with engine_name='engine:classifica-stato' prefix='Stato delle risposte' %}
 {% endif %}
 </li>
+
+<li class="m-4">
+<a class="nohover" href="{% url 'engine:classifica-scorrimento' object.pk %}" target="_blank">
+    <b>A scorrimento</b>
+</a>
+{% if is_admin %}
+{% include 'gara/link_querystring.html' with engine_name='engine:classifica-scorrimento' prefix='A scorrimento' %}
+{% endif %}
+</li>
 </ul>
 
 {% endblock %}

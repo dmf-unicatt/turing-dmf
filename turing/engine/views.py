@@ -702,3 +702,13 @@ class UnicaView(ClassificaBaseView):
         context = super().get_context_data(**kwargs)
         context['soluzioni'] = self.object.soluzioni.all().order_by("problema")
         return context
+
+class ScorrimentoView(ClassificaBaseView):
+    """ Visualizzazione scorrimento: tutte le informazioni """
+    model = Gara
+    template_name = "classifiche/scorrimento.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['soluzioni'] = self.object.soluzioni.all().order_by("problema")
+        return context
