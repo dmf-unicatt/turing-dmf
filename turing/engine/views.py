@@ -346,7 +346,7 @@ class InserimentoView(CheckPermissionsMixin, DetailView, FormView):
         return super().form_valid(form)
 
     def form_invalid(self, form, *args, **kwargs):
-        messages.error(self.request, "Inserimento non riuscito")
+        messages.error(self.request, f"Inserimento non riuscito. Vedere l'elenco puntato sotto \"Gara: {self.get_object().nome} - inserimento risposte\" per maggiori dettagli sull'errore.")
         return super().form_invalid(form)
 
 
