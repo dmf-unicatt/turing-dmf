@@ -125,6 +125,11 @@ class InserimentoForm(SquadraChoiceUserSubsetForm):
     jolly = forms.BooleanField(required=False)
     bonus = forms.BooleanField(required=False, label="Bonus manuale")
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.gara:
+            self.fields['squadra'].widget.attrs.update({'size': '5'})
+
     def clean(self):
         cleaned_data = super().clean()
         if self.errors:
