@@ -13,12 +13,27 @@ from dateutil.parser import parse
 import logging
 logger = logging.getLogger(__name__)
 
+from string import Template
 from django.conf import settings
 import pytz
 TIME_ZONE_SETTING = getattr(settings, "TIME_ZONE", None)
 assert TIME_ZONE_SETTING is not None
 assert isinstance(TIME_ZONE_SETTING, str)
 TIME_ZONE_SETTING = pytz.timezone(TIME_ZONE_SETTING)
+
+
+class DeltaTemplate(Template):
+    delimiter = "%"
+
+def strfdelta(tdelta, fmt):
+    d = {"D": tdelta.days}
+    hours, rem = divmod(tdelta.seconds, 3600)
+    minutes, seconds = divmod(rem, 60)
+    d["H"] = '{:02d}'.format(hours)
+    d["M"] = '{:02d}'.format(minutes)
+    d["S"] = '{:02d}'.format(seconds)
+    t = DeltaTemplate(fmt)
+    return t.substitute(**d)
 
 
 def get_file_path(instance, filename):  # pragma: no cover
@@ -157,33 +172,54 @@ class Gara(models.Model):
     def finished(self):
         return (self.inizio is not None) and (timezone.now() > self.get_ora_fine())
 
-    def get_all_eventi(self, user, squadra, problema, risposta):
+    def get_all_eventi(self, user, id_evento, num_squadra, problema, risposta):
         """Restituisce tutti gli eventi all'amministratore."""
-        qs = self.eventi.all().select_related("consegna__squadra", "jolly__squadra")
+        qs = self.eventi.all().select_related("consegna__squadra", "jolly__squadra", "bonus__squadra")
 
         if user.can_administrate(self):
 
             res = [x.as_child() for x in qs]
-            if squadra:
-                res = [x for x in res if x.squadra.nome == squadra]
+            for x in res:
+                x.timestamp = strfdelta(x.orario - self.inizio, "%H:%M:%S")
+                if hasattr(x, "problema") and hasattr(x, "risposta"):
+                    x.giusta = (x.risposta == self.soluzioni.get(problema=x.problema).risposta)
+                else:
+                    x.giusta = None
+            if id_evento:
+                res = [x for x in res if x.pk == int(id_evento)]
+            if num_squadra:
+                res = [x for x in res if x.squadra.num == int(num_squadra)]
             if problema:
-                res = [x for x in res if x.problema == int(problema)]
+                if problema == "B":
+                    res = [x for x in res if isinstance(x, Bonus)]
+                else:
+                    assert problema.isdigit()
+                    res = [x for x in res if hasattr(x, "problema") and x.problema == int(problema)]
             if risposta:
-                res = [x for x in res if x.risposta == int(risposta)]
+                if risposta == "J":
+                    res = [x for x in res if isinstance(x, Jolly)]
+                else:
+                    if risposta == "G":
+                        res = [x for x in res if hasattr(x, "risposta") and x.giusta]
+                    elif risposta == "S":
+                        res = [x for x in res if hasattr(x, "risposta") and not x.giusta]
+                    else:
+                        assert risposta.isdigit()
+                        res = [x for x in res if hasattr(x, "risposta") and x.risposta == int(risposta)]
 
             return res
         raise PermissionDenied("L'utente non può chiedere gli eventi della gara.")
 
-    def get_eventi(self, user):
+    def get_eventi_recenti(self, user, limit):
         """Restituisce gli eventi visualizzabili dall'utente."""
-        qs = self.eventi.all().select_related("consegna__squadra", "jolly__squadra")
+        qs = self.eventi.all().select_related("consegna__squadra", "jolly__squadra", "bonus__squadra")
 
         if user.can_administrate(self):
-            return [(True, x.as_child()) for x in qs[:20]]
+            return [(True, x.as_child()) for x in qs[:limit]]
         if user.is_inseritore(self):
-            return [(x.creatore == self, x.as_child()) for x in qs[:20]]
+            return [(x.creatore == user, x.as_child()) for x in qs[:limit]]
         if user.is_consegnatore(self):
-            return [(False, x.as_child()) for x in qs.filter(creatore=user)]
+            return [(False, x.as_child()) for x in qs.filter(creatore=user)[:limit]]
         raise PermissionDenied("L'utente non può chiedere gli eventi della gara.")
 
     def get_squadre_inseribili(self, user):
@@ -242,6 +278,20 @@ class Gara(models.Model):
             res.append(tmp)
         return res
 
+    def get_bonus(self, last=None):
+        res = []
+        qs = Bonus.objects.filter(gara=self).select_related('squadra')
+        if last is not None:
+            qs = qs.filter(pk__gt=last)
+        for c in qs.order_by('orario'):
+            tmp = {}
+            tmp["id"] = c.pk
+            tmp["squadra"] = c.squadra.num
+            tmp["punteggio"] = c.punteggio
+            tmp["orario"] = c.orario
+            res.append(tmp)
+        return res
+
     def get_squadre(self):
         res = {}
         for s in self.squadre.all():
@@ -258,6 +308,7 @@ class Gara(models.Model):
         - Ultima modifica di gara
         - Ultima modifica o eliminazione di un jolly
         - Ultima modifica o eliminazione di una consegna
+        - Ultima modifica o eliminazione di un bonus
         - Ultima modifica di un problema
         """
         lu = self.history.latest().history_date
@@ -272,6 +323,13 @@ class Gara(models.Model):
             lu = max(lu, obj.history_date)
         except:
             pass
+
+        try:
+            obj = Bonus.history.filter(gara=self).exclude(history_type='+').latest()
+            lu = max(lu, obj.history_date)
+        except:
+            pass
+
         try:
             obj = Soluzione.history.filter(gara=self).exclude(history_type='+').latest()
             lu = max(lu, obj.history_date)
@@ -360,7 +418,7 @@ class Gara(models.Model):
             # Non si può usare order_by perché la classe padre Evento contiene solo orario e subclass
             # 'eventi': [e.to_dict() for e in self.eventi.all().order_by('orario', 'subclass', 'squadra_id', 'problema')],
             'eventi': list(sorted([e.to_dict() for e in self.eventi.all()], key=lambda e: (
-                e["orario"], e["subclass"], e["squadra_id"], e["problema"]))),
+                e["orario"], e["subclass"], e["squadra_id"], e["problema"] if "problema" in e else None))),
             'soluzioni': [s.to_dict() for s in self.soluzioni.all().order_by('problema')],
             'squadre': [s.to_dict() for s in self.squadre.all().order_by('num')],
         })
@@ -478,7 +536,7 @@ class Evento(KnowsChild):
         d = {}
         c = self.as_child()
         for k, v in c.__dict__.items():
-            if k in {'subclass', 'problema', 'risposta'}:
+            if k in {'subclass', 'problema', 'risposta', 'punteggio'}:
                 d[k] = v
             if k == 'orario':
                 d[k] = v.isoformat()
@@ -538,7 +596,7 @@ class Consegna(Evento):
     def maybe_save(self):
         res = super().maybe_save()
 
-        if (res[0]):
+        if res[0]:
             self.save()
 
             sol = self.gara.soluzioni.get(problema=self.problema)
@@ -572,6 +630,9 @@ class Jolly(Evento):
     def maybe_save(self):
         res = super().maybe_save()
 
+        if not res[0]:
+            return res
+
         if not self.gara.jolly:
             return (False, "Questa gara non prevede l'inserimento di jolly")
 
@@ -580,7 +641,57 @@ class Jolly(Evento):
             if self.creatore == self.squadra.consegnatore:
                 return (False, "Non puoi inserire un jolly dopo 10 minuti")
 
-        if (res[0]):
+        qs = self.gara.eventi.all()
+        events = [x.as_child() for x in qs]
+
+        jolly = [x for x in events if isinstance(x, Jolly) and x.pk != self.pk]
+        jolly = [x.as_child() for x in jolly if x.squadra.num == self.squadra.num]
+        if len(jolly) > 0:
+            return (False, f"È già stato inserito un jolly per la squadra: {jolly}")
+
+        if not self.creatore.can_administrate(self.gara):
+            sol = self.gara.soluzioni.get(problema=self.problema)
+            consegne = [x for x in events if isinstance(x, Consegna)]
+            consegne = [x for x in consegne if x.squadra.num == self.squadra.num and x.problema == self.problema]
+            consegne_esatte = [x for x in consegne if x.risposta == sol.risposta]
+            if len(consegne_esatte) > 0:
+                return (False, f"Solo l'amministratore può inserire il jolly ad una risposta a cui la squadra ha già risposto correttamente: {consegne_esatte}")
+
+        if res[0]:
+            self.save()
+            res = (res[0], res[1] + f". Il numero di protocollo è {self.pk} e la data di inserimento è {self.orario.astimezone(TIME_ZONE_SETTING)}.")
+        return res
+
+
+class Bonus(Evento):
+    """
+    Modello che descrive l'assegnazione di un bonus.
+    """
+    squadra = models.ForeignKey(Squadra, on_delete=models.CASCADE, related_name='bonus')
+    punteggio = models.SmallIntegerField()
+
+    class Meta(Evento.Meta):
+        # Eredita il Meta dell'evento generico
+        verbose_name_plural = "bonus"
+
+    def __str__(self):
+        return "Bonus di {} punti alla squadra {} nella gara {} @ {}".format(self.punteggio, self.squadra, self.gara, self.orario.astimezone(TIME_ZONE_SETTING))
+
+    def get_valore(self):
+        return self.punteggio
+
+    def clean(self):
+        """
+        Validazione dell'oggetto: accettiamo la consegna solo se:
+        - la squadra sta partecipando alla gara
+        """
+        if self.squadra.gara != self.gara:
+            raise ValidationError("Questa squadra non sta partecipando alla gara!")
+
+    def maybe_save(self):
+        res = super().maybe_save()
+
+        if res[0]:
             self.save()
             res = (res[0], res[1] + f". Il numero di protocollo è {self.pk} e la data di inserimento è {self.orario.astimezone(TIME_ZONE_SETTING)}.")
         return res

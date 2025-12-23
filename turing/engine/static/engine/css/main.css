@@ -33,3 +33,7 @@ a.nohover:hover {
     display: inline-block;
     width: auto;
 }
+
+.alert {
+  font-size: 1.2rem;
+}

@@ -25,7 +25,6 @@ urlpatterns = [
     path('classifica/<int:pk>/squadre', ClassificaView.as_view(), name='classifica-squadre'),
     path('classifica/<int:pk>/problemi', PuntiProblemiView.as_view(), name='classifica-problemi'),
     path('classifica/<int:pk>/stato', StatoProblemiView.as_view(), name='classifica-stato'),
-    path('classifica/<int:pk>/cronaca', CronacaView.as_view(), name='classifica-cronaca'),
     path('classifica/<int:pk>/unica', UnicaView.as_view(), name='classifica-unica'),
     path('about', AboutView.as_view(), name="about")
 ]

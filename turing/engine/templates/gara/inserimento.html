@@ -34,21 +34,22 @@
         </div>
     </div>
     {% if object.jolly %}{{ form.jolly|as_crispy_field }}{% endif %}
+    {% if is_admin %}{{ form.bonus|as_crispy_field }}{% endif %}
 
     <button id="submit" type="submit" class="btn btn-primary" form="form-ins">Inserisci</button>
 </form>
   <div class="card mb-3" style="top: 30px">
     <div class="card-header">
       <i class="fas fa-table"></i>
-      Risposte consegnate
+      Ultime risposte consegnate
     </div>
     <div class="card-body">
       <div class="table-responsive">
         <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
           <thead>
             <tr>
+              <th>Id</th>
               <th>Tipo</th>
-              <th>ID Squadra</th>
               <th>Squadra</th>
               <th>Problema</th>
               <th>Valore</th>
@@ -57,24 +58,35 @@
             </tr>
           </thead>
           <tbody>
-              {% for m, e in eventi %}
+              {% for m, e in eventi_recenti %}
             <tr id="event{{e.pk}}">
+                <td scope="row">{{e.pk}}</<td>
                 <td scope="row">{{e.subclass}}</<td>
-                <td scope="row">{{e.squadra.num}}</td>
-                <td scope="row">{{e.squadra.nome}}</td>
                 <td scope="row">
-                  <span class="event-static">{{e.problema}}</span>
-                  <input type="number" class="event-input" form="edit{{ e.pk }}" name="{% if e.get_valore == "J" %}jolly{% else %}problema{% endif %}" value="{{ e.problema }}">
+                  <span class="event-static">{{e.squadra.get_id_nome}}</span>
+                  <select class="event-input" style="max-width: 100%" form="edit{{ e.pk }}" name="squadra">
+                    {% for s in squadre_inseribili %}
+                    <option value="{{s.pk}}" {% if e.squadra.pk == s.pk %}selected{% endif %}>{{s.get_id_nome}}</option>
+                    {% endfor %}
+                  </select>
                 </td>
-                {% if e.get_valore == "J" %}
-                  <td scope="row">J</td>
-                {% else %}
-                  <td scope="row">
-                    <span class="event-static">{{e.get_valore}}</span>
-                    <input type="number" class="event-input" form="edit{{ e.pk }}" name="risposta" value="{{ e.get_valore }}">
-                  </td>
-                {% endif %}
-                <td scope="row">{{e.orario}}</td>
+                <td scope="row">
+                  {% if e.subclass == "Bonus" %}
+                  B
+                  {% else %}
+                  <span class="event-static">{{e.problema}}</span>
+                  <input type="number" class="event-input" form="edit{{ e.pk }}" name="problema" value="{{ e.problema }}">
+                  {% endif %}
+                </td>
+                <td scope="row">
+                  {% if e.subclass == "Jolly" %}
+                  J
+                  {% else %}
+                  <span class="event-static">{{e.get_valore}}</span>
+                  <input type="number" class="event-input" form="edit{{ e.pk }}" name="risposta" value="{{ e.get_valore }}">
+                  {% endif %}
+                </td>
+                <td scope="row">{{e.orario|date:'Y-m-d H:i:s'}}</td>
                 <td scope="row">
                 {% if m %}
                   <a href="javascript:void(0)" class="event-actions" onclick="$('#event{{ e.pk }}').addClass('editable-event')" id="modifica-{{ e.pk }}">
@@ -82,14 +94,14 @@
                   <a href="javascript:void(0)" class="event-actions" onclick="$('#event{{ e.pk }}').addClass('deletable-event')" id="elimina-{{ e.pk }}">
                       <i class="fas fa-trash fa-2x" title="Elimina"></i>&nbsp;&nbsp;</a>
 
-                  <form id="edit{{ e.pk }}" class="edit-actions" method="post" action="{% url 'engine:evento-modifica' pk=e.pk %}">
+                  <form id="edit{{ e.pk }}" class="edit-actions" method="post" action="{% url 'engine:evento-modifica' pk=e.pk %}?redirect_to=engine:inserimento">
                       {% csrf_token %}
                       <a href="javascript:void(0)" onclick="$('#edit{{ e.pk }}').submit();" id="modifica-conferma-{{ e.pk }}"><i class="fas fa-check-circle fa-2x" title="Conferma"></i></a>
                   </form>
                   <a href="javascript:void(0)" class="edit-actions" onclick="$('#event{{ e.pk }}').removeClass('editable-event')" id="modifica-annulla-{{ e.pk }}">
                       <i class="fas fa-times-circle fa-2x" title="Annulla"></i></a>
 
-                  <form id="delete{{ e.pk }}" class="delete-actions" method="post" action="{% url 'engine:evento-elimina' pk=e.pk %}">
+                  <form id="delete{{ e.pk }}" class="delete-actions" method="post" action="{% url 'engine:evento-elimina' pk=e.pk %}?redirect_to=engine:inserimento">
                       {% csrf_token %}
                       <a href="javascript:void(0)" onclick="$('#delete{{ e.pk }}').submit();" id="elimina-conferma-{{ e.pk }}">
                           <i class="confirm-delete-button fas fa-trash fa-2x" title="Elimina"></i></a>

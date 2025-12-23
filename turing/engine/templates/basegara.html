@@ -30,7 +30,6 @@
     <li><a class="text-white" href="{% url 'engine:classifica-problemi' object.pk %}" target="_blank">Problemi</a></li>
     <li><a class="text-white" href="{% url 'engine:classifica-stato' object.pk %}" target="_blank">Stato</a></li>
     {% if object.inizio is not null %}
-    <li><a class="text-white" href="{% url 'engine:classifica-cronaca' object.pk %}" target="_blank">Telecronaca</a></li>
     <li><a class="text-white" href="{% url 'engine:classifica-unica' object.pk %}" target="_blank">Unica</a></li>
     {% endif %}
   </ul>

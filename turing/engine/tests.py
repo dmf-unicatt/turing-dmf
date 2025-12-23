@@ -15,7 +15,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 import random
 
-from engine.models import Gara, Squadra, Soluzione, Consegna, Jolly, User
+from engine.models import Gara, Squadra, Soluzione, Consegna, Jolly, User, Bonus
 # Create your tests here.
 
 
@@ -82,6 +82,15 @@ class TuringTests():
 
         self.updated = False
         res = Jolly(problema=problema, squadra=Squadra.objects.get(gara=self.gara, num=squadra), gara=self.gara, creatore=self.user)
+        res.save()
+        t.sleep(0.005)
+        return res
+
+    def put_bonus(self, squadra, punteggio):
+        '''Aggiunge un bonus al database (nel minuto corrente)'''
+
+        self.updated = False
+        res = Bonus(punteggio=punteggio, squadra=Squadra.objects.get(gara=self.gara, num=squadra), gara=self.gara, creatore=self.user)
         res.save()
         t.sleep(0.005)
         return res
@@ -874,6 +883,26 @@ class HtmlTests(StaticLiveServerTestCase, TuringTests):
         jolly[0]['id'] = -1
         self.assertEqual(jolly, [{'id': -1, 'squadra': 1, 'problema': 1}])
 
+    def test_inserimento_bonus(self):
+        self.crea_gara(5, [0, 0, 0], admin=self.user)
+        url = self.get_url("engine:inserimento", pk=self.gara.pk)
+        self.selenium.get(url)
+
+        wait_for_element(self.selenium, By.NAME, "squadra")
+        self.selenium.find_element(By.NAME, "squadra").send_keys("01")
+        self.selenium.find_element(By.NAME, "risposta").send_keys("-75")
+        self.selenium.find_element(By.NAME, "bonus").send_keys(" ")
+        self.selenium.find_element(By.ID, "submit").click()
+        wait_for_element(self.selenium, By.CSS_SELECTOR, "div[class*='alert-info']")
+
+        bonus = self.gara.get_bonus()
+        assert len(bonus) == 1
+        # cannot compare IDs reliably with postgres
+        bonus[0]['id'] = -1
+        # do not have an expected timestamp for comparison
+        bonus[0].pop('orario')
+        self.assertEqual(bonus, [{'id': -1, 'squadra': 1, 'punteggio': -75}])
+
     def test_inserimento_risposta(self):
         self.crea_gara(5, [0, 0, 0])
         self.gara.inseritori.add(self.user)
@@ -1114,13 +1143,18 @@ class ValidationTests(MyTestCase, TuringTests):
         self.gara.inseritori.add(self.user)
         e = self.consegna(1, 1, 500)
         self.url = reverse('engine:evento-modifica', kwargs={'pk': e.pk})
-        self.data = {'problema': 1, 'risposta': 0}
+        sq2 = self.gara.squadre.all()[1]
+        self.data = {'squadra': sq2.pk, 'problema': 3, 'risposta': 0}
 
         res = self.gara.get_consegne()
+        self.assertEqual(res[0]["squadra"], 1)
+        self.assertEqual(res[0]["problema"], 1)
         self.assertEqual(res[0]["giusta"], False)
 
         self.view_helper(post_code=200)
         res = self.gara.get_consegne()
+        self.assertEqual(res[0]["squadra"], 2)
+        self.assertEqual(res[0]["problema"], 3)
         self.assertEqual(res[0]["giusta"], True)
 
     def test_modifica_risposta_vuota(self):
@@ -1128,7 +1162,8 @@ class ValidationTests(MyTestCase, TuringTests):
         self.gara.inseritori.add(self.user)
         e = self.consegna(1, 1, 500)
         self.url = reverse('engine:evento-modifica', kwargs={'pk': e.pk})
-        self.data = {'problema': 1}
+        sq1 = self.gara.squadre.all()[0]
+        self.data = {'squadra': sq1.pk, 'problema': 1}
 
         res = self.gara.get_consegne()
         self.assertEqual(res[0]["giusta"], False)
@@ -1142,28 +1177,60 @@ class ValidationTests(MyTestCase, TuringTests):
         self.gara.inseritori.add(self.user)
         e = self.put_jolly(1, 3)
         self.url = reverse('engine:evento-modifica', kwargs={'pk': e.pk})
-        self.data = {'jolly': 2}
+        sq4 = self.gara.squadre.all()[3]
+        self.data = {'squadra': sq4.pk, 'problema': 2}
 
         res = self.gara.get_jolly()
         self.assertEqual(res, [{'id': e.pk, 'squadra': 1, 'problema': 3}])
 
         self.view_helper(post_code=200)
         res = self.gara.get_jolly()
-        self.assertEqual(res, [{'id': e.pk, 'squadra': 1, 'problema': 2}])
+        self.assertEqual(res, [{'id': e.pk, 'squadra': 4, 'problema': 2}])
 
     def test_modifica_jolly_vuoto(self):
         self.crea_gara(5, [0,0,0])
         self.gara.inseritori.add(self.user)
         e = self.put_jolly(1, 3)
         self.url = reverse('engine:evento-modifica', kwargs={'pk': e.pk})
-        self.data = {'jolly': ""}
+        sq1 = self.gara.squadre.all()[0]
+        self.data = {'squadra': sq1.pk, 'problema': ""}
 
         res = self.gara.get_jolly()
         self.assertEqual(res, [{'id': e.pk, 'squadra': 1, 'problema': 3}])
 
-        self.view_helper(post_code=200, form_errors={'jolly': ['Questo campo è obbligatorio.']})
+        self.view_helper(post_code=200, form_errors={'problema': ['Questo campo è obbligatorio.']})
         res = self.gara.get_jolly()
         self.assertEqual(res, [{'id': e.pk, 'squadra': 1, 'problema': 3}])
+
+    def test_modifica_bonus_ok(self):
+        self.crea_gara(5, [0,0,0])
+        self.gara.inseritori.add(self.user)
+        e = self.put_bonus(1, -98)
+        self.url = reverse('engine:evento-modifica', kwargs={'pk': e.pk})
+        sq2 = self.gara.squadre.all()[1]
+        self.data = {'squadra': sq2.pk, 'risposta': 97}
+
+        res = self.gara.get_bonus()
+        self.assertEqual(res, [{'id': e.pk, 'squadra': 1, 'punteggio': -98, 'orario': e.orario}])
+
+        self.view_helper(post_code=200)
+        res = self.gara.get_bonus()
+        self.assertEqual(res, [{'id': e.pk, 'squadra': 2, 'punteggio': 97, 'orario': e.orario}])
+
+    def test_modifica_bonus_vuoto(self):
+        self.crea_gara(5, [0,0,0])
+        self.gara.inseritori.add(self.user)
+        e = self.put_bonus(1, -98)
+        self.url = reverse('engine:evento-modifica', kwargs={'pk': e.pk})
+        sq1 = self.gara.squadre.all()[0]
+        self.data = {'squadra': sq1.pk, 'risposta': ""}
+
+        res = self.gara.get_bonus()
+        self.assertEqual(res, [{'id': e.pk, 'squadra': 1, 'punteggio': -98, 'orario': e.orario}])
+
+        self.view_helper(post_code=200, form_errors={'risposta': ['Questo campo è obbligatorio.']})
+        res = self.gara.get_bonus()
+        self.assertEqual(res, [{'id': e.pk, 'squadra': 1, 'punteggio': -98, 'orario': e.orario}])
 
 
 class PermissionTests(MyTestCase, TuringTests):
@@ -1354,7 +1421,7 @@ class PermissionTests(MyTestCase, TuringTests):
         self.view_helper(200, 200, messages_post=[{"tag": "info", "message": "La risposta che hai consegnato è errata.", "partial": True}])
 
         # Controlla gli eventi visibili
-        eventi = self.view_helper(200).context['eventi']
+        eventi = self.view_helper(200).context['eventi_recenti']
         self.assertEqual(len(eventi), 1)
         self.assertEqual(eventi[0][1].get_valore(), 76)
         self.assertEqual(eventi[0][1].squadra.num, 1)
@@ -1363,7 +1430,7 @@ class PermissionTests(MyTestCase, TuringTests):
         self.c.login(username='test2',password='test2')
 
         # Controlla gli eventi visibili
-        eventi = self.view_helper(200).context['eventi']
+        eventi = self.view_helper(200).context['eventi_recenti']
         self.assertEqual(len(eventi), 0)
 
         # Inserisce una nuova consegna
@@ -1371,7 +1438,7 @@ class PermissionTests(MyTestCase, TuringTests):
         self.view_helper(200, 200, messages_post=[{"tag": "info", "message": "Inserimento avvenuto", "partial": True}])
 
         # Controlla gli eventi visibili
-        eventi = self.view_helper(200).context['eventi']
+        eventi = self.view_helper(200).context['eventi_recenti']
         self.assertEqual(len(eventi), 1)
         self.assertEqual(eventi[0][1].get_valore(), "J")
         self.assertEqual(eventi[0][1].squadra.num, 2)
@@ -1380,7 +1447,7 @@ class PermissionTests(MyTestCase, TuringTests):
         self.c.login(username='test',password='test')
 
         # Continua a vedere solo il suo evento
-        eventi = self.view_helper(200).context['eventi']
+        eventi = self.view_helper(200).context['eventi_recenti']
         self.assertEqual(len(eventi), 1)
         self.assertEqual(eventi[0][1].get_valore(), 76)
         self.assertEqual(eventi[0][1].squadra.num, 1)
@@ -1389,7 +1456,8 @@ class PermissionTests(MyTestCase, TuringTests):
         self.crea_gara(5, [0,0,0])
         e = self.consegna(1, 1, 500)
         self.url = reverse('engine:evento-modifica', kwargs={'pk': e.pk})
-        self.data = {'problema': 1, 'risposta': 0}
+        sq1 = self.gara.squadre.all()[0]
+        self.data = {'squadra': sq1.pk, 'problema': 1, 'risposta': 0}
 
         self.assertEqual(e.creatore.username, 'test')
 
@@ -1400,13 +1468,13 @@ class PermissionTests(MyTestCase, TuringTests):
         self.user = User.objects.create_user('test2', 't2@e.st', 'test2')
         self.c.login(username='test2', password='test2')
 
-        self.view_helper(404, 404)
+        self.view_helper(403, 403)
         res = self.gara.get_consegne()
         self.assertEqual(res[0]["giusta"], False)
 
         self.gara.inseritori.add(self.user)
 
-        self.view_helper(404, 404)
+        self.view_helper(403, 403)
         res = self.gara.get_consegne()
         self.assertEqual(res[0]["giusta"], False)
 
@@ -1432,12 +1500,12 @@ class PermissionTests(MyTestCase, TuringTests):
         self.user = User.objects.create_user('test2', 't2@e.st', 'test2')
         self.c.login(username='test2', password='test2')
 
-        self.view_helper(post_code=404)
+        self.view_helper(post_code=403)
         res = self.gara.get_consegne()
         self.assertEqual(len(res), 1)
 
         self.gara.inseritori.add(self.user)
-        self.view_helper(post_code=404)
+        self.view_helper(post_code=403)
         res = self.gara.get_consegne()
         self.assertEqual(len(res), 1)
 
@@ -1462,7 +1530,7 @@ class PermissionTests(MyTestCase, TuringTests):
         self.view_helper(200, 200, messages_post=[{"tag": "info", "message": "Inserimento avvenuto", "partial": True}])
 
         self.data = {'squadra': sq.pk, 'problema': 2, 'jolly': True}
-        self.view_helper(200, 200, messages_post=[{"tag": "danger", "message": "Inserimento non riuscito"}])
+        self.view_helper(200, 200, messages_post=[{"tag": "warning", "message": "È già stato inserito un jolly per la squadra", "partial": True}])
 
         jolly = self.gara.get_jolly()
         assert len(jolly) == 1

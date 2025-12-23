@@ -19,7 +19,7 @@
 
 th.squadra {
     padding: 0.1em;
-    font-size: larger;
+    font-size: small;
 }
 
 #cutoff {
@@ -42,6 +42,13 @@ td.right-answer {
     padding-bottom: 0.1em;
     vertical-align: middle;
     color: white;
+}
+
+td.bonus {
+    padding-top: 0.1em;
+    padding-bottom: 0.1em;
+    vertical-align: middle;
+    color: black;
 }
 
 tr:nth-child(even) .wrong-answer {
@@ -70,28 +77,6 @@ tr:nth-child(odd) .right-answer {
     min-width: 1em;
     min-height: 1em;
     display: inline-block;
-}
-
-/* Cronaca */
-#cronaca_main {
-    position: relative;
-}
-#cronaca_main div {
-    position: relative;
-}
-#cronaca_main a {
-    display: block;
-}
-
-#frasi {
-    overflow: scroll;
-    max-height: 80vh;
-}
-
-@media (max-width: 992px) {
-    #frasi {
-        max-height: 30vh;
-    }
 }
 
 

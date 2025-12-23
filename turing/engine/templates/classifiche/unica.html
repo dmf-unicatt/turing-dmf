@@ -19,6 +19,7 @@
             {% for s in soluzioni %}
             <th scope="col" style="white-space:pre" id="pr-{{s.problema}}">#{{s.problema|stringformat:"02d"}}</th>
             {% endfor %}
+            <th scope="col" style="white-space:pre" id="pr-bonus">&#xb1;</th>
         </tr></thead>
         <tbody>
             {% for sq in object.get_squadre_order %}
@@ -29,6 +30,7 @@
                 {% for s in soluzioni %}
                   <td id="cell-{{sq.num}}-{{s.problema}}"></td>
                 {% endfor %}
+                <td id="cell-{{sq.num}}-bonus" class="bonus"></td>
             </tr>
             {% endfor %}
         </tbody>

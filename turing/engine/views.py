@@ -10,9 +10,9 @@ from django.utils import timezone
 from django.db import transaction
 from django.contrib.auth import login, authenticate
 
-from engine.models import User, Gara, Soluzione, Squadra, Evento, Consegna, Jolly
+from engine.models import User, Gara, Soluzione, Squadra, Evento, Consegna, Jolly, Bonus
 from engine.forms import SignUpForm, RispostaFormset, SquadraFormset, InserimentoForm,\
-    ModificaConsegnaForm, ModificaJollyForm, UploadGaraForm
+    ModificaConsegnaForm, ModificaJollyForm, ModificaBonusForm, UploadGaraForm, QueryForm
 from engine.formfields import IntegerMultiField
 
 import logging
@@ -268,10 +268,11 @@ class DownloadGaraView(DetailView):
 #             VIEW QUERY              #
 #######################################
 
-class QueryView(DetailView):
+class QueryView(CheckPermissionsMixin, DetailView, FormView):
     """ Query: consente di cercare tra gli eventi """
     model = Gara
     template_name = 'gara/query.html'
+    form_class = QueryForm
 
     def test_func(self):
         self.object = self.get_object()
@@ -280,9 +281,19 @@ class QueryView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update({
-            'eventi': self.object.get_all_eventi(self.request.user, self.request.GET.get('squadra'), self.request.GET.get('problema'), self.request.GET.get('risposta'))
+            'squadre_inseribili': self.object.get_squadre_inseribili(self.request.user),
+            'eventi': self.object.get_all_eventi(self.request.user, self.request.GET.get('id_evento'), self.request.GET.get('num_squadra'), self.request.GET.get('problema'), self.request.GET.get('risposta'))
         })
         return context
+
+    def get_form_kwargs(self):
+        kwargs = super(QueryView, self).get_form_kwargs()
+        kwargs['gara'] = self.object
+        kwargs['querystring_id_evento'] = self.request.GET.get('id_evento', '')
+        kwargs['querystring_num_squadra'] = self.request.GET.get('num_squadra', '')
+        kwargs['querystring_problema'] = self.request.GET.get('problema', '')
+        kwargs['querystring_risposta'] = self.request.GET.get('risposta', '')
+        return kwargs
 
 
 #######################################
@@ -302,7 +313,9 @@ class InserimentoView(CheckPermissionsMixin, DetailView, FormView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update({
-            'eventi': self.object.get_eventi(self.request.user)
+            'squadre_inseribili': self.object.get_squadre_inseribili(self.request.user),
+            'eventi_recenti': self.object.get_eventi_recenti(self.request.user, 20),
+            'is_admin': self.request.user.can_administrate(self.object)
         })
         return context
 
@@ -310,7 +323,7 @@ class InserimentoView(CheckPermissionsMixin, DetailView, FormView):
         return super().post(*args, **kwargs)
 
     def get_form_kwargs(self):
-        kwargs = super(InserimentoView, self).get_form_kwargs()
+        kwargs = super().get_form_kwargs()
         kwargs['gara'] = self.object
         kwargs['user'] = self.request.user
         return kwargs
@@ -337,56 +350,83 @@ class ModificaEventoView(CheckPermissionsMixin, DetailView, FormView):
     model = Evento
     template_name = "forms/evento_modifica.html"
 
-    def get_queryset(self):
-        qs = super().get_queryset()
-        return qs.filter(creatore=self.request.user)
-
     def test_func(self):
         self.object = self.get_object()
         return self.request.user.can_edit_or_delete(self.object)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'squadre_inseribili': self.object.gara.get_squadre_inseribili(self.request.user)
+        })
+        return context
 
     def get_form_class(self):
         if self.object.subclass == "Consegna":
             return ModificaConsegnaForm
         elif self.object.subclass == "Jolly":
             return ModificaJollyForm
+        elif self.object.subclass == "Bonus":
+            return ModificaBonusForm
 
     def get_initial(self):
         c = self.object.as_child()
         if self.object.subclass == "Consegna":
-            initial = {'problema': c.problema, 'risposta': c.risposta}
+            initial = {'squadra': c.squadra.num, 'problema': c.problema, 'risposta': c.risposta}
         elif self.object.subclass == "Jolly":
-            initial = {'jolly': c.problema}
+            initial = {'squadra': c.squadra.num, 'problema': c.problema}
+        elif self.object.subclass == "Bonus":
+            initial = {'squadra': c.squadra.num, 'risposta': c.punteggio}
         return initial
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['gara'] = self.object.gara
+        kwargs['user'] = self.request.user
+        return kwargs
+
     def get_success_url(self, **kwargs):
-        return reverse("engine:inserimento", kwargs={'pk': self.get_object().gara.pk})
+        return reverse(self.request.GET.get("redirect_to", "engine:inserimento"), kwargs={'pk': self.object.gara.pk})
 
     def form_valid(self, form):
         self.object = self.object.as_child()
         if self.object.subclass == "Consegna":
+            self.object.squadra = form.cleaned_data.get('squadra')
             self.object.problema = form.cleaned_data.get('problema')
             self.object.risposta = form.cleaned_data.get('risposta')
-            self.object.maybe_save()
         elif self.object.subclass == "Jolly":
-            self.object.problema = form.cleaned_data.get('jolly')
-            self.object.maybe_save()
+            self.object.squadra = form.cleaned_data.get('squadra')
+            self.object.problema = form.cleaned_data.get('problema')
+        elif self.object.subclass == "Bonus":
+            self.object.squadra = form.cleaned_data.get('squadra')
+            self.object.punteggio = form.cleaned_data.get('risposta')
+        self.object.creatore = self.request.user
+        try:
+            self.object.clean()
+        except Exception as e:
+            messages.warning(self.request, f"Modifica non effettuata. {e}")
+        else:
+            res = self.object.maybe_save()
+            if res[0]:
+                messages.info(self.request, "Modifica eseguita con successo")
+            else:
+                messages.warning(self.request, f"Modifica non effettuata. {res[1]}")
         return super().form_valid(form)
 
 
 class EliminaEventoView(CheckPermissionsMixin, DeleteView):
     model = Evento
 
-    def get_queryset(self):
-        qs = super().get_queryset()
-        return qs.filter(creatore=self.request.user)
-
     def test_func(self):
         self.object = self.get_object()
         return self.request.user.can_edit_or_delete(self.object)
 
     def get_success_url(self):
-        return reverse('engine:inserimento', kwargs={'pk': self.object.gara.pk})
+        return reverse(self.request.GET.get("redirect_to", "engine:inserimento"), kwargs={'pk': self.object.gara.pk})
+
+    def form_valid(self, form):
+        messages.info(self.request, "Evento eliminato con successo")
+        return super().form_valid(form)
 
 
 ####################################
@@ -401,9 +441,13 @@ class StatusView(DetailView):
         resp = {}
         resp['last_update'] = gara.get_last_update()
 
-        if "last_event" in request.GET:
-            resp['consegne'] = gara.get_consegne(request.GET["last_event"])
-            resp['jolly'] = gara.get_jolly(request.GET["last_event"])
+        if "last_consegna_id" in request.GET or "last_jolly_id" in request.GET or "last_bonus_id" in request.GET:
+            assert "last_consegna_id" in request.GET
+            resp['consegne'] = gara.get_consegne(request.GET["last_consegna_id"])
+            assert "last_jolly_id" in request.GET
+            resp['jolly'] = gara.get_jolly(request.GET["last_jolly_id"])
+            assert "last_bonus_id" in request.GET
+            resp['bonus'] = gara.get_bonus(request.GET["last_bonus_id"])
             return JsonResponse(resp)
 
         resp['nome'] = gara.nome
@@ -431,6 +475,7 @@ class StatusView(DetailView):
 
         resp['consegne'] = gara.get_consegne()
         resp['jolly'] = gara.get_jolly()
+        resp['bonus'] = gara.get_bonus()
 
         return JsonResponse(resp)
 
@@ -461,12 +506,6 @@ class StatoProblemiView(DetailView):
         context = super(StatoProblemiView, self).get_context_data(**kwargs)
         context['soluzioni'] = self.object.soluzioni.all().order_by("problema")
         return context
-
-
-class CronacaView(DetailView):
-    """ Visualizzazione stato problemi: quali sono stati risolti e quali no """
-    model = Gara
-    template_name = "classifiche/cronaca.html"
 
 
 class UnicaView(DetailView):

@@ -5,7 +5,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.utils import timezone
 from crispy_forms.helper import FormHelper
 
-from engine.models import Squadra, Soluzione, Jolly, Consegna
+from engine.models import Squadra, Soluzione, Jolly, Consegna, Bonus
 from dateutil.parser import parse
 from mathrace_interaction.journal_reader import journal_reader
 from mathrace_interaction.filter.strip_mathrace_only_attributes_from_imported_turing import (
@@ -84,31 +84,80 @@ class SquadraChoiceField(forms.ModelChoiceField):
         return obj.get_id_nome()
 
 
-class InserimentoForm(forms.Form):
-    problema = forms.IntegerField(min_value=1)
-    risposta = forms.IntegerField(min_value=0, max_value=9999, required=False)
-    jolly = forms.BooleanField(required=False)
+class QueryForm(forms.Form):
+    id_evento = forms.IntegerField(required=False, label="Id")
+    num_squadra = SquadraChoiceField(required=False, queryset=None, to_field_name="num")
+    problema = forms.CharField(required=False, help_text='Usare "B" per cercare i bonus')
+    risposta = forms.CharField(required=False, help_text='Usare "J" per cercare i jolly, "G" per cercare risposte giuste, "S" per cercare risposte sbagliate')
+
+    def __init__(self, *args, **kwargs):
+        self.gara = kwargs.pop('gara', None)
+        querystring_id_evento = kwargs.pop('querystring_id_evento', '')
+        querystring_num_squadra = kwargs.pop('querystring_num_squadra', '')
+        querystring_problema = kwargs.pop('querystring_problema', '')
+        querystring_risposta = kwargs.pop('querystring_risposta', '')
+        super(QueryForm, self).__init__(*args, **kwargs)
+        if self.gara:
+            self.fields['num_squadra'].queryset = self.gara.squadre.all()
+            self.fields['num_squadra'].widget.attrs.update({'autofocus': ''})
+        self.fields['id_evento'].initial = querystring_id_evento
+        self.fields['num_squadra'].initial = querystring_num_squadra
+        self.fields['problema'].initial = querystring_problema
+        self.fields['risposta'].initial = querystring_risposta
+
+
+class SquadraChoiceUserSubsetForm(forms.Form):
     squadra = SquadraChoiceField(required=True, queryset=None)
 
     def __init__(self, *args, **kwargs):
         self.gara = kwargs.pop('gara', None)
         self.user = kwargs.pop('user', None)
-        super(InserimentoForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         if self.gara:
             self.fields['squadra'].queryset = self.gara.get_squadre_inseribili(self.user)
             self.fields['squadra'].empty_label = None
             self.fields['squadra'].widget.attrs.update({'autofocus': ''})
+
+
+class InserimentoForm(SquadraChoiceUserSubsetForm):
+    problema = forms.IntegerField(min_value=1, required=False, help_text='Problema di cui si inserisce la risposta o il jolly. Lasciare vuoto se "Bonus manuale" è spuntato')
+    risposta = forms.IntegerField(required=False, help_text='Valore della risposta. Se "Jolly" è spuntato lasciare vuoto; se "Bonus manuale" è spuntato, inserire il valore del bonus')
+    jolly = forms.BooleanField(required=False)
+    bonus = forms.BooleanField(required=False, label="Bonus manuale")
 
     def clean(self):
         cleaned_data = super().clean()
         if self.errors:
             return cleaned_data
 
-        if bool(cleaned_data['jolly']) != bool(cleaned_data['risposta'] is None):
-            raise forms.ValidationError('Inserire la risposta o il jolly, ma non entrambi')
+        is_jolly = bool(cleaned_data['jolly'])
+        is_bonus = bool(cleaned_data['bonus'])
 
-        if bool(cleaned_data['jolly']) and Jolly.objects.filter(squadra = cleaned_data['squadra']).exists():
-            raise forms.ValidationError('Ė già stato inserito un jolly per la squadra')
+        has_problema = bool(cleaned_data['problema'] is not None)
+        has_risposta = bool(cleaned_data['risposta'] is not None)
+
+        if is_jolly and is_bonus:
+            raise forms.ValidationError('Inserire il bonus o il jolly, ma non entrambi')
+        if is_jolly:
+            if not has_problema:
+                raise forms.ValidationError('Inserire il problema')
+            if has_risposta:
+                raise forms.ValidationError('Inserire la risposta o il jolly, ma non entrambi')
+        elif is_bonus:
+            if not has_risposta:
+                raise forms.ValidationError('Inserire il valore numerico del punteggio del bonus')
+            if has_problema:
+                raise forms.ValidationError('Non inserire il problema quando si aggiunge un bonus')
+        else:
+            if not has_problema:
+                raise forms.ValidationError('Inserire il problema')
+            if not has_risposta:
+                raise forms.ValidationError('Inserire il valore numerico della risposta')
+            risposta = int(cleaned_data['risposta'])
+            if risposta < 0:
+                raise forms.ValidationError('La risposta deve essere non negativa')
+            if risposta > 9999:
+                raise forms.ValidationError('La risposta deve essere inferiore o uguale a 9999')
 
         obj = self.get_instance()
         obj.clean()
@@ -118,19 +167,26 @@ class InserimentoForm(forms.Form):
         if self.cleaned_data.get('jolly'):
             return Jolly(gara=self.gara, squadra=self.cleaned_data.get('squadra'),
                          problema=self.cleaned_data.get('problema'))
+        elif self.cleaned_data.get('bonus'):
+            return Bonus(gara=self.gara, squadra=self.cleaned_data.get('squadra'),
+                         punteggio=self.cleaned_data.get('risposta'))
         else:
             return Consegna(gara=self.gara, squadra=self.cleaned_data.get('squadra'),
                             problema=self.cleaned_data.get('problema'),
                             risposta=self.cleaned_data.get('risposta'))
 
 
-class ModificaConsegnaForm(forms.Form):
+class ModificaConsegnaForm(SquadraChoiceUserSubsetForm):
     problema = forms.IntegerField(min_value=1, max_value=50)
     risposta = forms.IntegerField(min_value=0, max_value=9999)
 
 
-class ModificaJollyForm(forms.Form):
-    jolly = forms.IntegerField(min_value=1, max_value=50)
+class ModificaJollyForm(SquadraChoiceUserSubsetForm):
+    problema = forms.IntegerField(min_value=1, max_value=50)
+
+
+class ModificaBonusForm(SquadraChoiceUserSubsetForm):
+    risposta = forms.IntegerField()
 
 
 class UploadGaraForm(forms.Form):

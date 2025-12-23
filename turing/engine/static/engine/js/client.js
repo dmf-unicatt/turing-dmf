@@ -46,7 +46,9 @@ class Gara {
         if (data.inizio == null) return;
 
         this.last_update = new Date(data.last_update);
-        this.last_event = 0;
+        this.last_consegna_id = 0;
+        this.last_jolly_id = 0;
+        this.last_bonus_id = 0;
         this._time = this.inizio; // Parte a calcolare dall'inizio della gara
         this.fine = new Date(data.fine);
         this.tempo_blocco = new Date(data.tempo_blocco);
@@ -57,14 +59,17 @@ class Gara {
             this.add_jolly(data.jolly[i])
         }
 
-        this.futuro = [];
-        for (var i in data.consegne) {
-            this.add_event(data.consegne[i]);
+        this.futuro_bonus = [];
+        this.passato_bonus = [];
+        for (var i in data.bonus) {
+            this.add_bonus(data.bonus[i])
         }
 
-        this.passato = [];
-
-        console.log(this);
+        this.futuro_consegne = [];
+        this.passato_consegne = [];
+        for (var i in data.consegne) {
+            this.add_consegna(data.consegne[i]);
+        }
     }
 
     add_jolly(event) {
@@ -72,12 +77,17 @@ class Gara {
         var prob = event.problema
         this.squadre[sq_idx].jolly = this.squadre[sq_idx].risposte[prob];
         this.squadre[sq_idx].jolly.is_jolly = true;
-        this.last_event = event.id
+        this.last_jolly_id = event.id;
     }
 
-    add_event(event) {
-        this.futuro.push(new Evento(this, event));
-        this.last_event = event.id;
+    add_consegna(event) {
+        this.futuro_consegne.push(new Consegna(this, event));
+        this.last_consegna_id = event.id;
+    }
+
+    add_bonus(event) {
+        this.futuro_bonus.push(new Bonus(this, event));
+        this.last_bonus_id = event.id;
     }
 
     get time() {
@@ -85,45 +95,56 @@ class Gara {
     }
 
     set time(value) {
-        // Si sposta al tempo specificato, calcolando gli eventi in mezzo
-        if (value >= this.time) {
+        var nel_futuro = (value >= this.time);  // necessario memorizzare perchè this.update_events cambia internamente il valore a this.time
+        console.log("updating consegne");
+        this.update_events(value, nel_futuro, this.futuro_consegne, this.passato_consegne);
+        console.log("updating bonus");
+        this.update_events(value, nel_futuro, this.futuro_bonus, this.passato_bonus);
+        // Finalmente, setta il tempo della gara
+        this._time = value;
+    }
+
+    update_events(new_time, nel_futuro, futuro, passato) {
+        // Si sposta al tempo specificato, calcolando gli eventi (consegne e bonus) in mezzo
+        if (nel_futuro) {
             // Stiamo andando in avanti
-            while (this.futuro.length > 0 && this.futuro[0].orario <= value) {
-                // Processa eventi, finché il prossimo evento non è troppo avanti
-                var e = this.futuro[0];
+            console.log(futuro.length, passato.length, "futuro");
+            if (futuro.length > 0) console.log(futuro[0].orario, new_time, "futuro");
+            while (futuro.length > 0 && futuro[0].orario <= new_time) {
+                // Processa eventi, finché il prossimo non è troppo avanti
+                var e = futuro[0];
                 this._time = e.orario // Porta la gara all'ora della consegna
 
-
-                if (e.pts_prec == null) {
-                    // Se non era già stato fatto, calcola la posizione attuale e il punteggio
-                    e.pts_prec = e.squadra.punteggio;
-                    e.pos_prec = e.squadra.posizione(this.classifica);
+                if (e instanceof Consegna) {
+                    e.squadra.risposte[e.problema.id].consegna(e.giusta);
+                }
+                else if (e instanceof Bonus) {
+                    e.squadra.aggiungi_bonus_manuale(e.punteggio)
                 }
 
-                e.squadra.risposte[e.problema.id].consegna(e.giusta);
-
-                if (e.pts_succ == null) {
-                    e.pts_succ = e.squadra.punteggio;
-                    e.pos_succ = e.squadra.posizione(this.classifica);
-                }
-                this.passato.push(e);
-                this.futuro.shift();
+                passato.push(e);
+                futuro.shift();
             }
         }
         else {
             // Stiamo tornando indietro
-            while (this.passato.length > 0 && this.passato[this.passato.length-1].orario > value) {
-                var e = this.passato[this.passato.length-1];
+            console.log(futuro.length, passato.length, "passato");
+            if (passato.length > 0) console.log(passato[passato.length-1].orario, new_time, "passato");
+            while (passato.length > 0 && passato[passato.length-1].orario > new_time) {
+                var e = passato[passato.length-1];
                 this._time = e.orario // Porta la gara all'ora della consegna
 
-                e.squadra.risposte[e.problema.id].undo_consegna(e.giusta);
+                if (e instanceof Consegna) {
+                    e.squadra.risposte[e.problema.id].undo_consegna(e.giusta);
+                }
+                else if (e instanceof Bonus) {
+                    e.squadra.rimuovi_bonus_manuale(e.punteggio)
+                }
 
-                this.passato.pop();
-                this.futuro.unshift(e);
+                passato.pop();
+                futuro.unshift(e);
             }
         }
-        // Finalmente, setta il tempo della gara
-        this._time = value;
     }
 
     get progess() {
@@ -365,6 +386,7 @@ class Squadra {
         for(var i in this.gara.problemi) {
             this.risposte[i] = new Risposta(this, this.gara.problemi[i])
         }
+        this.bonus_manuale = 0;
         this._risposte_corrette = 0;
         this._en_plein_bonus = 0;
     }
@@ -395,6 +417,14 @@ class Squadra {
         }
     }
 
+    aggiungi_bonus_manuale(punteggio) {
+        this.bonus_manuale += punteggio;
+    }
+
+    rimuovi_bonus_manuale(punteggio) {
+        this.bonus_manuale -= punteggio;
+    }
+
     get punteggio() {
         // Calcola il punteggio della squadra
         var pts = this.gara.calcola_punteggio_tempo_iniziale(this.gara.n_prob, this.gara.penalita_errore);
@@ -402,6 +432,7 @@ class Squadra {
         for(var i in this.risposte) {
             pts += this.risposte[i].punteggio
         }
+        pts += this.bonus_manuale;
         return pts
     }
 
@@ -416,60 +447,31 @@ class Squadra {
     }
 }
 
-class Evento {
+class Consegna {
     // Descrive una consegna, e contiene le informazioni necessarie per generare un commento
     constructor(gara, data) {
         this.gara = gara;
-        if (data.orario > gara.fine)
+        this.orario = new Date(data.orario);
+        if (this.orario > gara.fine)
             // Se l'evento è avvenuto dopo la fine, fallo accadere alla fine.
             this.orario = new Date(gara.fine);
-        else
-            this.orario = new Date(data.orario);
         this.squadra = gara.squadre[data.squadra];
         this.problema = gara.problemi[data.problema];
         this.giusta = data.giusta;
-        this.pos_prec = null;
-        this.pos_succ = null;
-        this.pts_prec = null;
-        this.pts_succ = null;
     }
+}
 
-    get frase() {
-        // jolly risolto
-        if (this.giusta && this.squadra.risposte[this.problema.id].is_jolly) {
-          if (this.pos_succ != this.pos_prec){
-            return `La squadra ${this.squadra.nome} risolve il proprio jolly, guadagnando ${this.pts_succ-this.pts_prec} punti e salendo in posizione ${this.pos_succ}`;
-          }
-          else{
-            return `La squadra ${this.squadra.nome} risolve il proprio jolly, guadagnando ${this.pts_succ-this.pts_prec} punti, ma rimanendo in posizione ${this.pos_succ}`;
-          }
-        }
-
-        // alta classifica
-        if (this.pos_succ<5) {
-            if (this.pts_prec<this.pts_succ)
-              if (this.pos_succ != this.pos_prec)
-                return `La squadra ${this.squadra.nome} risolve il problema ${this.problema.id} e sale in posizione ${this.pos_succ}`;
-              else
-                return `La squadra ${this.squadra.nome} risolve il problema ${this.problema.id}, ma rimane in posizione ${this.pos_succ}`;
-            else
-              if (this.pos_succ != this.pos_prec)
-                return `La squadra ${this.squadra.nome} sbaglia il problema ${this.problema.id} e scende in posizione ${this.pos_succ}`;
-              else
-                return `La squadra ${this.squadra.nome} sbaglia il problema ${this.problema.id}, ma rimane in posizione ${this.pos_succ}`;
-        }
-
-        // molti punti?
-        if (this.pts_succ-this.pts_prec>99)
-          if (this.pos_succ != this.pos_prec)
-            return `La squadra ${this.squadra.nome} risolve il problema ${this.problema.id}, guadagnando ${this.pts_succ-this.pts_prec} punti e salendo in posizione ${this.pos_succ}`;
-          else
-            return `La squadra ${this.squadra.nome} risolve il problema ${this.problema.id}, guadagnando ${this.pts_succ-this.pts_prec} punti, ma rimanendo in posizione ${this.pos_succ}`;
-
-        // se non succede niente di interessante ritorna null
-        return null;
+class Bonus {
+    // Descrive un bonus manuale
+    constructor(gara, data) {
+        this.gara = gara;
+        this.orario = new Date(data.orario);
+        if (this.orario > gara.fine)
+            // Se l'evento è avvenuto dopo la fine, fallo accadere alla fine.
+            this.orario = new Date(gara.fine);
+        this.squadra = gara.squadre[data.squadra];
+        this.punteggio = data.punteggio;
     }
-
 }
 
 class ClassificaClient {
@@ -500,8 +502,11 @@ class ClassificaClient {
             this.init();
             return
         }
-        var last_event_before = this.gara.last_event;
-        $.getJSON(this.url, {last_event: last_event_before}).done(function(data){
+        var last_consegna_id_before = this.gara.last_consegna_id;
+        var last_jolly_id_before = this.gara.last_jolly_id;
+        var last_bonus_id_before = this.gara.last_bonus_id;
+        console.log("Last consegna ID is", last_consegna_id_before, "- last jolly ID is", last_jolly_id_before, "- last bonus ID is", last_bonus_id_before);
+        $.getJSON(this.url, {last_consegna_id: last_consegna_id_before, last_jolly_id: last_jolly_id_before, last_bonus_id: last_bonus_id_before}).done(function(data){
             var new_lu = new Date(data.last_update);
             if (new_lu > self.gara.last_update) {
                 // C'è stata una modifica grossa, serve un ricalcolo totale
@@ -509,14 +514,17 @@ class ClassificaClient {
                 return;
             }
             // Evitiamo di riconteggiare alcuni eventi già arrivati; succede se la rete sta laggando
-            if (self.gara.last_event > last_event_before) return;
+            if (self.gara.last_consegna_id > last_consegna_id_before || self.gara.last_jolly_id > last_jolly_id_before || self.gara.last_bonus_id > last_bonus_id_before) return;
 
             // Aggiungiamo le nuove consegne e jolly
             for (var i in data.consegne) {
-                self.gara.add_event(data.consegne[i]);
+                self.gara.add_consegna(data.consegne[i]);
             }
             for (var i in data.jolly) {
                 self.gara.add_jolly(data.jolly[i])
+            }
+            for (var i in data.bonus) {
+                self.gara.add_bonus(data.bonus[i])
             }
             self.progress = progress;
         });
@@ -538,7 +546,6 @@ class ClassificaClient {
             case 'squadre': this._mostraClassifica(); break;
             case 'problemi': this._mostraPuntiProblemi(); break;
             case 'stato': this._mostraStatoProblemi(); break;
-            case 'cronaca': this._mostraCronaca(); break;
             case 'unica': this._mostraUnica(); break;
         }
         document.dispatchEvent(new Event('updated'));
@@ -638,44 +645,6 @@ class ClassificaClient {
         }
     }
 
-    _mostraCronaca() {
-        var classifica = this.gara.classifica
-        var max = classifica.length > 0 ? classifica[0].pts : 0;
-        max = Math.max(max,this.gara.n_prob*10*4);
-
-        for (const sq_id of this.following) {
-            $("#team-"+sq_id).addClass("following");
-        }
-
-        for (var i in classifica) {
-            var sq = classifica[i].squadra
-            $("#team-"+sq.id).css('width', Math.round(classifica[i].pts/max*1000)/10+'%');
-            $("#label-"+sq.id).text(sq.posizione(classifica) + "° - " + sq.nome);
-            $("#label-points-"+sq.id).text(classifica[i].pts);
-        }
-
-        var h = $("#div-1").outerHeight();
-        var options = {"duration": 800, "queue": false};
-        if (this.autoplay) options = {"duration": 100, "queue": false, "easing": "linear"};
-        for (i=0; i<classifica.length; i++) {
-            var sq = classifica[i].squadra;
-            var dist = h*(i+1-sq.id);
-            $("#div-"+sq.id).animate({
-                top: dist
-            }, options);
-        }
-
-        if (this.gara.inizio != null) {
-            $("#frasi").empty();
-            $("#frasi").prepend('<li class="list-group-item">Gara iniziata!</li>');
-            for (var e in this.gara.passato) {
-                var f = this.gara.passato[e].frase;
-                if (f!=null) $("#frasi").prepend('<li class="list-group-item">'+f+'</li>');
-            }
-        }
-
-    }
-
     _mostraUnica() {
       var classifica = this.gara.classifica
       var punti_problemi = this.gara.punti_problemi
@@ -713,6 +682,8 @@ class ClassificaClient {
 
               $("#cell-"+riga+"-"+j).html(text);
           }
+          if (sq.bonus_manuale + sq._en_plein_bonus != 0) $("#cell-"+riga+"-bonus").html("<span><b>" + (sq.bonus_manuale + sq._en_plein_bonus ) + "</b></span>");
+          else $("#cell-"+riga+"-bonus").html("");
 
           if (this.following.includes(sq.id)) $("#riga-"+riga).addClass("following");
           else $("#riga-"+riga).removeClass("following");
