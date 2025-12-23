@@ -517,12 +517,12 @@ class LiveTests(StaticLiveServerTestCase, TuringTests):
             prob = random.randint(1, m)
             r = random.randint(0, 1)
             self.consegna(squadra=sq, problema=prob, risposta=r)
+            if r != 0:
+                points[sq-1] -= 10
             if prob in solved[sq-1]: continue
             if r == 0:
                 points[sq-1] += problem_points[prob-1]
                 solved[sq-1].add(prob)
-            else:
-                points[sq-1] -= 10
 
         self.go_to_minute(110)
         for i in range(m):
@@ -641,13 +641,13 @@ class LiveTests(StaticLiveServerTestCase, TuringTests):
         self.consegna(squadra=1, problema=2, risposta=43)
         self.check_punti_squadra(squadra=1, expected=50-10-10)
 
-        # Correggi la prima: la penalità della seconda sparisce
+        # Correggi la prima: la penalità della seconda NON sparisce
         self.modifica(evento, risposta=42)
-        self.check_punti_squadra(squadra=1, expected=50+40)
+        self.check_punti_squadra(squadra=1, expected=50+40-10)
 
-        # Un errore successivo non viene comunque considerato
+        # Un errore successivo viene comunque considerato
         self.consegna(squadra=1, problema=2, risposta=43)
-        self.check_punti_squadra(squadra=1, expected=50+40)
+        self.check_punti_squadra(squadra=1, expected=50+40-10-10)
 
     def test_modifica_consegna_due_squadre(self):
         self.crea_gara(5, n_blocco=10, k_blocco=10, soluzioni=[0, 0])
