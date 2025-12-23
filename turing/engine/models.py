@@ -546,6 +546,7 @@ class Consegna(Evento):
                 frase = "La risposta che hai consegnato è esatta!"
             else:
                 frase = "La risposta che hai consegnato è errata."
+            frase += f" Il numero di protocollo è {self.pk} e la data di inserimento è {self.orario.astimezone(TIME_ZONE_SETTING)}."
             return (True, frase)
 
         return res
@@ -581,4 +582,5 @@ class Jolly(Evento):
 
         if (res[0]):
             self.save()
+            res = (res[0], res[1] + f". Il numero di protocollo è {self.pk} e la data di inserimento è {self.orario.astimezone(TIME_ZONE_SETTING)}.")
         return res
