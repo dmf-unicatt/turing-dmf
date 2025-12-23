@@ -44,6 +44,11 @@
     Visualizzazione unica per un range specifico di posizioni (querystring <code>?start_pos=2&end_pos=5</code>)
 </a>
 </li>
+<li>
+<a class="nohover" href="{% url 'engine:classifica-unica' object.pk %}?blink=6" target="_blank">
+    Visualizzazione unica con lampeggi per ultime risposte e frecce per cambio posizione (querystring <code>?blink=6</code>)
+</a>
+</li>
 </ul>
 {% include 'gara/link_querystring.html' with engine_name='engine:classifica-unica' prefix='Visualizzazione unica' %}
 {% endif %}

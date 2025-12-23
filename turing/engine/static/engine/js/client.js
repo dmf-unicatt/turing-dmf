@@ -70,6 +70,8 @@ class Gara {
         for (var i in data.consegne) {
             this.add_consegna(data.consegne[i]);
         }
+        this.futuro_consegne_posizioni = [];
+        this.passato_consegne_posizioni = [];
     }
 
     add_jolly(event) {
@@ -97,14 +99,14 @@ class Gara {
     set time(value) {
         var nel_futuro = (value >= this.time);  // necessario memorizzare perchè this.update_events cambia internamente il valore a this.time
         console.log("updating consegne");
-        this.update_events(value, nel_futuro, this.futuro_consegne, this.passato_consegne);
+        this.update_events(value, nel_futuro, this.futuro_consegne, this.passato_consegne, this.futuro_consegne_posizioni, this.passato_consegne_posizioni);
         console.log("updating bonus");
-        this.update_events(value, nel_futuro, this.futuro_bonus, this.passato_bonus);
+        this.update_events(value, nel_futuro, this.futuro_bonus, this.passato_bonus, null, null);
         // Finalmente, setta il tempo della gara
         this._time = value;
     }
 
-    update_events(new_time, nel_futuro, futuro, passato) {
+    update_events(new_time, nel_futuro, futuro, passato, futuro_posizioni, passato_posizioni) {
         // Si sposta al tempo specificato, calcolando gli eventi (consegne e bonus) in mezzo
         if (nel_futuro) {
             // Stiamo andando in avanti
@@ -124,6 +126,17 @@ class Gara {
 
                 passato.push(e);
                 futuro.shift();
+
+                if (passato_posizioni !== null && futuro_posizioni !== null) {
+                    var classifica_e;
+                    if (futuro_posizioni.length > 0) {
+                        classifica_e = futuro_posizioni.shift();
+                    }
+                    else {
+                        classifica_e = this.get_classifica_posizioni(this.classifica);
+                    }
+                    passato_posizioni.push(classifica_e);
+                }
             }
         }
         else {
@@ -143,6 +156,16 @@ class Gara {
 
                 passato.pop();
                 futuro.unshift(e);
+
+                if (passato_posizioni !== null && futuro_posizioni !== null) {
+                    if (passato_posizioni.length > 0) {
+                        classifica_e = passato_posizioni.pop();
+                    }
+                    else {
+                        classifica_e = this.get_classifica_posizioni(this.classifica);
+                    }
+                    futuro_posizioni.unshift(classifica_e);
+                }
             }
         }
     }
@@ -210,6 +233,15 @@ class Gara {
         // Ordina secondo il regolamento
         ret.sort(this.custom_sort)
         return ret
+    }
+
+    get_classifica_posizioni(classifica) {
+        var posizioni = new Array(classifica.length).fill(null);
+        for (var i = 0; i < classifica.length; i++) {
+            var sq = classifica[i].squadra;
+            posizioni[sq.id - 1] = i + 1;
+        }
+        return posizioni;
     }
 
     get punti_problemi() {
@@ -435,16 +467,6 @@ class Squadra {
         pts += this.bonus_manuale;
         return pts
     }
-
-    posizione(classifica) {
-        var pos = 1;
-        for(var i=0; classifica[i].squadra!=this; i++) {
-            if (!classifica[i].squadra.ospite) {
-                pos += 1;
-            }
-        }
-        return pos
-    }
 }
 
 class Consegna {
@@ -482,6 +504,10 @@ class ClassificaClient {
         this.following = following;
         this.autoplay = 0;
         this.recalculating = false;
+        // Impostazione specifica della classifica unica
+        var urlParams = new URLSearchParams(window.location.search);
+        var blink = urlParams.get("blink");
+        this.blink = (blink && !isNaN(blink) && Number.isInteger(parseFloat(blink))) ? parseInt(blink) : 0;
     }
 
     init() {
@@ -565,7 +591,8 @@ class ClassificaClient {
     }
 
     _mostraClassifica() {
-        var classifica = this.gara.classifica
+        var classifica = this.gara.classifica;
+        var classifica_posizioni = this.gara.get_classifica_posizioni(classifica);
         var max = classifica.length > 0 ? classifica[0].pts : 0;
         max = Math.max(max,this.gara.n_prob*10*4);
 
@@ -573,7 +600,7 @@ class ClassificaClient {
         for (var i in classifica) {
             var sq = classifica[i].squadra;
             var pts = classifica[i].pts;
-            var pos = sq.posizione(classifica);
+            var pos = classifica_posizioni[sq.id-1];
             var elapsed = (this.gara.time - this.gara.inizio)/1000;
             if (this.gara.cutoff != null && this.gara.cutoff >= pos && !sq.ospite && elapsed >= 60*20)
                 $("#team-"+sq.id).addClass("cutoff");
@@ -587,16 +614,6 @@ class ClassificaClient {
         for (const sq_id of this.following) {
             $("#team-"+sq_id).addClass("following");
         }
-
-        // if (this.cutoff == null) {
-        //     $("#cutoff").addClass('d-none');
-        // }
-        // else {
-        //     var bRect = $("#team-"+cutoff_team.id)[0].getBoundingClientRect();
-        //     var pos = $("#classifica-container")[0].getBoundingClientRect();
-        //     $("#cutoff").css('left', (bRect.right-pos.left-1)+'px');
-        // }
-        // Spara un evento per comunicare che la pagina si è aggiornata
     }
 
     _mostraPuntiProblemi() {
@@ -682,29 +699,73 @@ class ClassificaClient {
               $("#giuste-"+problema).addClass("progress-bar-light");
           }
       }
-      this._mostraUnicaOScorrimento(false);
+      // Chiama l'implementazione comune
+      var classifica = this.gara.classifica;
+      var classifica_posizioni = this.gara.get_classifica_posizioni(classifica);
+      this._mostraUnicaOScorrimento(classifica, classifica_posizioni, false);
+      // Aggiungi lampeggio alla risposta
+      var passato_length = this.gara.passato_consegne.length;
+      var oldest_blink = Math.min(this.blink, passato_length);
+      for (var i = passato_length - oldest_blink; i < passato_length; i++) {
+          var e = this.gara.passato_consegne[i];
+          var sq = e.squadra;
+          var r = e.problema;
+          $("#cell-" + classifica_posizioni[sq.id - 1] + "-" + r.id).addClass("blink");
+      }
+      // Aggiungi frecce per il cambiamento di posizione in classifica
+      if (this.blink > 0) {
+          $("#freccia-head").show();
+          for (var i in classifica) {
+              var riga = parseInt(i)+1;
+              $("#freccia-"+riga).show();
+          }
+          $("#freccia-foot").show();
+      }
+      if (oldest_blink > 0) {
+          var classifica_posizioni_oldest_blink = this.gara.passato_consegne_posizioni[passato_length - oldest_blink];
+          for (var i in classifica) {
+              var sq = classifica[i].squadra;
+              var riga = parseInt(i)+1;
+              var differenza_posizioni = classifica_posizioni_oldest_blink[sq.id-1] - classifica_posizioni[sq.id-1];
+              var freccia;
+              if (differenza_posizioni > 0) {
+                  freccia = ClassificaClient.freccia_su;
+              }
+              else if (differenza_posizioni < 0) {
+                  freccia = ClassificaClient.freccia_giu;
+              }
+              else {
+                  freccia = ClassificaClient.uguale;
+              }
+              $("#freccia-"+riga).html(freccia);
+          }
+      }
+      else {
+          $("#freccia-"+riga).html();
+      }
     }
 
     _mostraScorrimento() {
-      this._mostraUnicaOScorrimento(true);
+      var classifica = this.gara.classifica;
+      var classifica_posizioni = this.gara.get_classifica_posizioni(classifica);
+      this._mostraUnicaOScorrimento(classifica, classifica_posizioni, true);
     }
 
-    _mostraUnicaOScorrimento(reverse) {
-      var classifica = this.gara.classifica;
+    _mostraUnicaOScorrimento(classifica, classifica_posizioni, reverse) {
       var length = classifica.length;
       for (var i in classifica) {
           var sq = classifica[reverse ? length - 1 - parseInt(i) : parseInt(i)].squadra;
           var riga = parseInt(i) + 1;
           if (sq.ospite) $("#riga-"+riga).addClass("text-muted");
           else $("#riga-"+riga).removeClass("text-muted");
-          $("#pos-"+riga).html(sq.posizione(classifica)+"° ");
+          $("#pos-"+riga).html(classifica_posizioni[sq.id-1]+"° ");
           $("#nome-"+riga).html(sq.nome);
           $("#num-"+riga).html(sq.id);
           $("#punt-"+riga).html(""+sq.punteggio);
           for (var j in sq.risposte) {
               var r = sq.risposte[j];
               var text = "";
-              $("#cell-"+riga+"-"+j).removeClass("wrong-answer right-answer")
+              $("#cell-"+riga+"-"+j).removeClass("wrong-answer right-answer blink")
 
               if (r.risolto) {
                   $("#cell-"+riga+"-"+j).addClass("right-answer");
@@ -745,7 +806,19 @@ class ClassificaClient {
     }
 }
 
-ClassificaClient.stella_jolly = `<span class="my-fa-stack">
+ClassificaClient.stella_jolly = `<span class="jolly-fa-stack">
     <i class="fas fa-star fa-stack-1x fa-inverse" style="color:yellow"></i>
     <i class="far fa-star fa-stack-1x" style="color:black"></i>
+</span>`;
+
+ClassificaClient.freccia_su = `<span class="arrow-fa-stack">
+    <i class="fas fa-arrow-up" style="color:forestgreen"></i>
+</span>`;
+
+ClassificaClient.freccia_giu = `<span class="arrow-fa-stack">
+    <i class="fas fa-arrow-down" style="color:firebrick"></i>
+</span>`;
+
+ClassificaClient.uguale = `<span class="arrow-fa-stack">
+    <i class="fas fa-equals" style="color:#212529"></i>
 </span>`;

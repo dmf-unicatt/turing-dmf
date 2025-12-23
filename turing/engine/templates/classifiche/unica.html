@@ -14,6 +14,7 @@
     <table class="table table-striped table-bordered table-sm maybe-fixed text-center">
         <thead class="thead-light"><tr>
             <th scope="col" style="width:2.5%">Pos.</th>
+            <th scope="col" style="display: none; width:2.5%" id="freccia-head"></th>
             <th scope="col" style="width:8%">Squadra</th>
             <th scope="col" style="display: none;">Num. squadra</th>
             <th scope="col" style="width:3%">Punt.</th>
@@ -30,6 +31,7 @@
             <tr id="riga-{{sq.num}}" style="display: none;" >
             {% endif %}
               <th scope="row" style="white-space:pre" id="pos-{{sq.num}}">°</th>
+              <th scope="row" style="display: none;" id="freccia-{{sq.num}}"></th>
               <th scope="row" class="text-truncate squadra" style="white-space:pre" id="nome-{{sq.num}}"></th>
               <th scope="row" style="display: none;" id="num-{{sq.num}}">{{sq.num}}</th>
               <th scope="row" style="white-space:pre" id="punt-{{sq.num}}"></th>
@@ -42,6 +44,7 @@
         </tbody>
         <thead class="thead-light"><tr>
             <th scope="row"></th>
+            <th scope="row" style="display: none;" id="freccia-foot"></th>
             <th scope="row"></th>
             <th scope="row" style="display: none;"></th>
             <th scope="row"></th>
