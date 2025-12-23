@@ -60,11 +60,11 @@ class TuringClassificationSelenium:
 
     def __init__(self, root_url: str, race_id: int, max_wait: float) -> None:
         options = selenium.webdriver.ChromeOptions()
-        options.add_argument("--no-sandbox")  # type: ignore[no-untyped-call]
-        options.add_argument("--window-size=1920,1080")  # type: ignore[no-untyped-call]
-        options.add_argument("--headless")  # type: ignore[no-untyped-call]
-        options.add_argument("--disable-gpu")  # type: ignore[no-untyped-call]
-        options.add_argument("--disable-dev-shm-usage")  # type: ignore[no-untyped-call]
+        options.add_argument("--no-sandbox")
+        options.add_argument("--window-size=1920,1080")
+        options.add_argument("--headless")
+        options.add_argument("--disable-gpu")
+        options.add_argument("--disable-dev-shm-usage")
         self._browser = selenium.webdriver.Chrome(options=options)
         self._root_url = root_url
         self._race_id = race_id
@@ -134,7 +134,7 @@ class TuringClassificationSelenium:
         """Wait for an element to be present on the page."""
         self.ensure_unlocked()
         selenium.webdriver.support.wait.WebDriverWait(self._browser, self._max_wait).until(
-            EC.presence_of_element_located((by, value)))  # type: ignore[no-untyped-call]
+            EC.presence_of_element_located((by, value)))
 
     def _wait_for_classification_timer(self, value: str) -> None:
         """Wait for classification timer to be greater than or equal to a certain value."""
