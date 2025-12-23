@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block head %}
+<script src="{% static "engine/js/client.js" %}"></script>
+{% endblock %}
+
+{% block css %}<link href="{% static 'engine/css/classifiche.css' %}" rel="stylesheet" type="text/css" >{% endblock %}
+
+{% block content %}
+{% if object.inizio is not null %}
+{% block main %}{% endblock %}
+
+<script>
+document.updated = false;
+document.addEventListener("updated", function(e) {
+  document.updated = true;
+});
+$(document).ready(function() {
+    var url = "{% url 'engine:status' object.pk %}";
+    var client = new ClassificaClient(url, '{% block class_type %}{% endblock %}');
+    client.init();
+    {% if object.finished %}
+    $("#myRange").on('input', function() {
+        client.progress = this.value/1000;
+    });
+    $("#play").click(function() {
+        client.toggleReplay(this, "myRange")
+    });
+
+    {% else %}
+    setInterval(function() {client.update()}, 3000);
+    {% endif %}
+});
+
+</script>
+{% else %}
+<p>La classifica non è disponibile prima dell'inizio della gara</p>
+{% endif %}
+{% endblock %}

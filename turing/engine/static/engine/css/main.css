@@ -1,0 +1,35 @@
+body {
+    font-family: 'Lato', sans-serif !important;
+}
+
+.mb-3, .my-3 {
+    margin-top: 1rem;
+}
+
+.container-fluid, .container {
+    margin-top: 1rem
+}
+
+.dropdown:hover>.dropdown-menu {
+    display: block;
+}
+
+.dropdown-menu {
+    width: 300px !important;
+    padding: 20px !important;
+}
+
+@media (min-width:900px) {
+    .maybe-fixed {
+        table-layout: fixed
+    }
+}
+
+a.nohover:hover {
+    text-decoration: none;
+}
+
+.multi-form-control {
+    display: inline-block;
+    width: auto;
+}

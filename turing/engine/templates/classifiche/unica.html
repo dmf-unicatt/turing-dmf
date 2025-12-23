@@ -1,0 +1,46 @@
+{% extends "classifiche/class_template.html" %}
+
+{% block title %}Schermata unica {{object.nome}}{% endblock %}
+
+{% block class_type %}unica{% endblock %}
+
+{% block main %}
+<h3>Gara: <a href="{% url 'engine:gara-detail' object.pk %}">{{object.nome}}</a> - visualizzazione unica</h3>
+<div class="container-fluid">
+  <div class="row no-gutters justify-content-end">
+      <h3 id="orologio">##:##:##</h3>
+  </div>
+    <div class="table-responsive">
+    <table class="table table-striped table-bordered table-sm maybe-fixed text-center">
+        <thead class="thead-light"><tr>
+            <th scope="col" style="width:2.5%">Pos.</th>
+            <th scope="col" style="width:8%">Squadra</th>
+            <th scope="col" style="width:3%">Punt.</th>
+            {% for s in soluzioni %}
+            <th scope="col" style="white-space:pre" id="pr-{{s.problema}}">#{{s.problema|stringformat:"02d"}}</th>
+            {% endfor %}
+        </tr></thead>
+        <tbody>
+            {% for sq in object.get_squadre_order %}
+            <tr id="riga-{{sq.num}}">
+              <th scope="row" style="white-space:pre" id="pos-{{sq.num}}">1°</th>
+              <th scope="row" class="text-truncate squadra" style="white-space:pre" id="nome-{{sq.num}}">{{sq.nome}}</th>
+              <th scope="row" style="white-space:pre" id="punt-{{sq.num}}"></th>
+                {% for s in soluzioni %}
+                  <td id="cell-{{sq.num}}-{{s.problema}}"></td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+
+    {% if object.finished %}
+    <div class="row pt-3 no-gutters">
+        <input type="range" min="0" max="1000" value="1000"  id="myRange">
+        <button id="play" class="ml-2"><i class="fas fa-play"></i></button>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

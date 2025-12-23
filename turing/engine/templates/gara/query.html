@@ -1,0 +1,80 @@
+{% extends "basegara.html" %}
+{% load static %}
+
+{% block head %}
+{% endblock %}
+
+{% block title %}Query {{object.nome}}{% endblock %}
+
+
+{% block content %}
+
+
+<div class="container">
+
+<h3>Gara: <a href="{% url 'engine:gara-detail' object.pk %}">{{object.nome}}</a> - query eventi</h3>
+
+<form>
+    <div class="form-row">
+        <div class="form-group col-md-6">
+          <input type="text" id="qsquadra" name="squadra" class="form-control" placeholder="Squadra">
+        </div>
+        <div class="col-md-3">
+            <div class="form-group">
+              <input type="text" id="qproblema" name="problema" class="form-control" placeholder="Problema">
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="form-group">
+              <input type="text" id="qrisposta" name="risposta" class="form-control" placeholder="Risposta">
+            </div>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Filtra</button>
+</form>
+  <div class="card mb-3" style="top: 30px">
+    <div class="card-header">
+      <i class="fas fa-table"></i>
+      Risposte consegnate
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+          <thead>
+            <tr>
+              <th>Tipo</th>
+              <th>ID Squadra</th>
+              <th>Squadra</th>
+              <th>Problema</th>
+              <th>Valore</th>
+              <th>Orario</th>
+            </tr>
+          </thead>
+          <tbody>
+              {% for e in eventi %}
+            <tr id="event{{e.pk}}">
+                <td scope="row">{{e.subclass}}</<td>
+                <td scope="row">{{e.squadra.num}}</td>
+                <td scope="row">{{e.squadra.nome}}</td>
+                <td scope="row">
+                  <span class="event-static">{{e.problema}}</span>
+                </td>
+                {% if e.get_valore == "J" %}
+                  <td scope="row">J</td>
+                {% else %}
+                  <td scope="row">
+                    <span class="event-static">{{e.get_valore}}</span>
+                  </td>
+                {% endif %}
+                <td scope="row">{{e.orario}}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,115 @@
+{% extends "baseheader.html" %}
+
+{% block title %}Turing homepage{% endblock %}
+
+{% block content %}
+
+{% if gare_attive %}
+<div id="wrapper">
+  <div class="card mb-3">
+    <div class="card-header">
+      <h5 class="pr-3"><i class="fas fa-table"></i>
+      Gare in corso</h5>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+          <thead>
+            <tr>
+              <th>Id</th>
+              <th>Nome</th>
+              <th>Testo</th>
+              <th>Inizio</th>
+              <th>Fine</th>
+            </tr>
+          </thead>
+          <tbody>
+              {% for gara in gare_attive %}
+            <tr>
+              <td>{{gara.pk}}</td>
+              <td><a href="{% url 'engine:gara-detail' gara.pk%}">{{gara.nome}}</a></td>
+              <td>{% if gara.testo %}<a href="{{gara.testo}}" target=_blank><i class="fas fa-file-pdf"></i></a>{% else %}<i class="fas fa-ban"></i>{% endif %}</td>
+              <td>{{gara.inizio}}</td>
+              <td>{{gara.get_ora_fine}}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<div id="wrapper">
+  <div class="card mb-3">
+    <div class="card-header">
+      <div class="d-flex align-items-baseline justify-content-between">
+        <h5 class="pr-3"><i class="fas fa-table"></i> Gare da iniziare</h5>
+        {% if perms.engine.add_gara %}
+          <div><a href="{% url 'engine:gara-new' %}" class="btn btn-primary">Crea nuova gara</a></div>
+        {% endif %}
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+          <thead>
+            <tr>
+              <th>Id</th>
+              <th>Nome</th>
+            </tr>
+          </thead>
+          <tbody>
+              {% for gara in gare_da_iniziare %}
+            <tr>
+              <td>{{gara.pk}}</td>
+              <td><a href="{% url 'engine:gara-detail' gara.pk%}">{{gara.nome}}</a></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="wrapper">
+  <div class="card mb-3">
+    <div class="card-header">
+      <div class="d-flex align-items-baseline justify-content-between">
+        <h5 class="pr-3"><i class="fas fa-table"></i> Archivio</h5>
+        {% if perms.engine.add_gara %}
+          <div><a href="{% url 'engine:gara-upload' %}" class="btn btn-primary">Importa gara</a></div>
+        {% endif %}
+      </div>
+    </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+            <thead>
+              <tr>
+                <th>Id</th>
+                <th>Nome</th>
+                <th>Inizio</th>
+                <th>Fine</th>
+                <th>Download</th>
+              </tr>
+            </thead>
+            <tbody>
+                {% for gara in gare_archivio %}
+              <tr>
+              <td>{{gara.pk}}</td>
+              <td><a href="{% url 'engine:gara-detail' gara.pk%}">{{gara.nome}}</a></td>
+                <td>{{gara.inizio}}</td>
+                <td>{{gara.get_ora_fine}}</td>
+                <td><a href="{% url 'engine:gara-download' gara.pk%}" target=_blank><i class="fas fa-download"></i></a></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+  </div>
+</div>
+{% endblock %}
