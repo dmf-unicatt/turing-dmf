@@ -21,8 +21,22 @@ $(document).ready(function() {
     var client = new ClassificaClient(url, '{% block class_type %}{% endblock %}');
     client.init();
     {% if object.finished %}
+    function integer_to_elapsed_time(seconds) {
+        return new Date(seconds * 1000).toISOString().slice(11, 19);
+    }
+    function elapsed_time_to_integer(elapsed) {
+        return elapsed.split(':').reduce((acc,time) => (60 * acc) + +time);
+    }
     $("#myRange").on('input', function() {
         client.progress = this.value/1000;
+        var durata = elapsed_time_to_integer("{{object.durata}}");
+        elapsedTimeText.value = integer_to_elapsed_time(Math.floor(this.value / 1000 * durata));
+    });
+    $("#elapsedTimeText").on('blur', function() {
+        var durata = elapsed_time_to_integer("{{object.durata}}");
+        var elapsed_time = elapsed_time_to_integer(this.value);
+        client.progress = elapsed_time/durata;
+        myRange.value = Math.floor(elapsed_time/durata * 1000);
     });
     $("#play").click(function() {
         client.toggleReplay(this, "myRange")
