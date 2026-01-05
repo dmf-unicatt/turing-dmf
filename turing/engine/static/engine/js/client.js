@@ -408,6 +408,16 @@ class Risposta {
 
         return pts
     }
+
+    get punteggio_per_premio() {
+        // Come il calcolo del punteggio, ma ignora le risposte errate: ri-aggiungi al punteggio calcolato i punti
+        // che sono stati persi per via di errori
+        var ignora_errori = 0;
+        ignora_errori += this.errori * this.gara.penalita_errore;
+        if (this.is_jolly)
+            ignora_errori = ignora_errori * this.gara.coefficiente_jolly;
+        return this.punteggio + ignora_errori;
+    }
 }
 
 class Squadra {
@@ -511,6 +521,8 @@ class ClassificaClient {
         var urlParams = new URLSearchParams(window.location.search);
         var blink = urlParams.get("blink");
         this.blink = (blink && !isNaN(blink) && Number.isInteger(parseFloat(blink))) ? parseInt(blink) : 0;
+        var prize = urlParams.get("prize");
+        this.prize = (prize && !isNaN(prize)) ? 1 : 0;
     }
 
     init() {
@@ -702,7 +714,7 @@ class ClassificaClient {
       // Chiama l'implementazione comune
       var classifica = this.gara.classifica;
       var classifica_posizioni = this.gara.get_classifica_posizioni(classifica);
-      this._mostraUnicaOScorrimento(classifica, classifica_posizioni, false);
+      this._mostraUnicaOScorrimento(classifica, classifica_posizioni, false, this.prize > 0);
       // Aggiungi lampeggio alla risposta
       var passato_length = this.gara.passato_consegne.length;
       var oldest_blink = Math.min(this.blink, passato_length);
@@ -743,15 +755,44 @@ class ClassificaClient {
       else {
           $("#freccia-"+riga).html();
       }
+      // Aggiungi bordo per la risposta che vincerebbe il premio
+      if (this.prize > 0) {
+          var riga_prize = [];
+          var j_prize = [];
+          var punteggio_prize = -1;
+          for (var i in classifica) {
+              var sq = classifica[parseInt(i)].squadra;
+              var riga = parseInt(i) + 1;
+              for (var j in sq.risposte) {
+                  $("#cell-"+riga+"-"+j).removeClass("prize");
+                  var r = sq.risposte[j];
+                  var r_prize = r.punteggio_per_premio;
+                  if (r.risolto) {
+                      if (r_prize > punteggio_prize) {
+                          punteggio_prize = r_prize;
+                          riga_prize = [riga];
+                          j_prize = [j];
+                      }
+                      else if (r_prize == punteggio_prize) {
+                          riga_prize.push(riga);
+                          j_prize.push(j);
+                      }
+                  }
+              }
+          }
+          for (var l = 0; l < riga_prize.length; l++) {
+              $("#cell-"+riga_prize[l]+"-"+j_prize[l]).addClass("prize");
+          }
+      }
     }
 
     _mostraScorrimento() {
       var classifica = this.gara.classifica;
       var classifica_posizioni = this.gara.get_classifica_posizioni(classifica);
-      this._mostraUnicaOScorrimento(classifica, classifica_posizioni, true);
+      this._mostraUnicaOScorrimento(classifica, classifica_posizioni, true, false);
     }
 
-    _mostraUnicaOScorrimento(classifica, classifica_posizioni, reverse) {
+    _mostraUnicaOScorrimento(classifica, classifica_posizioni, reverse, mostra_punteggio_per_premio) {
       var length = classifica.length;
       for (var i in classifica) {
           var sq = classifica[reverse ? length - 1 - parseInt(i) : parseInt(i)].squadra;
@@ -761,7 +802,9 @@ class ClassificaClient {
           $("#pos-"+riga).html(classifica_posizioni[sq.id-1]+"° ");
           $("#nome-"+riga).html(sq.nome);
           $("#num-"+riga).html(sq.id);
-          $("#punt-"+riga).html(""+sq.punteggio);
+          if (!mostra_punteggio_per_premio) {
+              $("#punt-"+riga).html(""+sq.punteggio);
+          }
           for (var j in sq.risposte) {
               var r = sq.risposte[j];
               var text = "";
@@ -773,8 +816,16 @@ class ClassificaClient {
               else if (r.errori) {
                   $("#cell-"+riga+"-"+j).addClass("wrong-answer");
               }
-              if(r.risolto || r.errori)
-                text += '<span class="punteggio_unica"><b>'+r.punteggio+'</b></span>'
+              if(r.risolto || r.errori) {
+                  text += '<span class="punteggio_unica"><b>';
+                  if (mostra_punteggio_per_premio) {
+                      text += r.punteggio_per_premio;
+                  }
+                  else {
+                      text += r.punteggio;
+                  }
+                  text += '</b></span>';
+              }
 
               if (r.is_jolly) {
                   text += ClassificaClient.stella_jolly;

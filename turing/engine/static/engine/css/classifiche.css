@@ -143,6 +143,10 @@ tr:nth-child(odd) .right-answer.blink {
     animation: blink-right-odd 1s infinite;
 }
 
+td.prize {
+    border: 3px solid gold;
+}
+
 td.unica_giuste {
     padding-top: 0.1em;
     padding-bottom: 0.1em;

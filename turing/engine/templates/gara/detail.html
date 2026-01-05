@@ -45,6 +45,11 @@
     Visualizzazione unica con lampeggi per ultime risposte e frecce per cambio posizione (querystring <code>?blink=6</code>)
 </a>
 </li>
+<li>
+<a class="nohover" href="{% url 'engine:classifica-unica' object.pk %}?prize=1" target="_blank">
+    Visualizzazione unica per premio alla risposta che ha dato il maggior numero di punti, ignorando gli errori (querystring <code>?prize=1</code>)
+</a>
+</li>
 </ul>
 {% include 'gara/link_querystring.html' with engine_name='engine:classifica-unica' prefix='Visualizzazione unica' %}
 {% endif %}
