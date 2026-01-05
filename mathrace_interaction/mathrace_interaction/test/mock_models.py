@@ -205,7 +205,7 @@ class Gara:
         self.k_blocco: int | None = None
         self.durata_blocco: datetime.timedelta | None = None
         self.num_problemi: int | None = None
-        self.cutoff: int | None = None
+        self.punteggio_iniziale_squadre: int | None = None
         self.fixed_bonus: str | None = None
         self.super_mega_bonus: str | None = None
         self.jolly: bool | None = None
@@ -223,7 +223,7 @@ class Gara:
         """Convert to a dictionary."""
         for key in (
             "nome", "inizio", "durata", "durata_blocco", "num_problemi", "fixed_bonus", "super_mega_bonus", "jolly"
-            # "n_blocco", "k_blocco", "cutoff" are optional
+            # "n_blocco", "k_blocco", "punteggio_iniziale_squadre" are optional
         ):
             assert getattr(self, key) is not None, f"{key} is still set to None"
         return {
@@ -234,7 +234,7 @@ class Gara:
             "k_blocco": self.k_blocco,
             "durata_blocco": self.durata_blocco.seconds // 60,  # type: ignore[union-attr]
             "num_problemi": self.num_problemi,
-            "cutoff": self.cutoff,
+            "punteggio_iniziale_squadre": self.punteggio_iniziale_squadre,
             "fixed_bonus": self.fixed_bonus,
             "jolly": self.jolly,
             "super_mega_bonus": self.super_mega_bonus,
@@ -259,7 +259,8 @@ class Gara:
         this = cls()
 
         for k in (
-            "nome", "n_blocco", "k_blocco", "num_problemi", "cutoff", "fixed_bonus", "super_mega_bonus", "jolly"
+            "nome", "n_blocco", "k_blocco", "num_problemi", "punteggio_iniziale_squadre", "fixed_bonus",
+            "super_mega_bonus", "jolly"
         ):
             setattr(this, k, data[k])
 

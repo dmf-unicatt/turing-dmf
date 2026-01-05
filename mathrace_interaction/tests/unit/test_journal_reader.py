@@ -130,21 +130,6 @@ def test_journal_reader_wrong_race_definition_parts(
         "the expected number of parts")
 
 
-def test_journal_reader_wrong_race_definition_initial_score(
-    race_date: datetime.datetime, runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
-) -> None:
-    """Test that journal_reader raises an error when the race definition contains a wrong initial score."""
-    wrong_journal = io.StringIO("""\
---- 001 inizializzazione simulatore
---- 003 10 7 99970 10 6 4 1 1 10 2 -- squadre: 10 quesiti: 7
-0 002 inizio gara
-""")
-    runtime_error_contains(
-        lambda: mathrace_interaction.journal_reader(wrong_journal).read("wrong_journal", race_date),
-        "Invalid line --- 003 10 7 99970 10 6 4 1 1 10 2 in race definition: the expected score is 70, "
-        "but the race definition contains 99970.")
-
-
 def test_journal_reader_wrong_race_definition_bonus_cardinality(
     race_date: datetime.datetime, runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
 ) -> None:
@@ -626,7 +611,7 @@ def test_journal_reader_alternative_race_definition_num_teams_entry_without_opti
     assert imported_dict["mathrace_only"]["num_teams_alternative"] == "10"
     assert imported_dict["mathrace_only"]["num_teams_nonguests"] == "10"
     assert imported_dict["mathrace_only"]["num_teams_guests"] == "0"
-    assert imported_dict["mathrace_only"]["initial_score"] == "70"
+    assert imported_dict["punteggio_iniziale_squadre"] is None
 
 
 def test_journal_reader_alternative_race_definition_num_teams_entry_with_guests_optional_argument(
@@ -647,7 +632,7 @@ def test_journal_reader_alternative_race_definition_num_teams_entry_with_guests_
     assert imported_dict["mathrace_only"]["num_teams_alternative"] == "10+2"
     assert imported_dict["mathrace_only"]["num_teams_nonguests"] == "10"
     assert imported_dict["mathrace_only"]["num_teams_guests"] == "2"
-    assert imported_dict["mathrace_only"]["initial_score"] == "70"
+    assert imported_dict["punteggio_iniziale_squadre"] is None
 
 
 def test_journal_reader_alternative_race_definition_num_teams_entry_with_initial_score_optional_argument(
@@ -668,22 +653,7 @@ def test_journal_reader_alternative_race_definition_num_teams_entry_with_initial
     assert imported_dict["mathrace_only"]["num_teams_alternative"] == "10:70"
     assert imported_dict["mathrace_only"]["num_teams_nonguests"] == "10"
     assert imported_dict["mathrace_only"]["num_teams_guests"] == "0"
-    assert imported_dict["mathrace_only"]["initial_score"] == "70"
-
-
-def test_journal_reader_alternative_race_definition_num_teams_entry_with_wrong_initial_score_optional_argument(
-    race_date: datetime.datetime, runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
-) -> None:
-    """Test a num_teams entry in the alternative race definition with a wrong value of the second optional argument."""
-    wrong_journal = io.StringIO("""\
---- 001 inizializzazione simulatore
---- 002 10:99970 7:20 4.1;1 10-2 -- squadre: 10 quesiti: 7
-0 200 inizio gara
-""")
-    runtime_error_contains(
-        lambda: mathrace_interaction.journal_reader(wrong_journal).read("wrong_journal", race_date),
-        "Invalid line --- 002 10:99970 7:20 4.1;1 10-2 in alternative race definition: the expected score is 70, "
-        "but the race definition contains 99970.")
+    assert imported_dict["punteggio_iniziale_squadre"] == 70
 
 
 def test_journal_reader_alternative_race_definition_num_teams_entry_with_both_optional_arguments(
@@ -704,7 +674,7 @@ def test_journal_reader_alternative_race_definition_num_teams_entry_with_both_op
     assert imported_dict["mathrace_only"]["num_teams_alternative"] == "10+2:70"
     assert imported_dict["mathrace_only"]["num_teams_nonguests"] == "10"
     assert imported_dict["mathrace_only"]["num_teams_guests"] == "2"
-    assert imported_dict["mathrace_only"]["initial_score"] == "70"
+    assert imported_dict["punteggio_iniziale_squadre"] == 70
 
 
 def test_journal_reader_alternative_race_definition_num_questions_entry_without_optional_argument(
@@ -725,7 +695,7 @@ def test_journal_reader_alternative_race_definition_num_questions_entry_without_
     assert imported_dict["num_problemi"] == 7
     assert imported_dict["mathrace_only"]["num_questions_alternative"] == "7"
     assert imported_dict["mathrace_only"]["default_score"] == "20"
-    assert imported_dict["mathrace_only"]["initial_score"] == "70"
+    assert imported_dict["punteggio_iniziale_squadre"] == 70
     assert imported_dict["soluzioni"][0]["punteggio"] == 30
     assert imported_dict["soluzioni"][1]["punteggio"] == 20
 
@@ -748,7 +718,7 @@ def test_journal_reader_alternative_race_definition_num_questions_entry_with_opt
     assert imported_dict["num_problemi"] == 7
     assert imported_dict["mathrace_only"]["num_questions_alternative"] == "7:40"
     assert imported_dict["mathrace_only"]["default_score"] == "40"
-    assert imported_dict["mathrace_only"]["initial_score"] == "70"
+    assert imported_dict["punteggio_iniziale_squadre"] == 70
     assert imported_dict["soluzioni"][0]["punteggio"] == 30
     assert imported_dict["soluzioni"][1]["punteggio"] == 40
 

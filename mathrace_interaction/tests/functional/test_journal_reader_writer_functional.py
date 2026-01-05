@@ -261,6 +261,22 @@ def test_journal_version_converter_same_turing_dictionary(
         ) and target_version in ("r5539", "r11167", "r11184", "r11189", "r17497", "r17505", "r17548")
     ):
         pytest.skip("This version does not support customizing bonus and superbonus values")
+    elif (
+        (
+            journal_name in (
+                "2019/cesenatico_finale_formato_journal.journal", "2019/cesenatico_semifinale_A.journal",
+                "2019/cesenatico_semifinale_B.journal", "2019/cesenatico_semifinale_C.journal",
+                "2019/cesenatico_semifinale_D.journal"
+            ) and target_version in ("r17505", )
+        )
+        or
+        (
+            journal_name in (
+                "2019/cesenatico_finale_femminile_formato_journal.journal",
+            ) and target_version in ("r5539", "r11167", "r11184", "r11189", "r17497", "r17505")
+        )
+    ):
+        pytest.skip("This version hardcodes the initial score, while the original journal did not store it")
     else:
         journal_year, _ = journal_name.split(os.sep, maxsplit=1)
         journal_date = datetime.datetime(int(journal_year), 1, 1, tzinfo=datetime.UTC)

@@ -120,9 +120,6 @@ class JournalReaderR5539(AbstractJournalReader):
         # Determine the deadline time for question score periodic increase from the tenth entry
         self._process_race_definition_deadline_score_increase_entry(line, race_def_split[9], turing_dict)
 
-        # mathrace does not store the cutoff, hence leave it unset in turing
-        turing_dict["cutoff"] = None
-
     def _process_race_definition_num_teams_entry(
         self, line: str, num_teams: str, turing_dict: TuringDict
     ) -> None:
@@ -139,13 +136,7 @@ class JournalReaderR5539(AbstractJournalReader):
         self, line: str, initial_score: str, turing_dict: TuringDict
     ) -> None:
         """Process the initial score entry in the race definition line."""
-        turing_dict["mathrace_only"]["initial_score"] = initial_score
-        expected_score = turing_dict["num_problemi"] * 10
-        if int(initial_score) != expected_score:
-            raise RuntimeError(
-                f"Invalid line {line} in race definition: the expected score is {expected_score}, "
-                f"but the race definition contains {initial_score}. This is not compatible with turing, "
-                f"since it does not allow to change the initial score")
+        turing_dict["punteggio_iniziale_squadre"] = int(initial_score)
 
     def _process_race_definition_bonus_cardinality_entry(
         self, line: str, bonus_cardinality: str, turing_dict: TuringDict
@@ -676,9 +667,6 @@ class JournalReaderR17548(JournalReaderR17505):
         self._process_race_definition_superbonus_cardinality_entry(
             "not-really-used", turing_dict["mathrace_only"]["superbonus_cardinality"], turing_dict)
 
-        # mathrace does not store the cutoff, hence leave it unset in turing
-        turing_dict["cutoff"] = None
-
     def _process_alternative_race_definition_num_teams_entry(
         self, line: str, num_teams_alternative: str, turing_dict: TuringDict
     ) -> None:
@@ -701,11 +689,10 @@ class JournalReaderR17548(JournalReaderR17505):
         turing_dict["mathrace_only"]["num_teams_guests"] = num_teams_guests
         # Initialize the initial score, if possible
         if initial_score != "":
-            turing_dict["mathrace_only"]["initial_score"] = initial_score
+            turing_dict["punteggio_iniziale_squadre"] = int(initial_score)
         else:
-            # It is not possible to set the initial score, because we do not know yet the number of
-            # questions in the race. Delay the initialization until the second entry gets read
-            turing_dict["mathrace_only"]["initial_score"] = "N/A"
+            # Initial score was not provided: let turing handle its calculation
+            turing_dict["punteggio_iniziale_squadre"] = None
 
     def _process_alternative_race_definition_num_questions_entry(
         self, line: str, num_questions_alternative: str, turing_dict: TuringDict
@@ -720,17 +707,6 @@ class JournalReaderR17548(JournalReaderR17505):
         turing_dict["mathrace_only"]["num_questions_alternative"] = num_questions_alternative
         turing_dict["num_problemi"] = int(num_questions)
         turing_dict["mathrace_only"]["default_score"] = default_score
-        # It is now possible to set the initial score, if it calculation was delayed when reading the first entry
-        initial_score = turing_dict["mathrace_only"]["initial_score"]
-        if initial_score == "N/A":
-            turing_dict["mathrace_only"]["initial_score"] = str(int(num_questions) * 10)
-        else:
-            expected_score = int(num_questions) * 10
-            if int(initial_score) != expected_score:
-                raise RuntimeError(
-                    f"Invalid line {line} in alternative race definition: the expected score is {expected_score}, "
-                    f"but the race definition contains {initial_score}. This is not compatible with turing, "
-                    f"since it does not allow to change the initial score")
 
     def _process_alternative_race_definition_n_k_altk_blocco_entry(
         self, line: str, n_k_altk_blocco: str, turing_dict: TuringDict

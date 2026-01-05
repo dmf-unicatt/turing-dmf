@@ -32,7 +32,7 @@ def simple_turing_race() -> engine.models.Gara:  # type: ignore[no-any-unimporte
         "durata_blocco": 2,
         "n_blocco": 4,
         "k_blocco": 1,
-        "cutoff": None,
+        "punteggio_iniziale_squadre": None,
         "fixed_bonus": "20,15,10,8,6,5,4,3,2,1",
         "super_mega_bonus": "100,60,40,30,20,10",
         "num_problemi": 7,

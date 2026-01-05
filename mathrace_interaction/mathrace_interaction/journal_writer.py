@@ -116,7 +116,11 @@ class JournalWriterR5539(AbstractJournalWriter):
 
     def _store_race_definition_initial_score_entry(self, line: str, turing_dict: TuringDict) -> str:
         """Store the initial score entry in the race definition line."""
-        return f'{line} {int(turing_dict["num_problemi"]) * 10}'
+        initial_score = turing_dict["punteggio_iniziale_squadre"]
+        if initial_score is not None:
+            return f"{line} {initial_score}"
+        else:
+            return f'{line} {int(turing_dict["num_problemi"]) * 10}'
 
     def _store_race_definition_bonus_cardinality_entry(self, line: str, turing_dict: TuringDict) -> str:
         """Store the bonus cardinality entry in the race definition line."""
@@ -453,8 +457,12 @@ class JournalWriterR17548(JournalWriterR17505):
         num_teams = len(teams)
         num_teams_nonguests = sum(not teams[s]["ospite"] for s in range(num_teams))
         num_teams_guests = sum(teams[s]["ospite"] for s in range(num_teams))
-        initial_score = int(turing_dict["num_problemi"]) * 10
-        return f"{line} {num_teams_nonguests}+{num_teams_guests}:{initial_score}", f"squadre: {num_teams}"
+        initial_score = turing_dict["punteggio_iniziale_squadre"]
+        if initial_score is not None:
+            initial_score_str = f":{initial_score}"
+        else:
+            initial_score_str = ""
+        return f"{line} {num_teams_nonguests}+{num_teams_guests}{initial_score_str}", f"squadre: {num_teams}"
 
     def _store_alternative_race_definition_num_questions_entry(
         self, line: str, comment: str, turing_dict: TuringDict

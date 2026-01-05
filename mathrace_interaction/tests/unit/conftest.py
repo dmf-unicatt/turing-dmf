@@ -474,7 +474,7 @@ def turing_dict(race_name: str, race_date: datetime.datetime) -> mathrace_intera
         "durata_blocco": 2,
         "n_blocco": 4,
         "k_blocco": 1,
-        "cutoff": None,
+        "punteggio_iniziale_squadre": 70,
         "fixed_bonus": "20,15,10,8,6,5,4,3,2,1",
         "super_mega_bonus": "100,60,40,30,20,10",
         "jolly": True,
