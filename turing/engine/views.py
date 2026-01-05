@@ -584,6 +584,7 @@ class StatusView(DetailView):
         resp['super_mega_bonus'] = gara.super_mega_bonus_array
         resp['n_blocco'] = gara.n_blocco
         resp['k_blocco'] = gara.k_blocco
+        resp['punteggio_iniziale_squadre'] = gara.punteggio_iniziale_squadre
         resp['jolly_enabled'] = gara.jolly
         if request.user.is_authenticated:
             ids = list(gara.squadre.filter(consegnatore=request.user).values_list("num", flat=True).all())

@@ -23,14 +23,18 @@ class Gara {
         this.super_mega_bonus = data.super_mega_bonus;
         this.n_blocco = data.n_blocco;
         this.k_blocco = data.k_blocco;
+        this.punteggio_iniziale_squadre = data.punteggio_iniziale_squadre;
         this.jolly_enabled = data.jolly_enabled;
 
         this.penalita_errore = 10;
         this.coefficiente_derivata = 1;
         this.coefficiente_bonus_errori = 2;
         this.coefficiente_jolly = 2;
-        this.calcola_punteggio_tempo_iniziale = function(n_prob, penalita_errore) {
-            return n_prob * penalita_errore;
+        this.calcola_punteggio_tempo_iniziale = function(n_prob, penalita_errore, punteggio_iniziale_squadre) {
+            if (punteggio_iniziale_squadre != null)
+                return punteggio_iniziale_squadre;
+            else
+                return n_prob * penalita_errore;
         }
         this._scadenza_jolly = 12 * 60 * 1000; // misurato in millisecondi
 
@@ -458,7 +462,7 @@ class Squadra {
 
     get punteggio() {
         // Calcola il punteggio della squadra
-        var pts = this.gara.calcola_punteggio_tempo_iniziale(this.gara.n_prob, this.gara.penalita_errore);
+        var pts = this.gara.calcola_punteggio_tempo_iniziale(this.gara.n_prob, this.gara.penalita_errore, this.gara.punteggio_iniziale_squadre);
         pts += this._en_plein_bonus;
         for(var i in this.risposte) {
             pts += this.risposte[i].punteggio

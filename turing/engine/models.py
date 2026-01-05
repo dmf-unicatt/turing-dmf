@@ -103,6 +103,7 @@ class Gara(models.Model):
     num_problemi = models.PositiveSmallIntegerField(default=20,
                                                     verbose_name="Problemi",
                                                     help_text="Numero di problemi")
+    punteggio_iniziale_squadre = models.PositiveSmallIntegerField(blank=True, null=True, help_text="Punteggio iniziale per ciascuna squadra. Se lasciato bianco, il punteggio è pari al numero di quesiti moltiplicato per 10 (dove -10 corrisponde alla penalità per una risposta errata)")
     fixed_bonus = models.CharField(blank=True, max_length=100,
                                    default='20,15,10,8,6,5,4,3,2,1',
                                    validators=[all_nonnegative_validator],
@@ -368,7 +369,7 @@ class Gara(models.Model):
     def create_from_dict(cls, data):
         this = cls()
         this.save()
-        for k in {'nome', 'n_blocco', 'k_blocco', 'num_problemi', 'fixed_bonus', 'super_mega_bonus', 'jolly'}:
+        for k in {'nome', 'n_blocco', 'k_blocco', 'punteggio_iniziale_squadre', 'num_problemi', 'fixed_bonus', 'super_mega_bonus', 'jolly'}:
             if k in data:
                 setattr(this, k, data[k])
 
@@ -404,7 +405,7 @@ class Gara(models.Model):
 
     def to_dict(self):
         d = {}
-        for k in {'nome', 'n_blocco', 'k_blocco', 'num_problemi', 'num_problemi', 'jolly'}:
+        for k in {'nome', 'n_blocco', 'k_blocco', 'punteggio_iniziale_squadre', 'num_problemi', 'jolly'}:
             d[k] = getattr(self, k)
         for k in {'fixed_bonus', 'super_mega_bonus'}:
             # Elimina valori nulli al termine della lista
