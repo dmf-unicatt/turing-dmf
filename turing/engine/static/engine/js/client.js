@@ -23,7 +23,6 @@ class Gara {
         this.super_mega_bonus = data.super_mega_bonus;
         this.n_blocco = data.n_blocco;
         this.k_blocco = data.k_blocco;
-        this.cutoff = data.cutoff;
         this.jolly_enabled = data.jolly_enabled;
 
         this.penalita_errore = 10;
@@ -602,9 +601,6 @@ class ClassificaClient {
             var pts = classifica[i].pts;
             var pos = classifica_posizioni[sq.id-1];
             var elapsed = (this.gara.time - this.gara.inizio)/1000;
-            if (this.gara.cutoff != null && this.gara.cutoff >= pos && !sq.ospite && elapsed >= 60*20)
-                $("#team-"+sq.id).addClass("cutoff");
-            else $("#team-"+sq.id).removeClass("cutoff");
             $("#team-"+sq.id).css('width', Math.round(pts/max*1000)/10+'%');
             $("#label-pos-"+sq.id).text(pos+"°");
             $("#label-points-"+sq.id).text(pts);

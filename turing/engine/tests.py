@@ -812,7 +812,6 @@ class HtmlTests(StaticLiveServerTestCase, TuringTests):
         self.selenium.get(url)
         wait_for_element(self.selenium, By.NAME, "nome")
         self.selenium.find_element(By.NAME, "nome").send_keys("prova")
-        self.selenium.find_element(By.NAME, "cutoff").send_keys("3")
         self.selenium.find_element(By.NAME, "k_blocco").clear()
         self.selenium.find_element(By.NAME, "k_blocco").send_keys("5")
         self.selenium.find_element(By.ID, "submit").click()
@@ -820,7 +819,6 @@ class HtmlTests(StaticLiveServerTestCase, TuringTests):
 
         gara = Gara.objects.first()
         self.assertEqual(gara.nome, "prova")
-        self.assertEqual(gara.cutoff, 3)
         self.assertEqual(gara.k_blocco, 5)
 
     def test_crea_gara_fail(self):
@@ -1202,7 +1200,7 @@ class ValidationTests(MyTestCase, TuringTests):
     def test_crea_gara_bonus_negativi(self):
         self.url = reverse('engine:gara-new')
         self.data = {
-            "nome": "Prova", "num_problemi": "20", "num_squadre": "10", "durata": "02:00:00", "durata_blocco": "00:20:00", "n_blocco": "2", "cutoff": "", "k_blocco": "5",
+            "nome": "Prova", "num_problemi": "20", "num_squadre": "10", "durata": "02:00:00", "durata_blocco": "00:20:00", "n_blocco": "2", "k_blocco": "5",
             "fixed_bonus_0": "20", "fixed_bonus_1": "15", "fixed_bonus_2": "10", "fixed_bonus_3": "8", "fixed_bonus_4": "6",
             "fixed_bonus_5": "5", "fixed_bonus_6": "4", "fixed_bonus_7": "3", "fixed_bonus_8": "2", "fixed_bonus_9": "-1",
             "super_mega_bonus_0": "100", "super_mega_bonus_1": "60", "super_mega_bonus_2": "40", "super_mega_bonus_3": "30",
@@ -1406,7 +1404,7 @@ class PermissionTests(MyTestCase, TuringTests):
     def test_crea_gara_permission(self):
         self.url = reverse('engine:gara-new')
         self.data = {
-            "nome": "Prova", "num_problemi": "20", "num_squadre": "10", "durata": "02:00:00", "durata_blocco": "00:20:00", "n_blocco": "2", "cutoff": "", "k_blocco": "5",
+            "nome": "Prova", "num_problemi": "20", "num_squadre": "10", "durata": "02:00:00", "durata_blocco": "00:20:00", "n_blocco": "2", "k_blocco": "5",
             "fixed_bonus_0": "20", "fixed_bonus_1": "+15", "fixed_bonus_2": "+10", "fixed_bonus_3": "+8", "fixed_bonus_4": "+6",
             "fixed_bonus_5": "+5", "fixed_bonus_6": "+4", "fixed_bonus_7": "+3", "fixed_bonus_8": "+2", "fixed_bonus_9": "+1",
             "super_mega_bonus_0": "100", "super_mega_bonus_1": "+60", "super_mega_bonus_2": "+40", "super_mega_bonus_3": "+30",
@@ -1432,7 +1430,7 @@ class PermissionTests(MyTestCase, TuringTests):
         gara = Gara.objects.first()
         self.url = reverse('engine:gara-parametri', kwargs={'pk':gara.pk})
         self.data = {
-            "nome": "Prova", "num_problemi": "20", "durata": "02:00:00", "durata_blocco": "00:20:00", "n_blocco": "2", "cutoff": "", "k_blocco": "5",
+            "nome": "Prova", "num_problemi": "20", "durata": "02:00:00", "durata_blocco": "00:20:00", "n_blocco": "2", "k_blocco": "5",
             "fixed_bonus_0": "20", "fixed_bonus_1": "+15", "fixed_bonus_2": "+10", "fixed_bonus_3": "+8", "fixed_bonus_4": "+6",
             "fixed_bonus_5": "+5", "fixed_bonus_6": "+4", "fixed_bonus_7": "+3", "fixed_bonus_8": "+2", "fixed_bonus_9": "+1",
             "super_mega_bonus_0": "100", "super_mega_bonus_1": "+60", "super_mega_bonus_2": "+40", "super_mega_bonus_3": "+30",
