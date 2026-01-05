@@ -94,7 +94,7 @@ def test_journal_writer_wrong_race_event(
 def test_journal_writer_wrong_version(
     runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
 ) -> None:
-    """Test that journal_reader raises an error when requesting a wrong version."""
+    """Test that journal_writer raises an error when requesting a wrong version."""
     with io.StringIO("") as exported_journal:
         runtime_error_contains(
             lambda: mathrace_interaction.journal_writer(exported_journal, "r0"),
@@ -105,7 +105,7 @@ def test_journal_writer_wrong_k_blocco(
     turing_dict: mathrace_interaction.typing.TuringDict,
     runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
 ) -> None:
-    """Test that journal_reader raises an error when k_blocco != 1, but the requested version does not support it."""
+    """Test that journal_writer raises an error when k_blocco != 1, but the requested version does not support it."""
     turing_dict["k_blocco"] = 2
     with (
         io.StringIO("") as exported_journal,
@@ -166,7 +166,7 @@ def test_journal_writer_wrong_race_events_order(
 def test_journal_writer_wrong_race_events_order_not_strict(
     turing_dict: mathrace_interaction.typing.TuringDict
 ) -> None:
-    """Test that journal_reader without strict mode allows to import incorrectly sorted events."""
+    """Test that journal_writer without strict mode allows to export incorrectly sorted events."""
     turing_dict["eventi"][-2], turing_dict["eventi"][-1] = turing_dict["eventi"][-1], turing_dict["eventi"][-2]
     with (
         io.StringIO("") as exported_journal,
@@ -179,3 +179,24 @@ def test_journal_writer_wrong_race_events_order_not_strict(
         assert exported_lines[-3] == "520 091 7 43 squadra 7 bonus 43"
         assert exported_lines[-2] == "600 029 termine gara"
         assert exported_lines[-1] == "--- 999 fine simulatore"
+
+
+def test_journal_writer_missing_initial_score(
+    turing_dict: mathrace_interaction.typing.TuringDict, journal: io.StringIO, journal_version: str
+) -> None:
+    """Test that journal_writer correctly exports journals even for turing dictionaries with no initial score."""
+    turing_dict["punteggio_iniziale_squadre"] = None
+    with (
+        io.StringIO("") as exported_journal,
+        mathrace_interaction.journal_writer(exported_journal, journal_version) as journal_stream
+    ):
+        journal_stream.write(turing_dict)
+        exported_lines = exported_journal.getvalue().splitlines()
+        if journal_version in ("r5539", "r11167", "r11184", "r11189"):
+            assert exported_lines[1] == "--- 003 10 7 70 10 6 4 1 1 10 8 -- squadre: 10 quesiti: 7"
+        elif journal_version in ("r17497", "r17505"):
+            assert exported_lines[1] == "--- 003 10 7 70 10 6 4.1 1 1 10 8 -- squadre: 10 quesiti: 7"
+        elif journal_version in ("r17548", "r20642", "r20644", "r25013"):
+            assert exported_lines[1] == "--- 002 10+0 7:20 4.1;1 10-2 -- squadre: 10 quesiti: 7"
+        else:
+            raise ValueError("Invalid journal version")
