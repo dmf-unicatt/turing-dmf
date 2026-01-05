@@ -117,13 +117,6 @@ class Gara(models.Model):
     jolly = models.BooleanField(default=True,
                                 verbose_name="Jolly",
                                 help_text="Possibilità di inserire un jolly")
-    # testo = models.FileField(blank=True, null=True,
-    #                          upload_to=get_file_path,
-    #                          verbose_name="Testo",
-    #                          help_text="Il testo dei problemi")
-    testo = models.URLField(blank=True, null=True,
-                            verbose_name="Testo",
-                            help_text="Link al testo dei problemi")
     history = HistoricalRecords()
 
     #

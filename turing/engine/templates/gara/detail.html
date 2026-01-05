@@ -18,10 +18,6 @@
     {% else %}
         finita {{object.get_ora_fine}}.</p>
     {% endif %}
-
-    {% if object.testo %}
-    <p>Scarica il testo: <a href="{{object.testo}}" target=_blank><i class="fas fa-file-pdf"></i></a></p>
-    {% endif %}
 {% else %}
     {% if object.sospensione is not null %}
 <p>Gara temporaneamente sospesa da {{object.sospensione}}</p>

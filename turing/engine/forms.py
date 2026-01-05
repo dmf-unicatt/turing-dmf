@@ -200,7 +200,7 @@ class ModificaGaraForm(forms.ModelForm):
     class Meta:
         model = Gara
         fields = ['nome', 'durata', 'durata_blocco', 'n_blocco', 'k_blocco',
-                 'num_problemi', 'punteggio_iniziale_squadre', 'fixed_bonus', 'super_mega_bonus', 'jolly', 'testo',
+                 'num_problemi', 'punteggio_iniziale_squadre', 'fixed_bonus', 'super_mega_bonus', 'jolly',
                  'admin', 'inseritori']
 
     def __init__(self, *args, **kwargs):
