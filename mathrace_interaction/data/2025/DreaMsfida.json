@@ -4,7 +4,6 @@
     "jolly": true,
     "n_blocco": 2,
     "k_blocco": 1,
-    "cutoff": null,
     "fixed_bonus": "20,15,10,8,6,5,4,3,2,1",
     "super_mega_bonus": "100,60,40,30,20,10",
     "inizio": "2025-04-11T15:14:09.792734+00:00",
