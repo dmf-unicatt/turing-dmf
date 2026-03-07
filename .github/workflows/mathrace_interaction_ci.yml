@@ -59,7 +59,7 @@ jobs:
           apt update -y -q
           apt install -y -qq git
         working-directory: .
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Setup container
         run: ${{ matrix.setup_container }}
         working-directory: .
