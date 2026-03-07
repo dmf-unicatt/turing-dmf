@@ -178,7 +178,7 @@ done
 
 ## Live `turing` to HTML output
 
-The script `mathrace_interaction/live_turing_to_html.py` transfers race events from a live `turing` session to a sequence of HTML files, which are suitable to update a mirror website and warn about podium position changes.
+The script `mathrace_interaction/live_turing_to_html.py` transfers race events from a live `turing` session to a sequence of HTML files, which are suitable to update a mirror website.
 
 ### Before the race
 
@@ -211,15 +211,5 @@ for EXT in css eot ttf woff woff2; do
 done
 ssh -t ${TURING_HOST_USER}@${TURING_HOST} "tail -n 0 -f ${HTML_TURING_OUTPUT}/watch.txt" | while read -r LINE; do
     scp ${TURING_HOST_USER}@${TURING_HOST}:${HTML_TURING_OUTPUT}/latest.html ${REMOTE_WEBSITE_HOST_USER}@${REMOTE_WEBSITE_HOST}:${REMOTE_WEBSITE_PATH}/index.html
-done
-```
-
-#### Step 4: execute an action on podium change
-
-```
-PODIUM_CHANGE_TURING_OUTPUT=/tmp/shared-turing-dmf/live_${LIVE_TURING_PRIMARY_KEY}/podium_change_files
-ssh -t ${TURING_HOST_USER}@${TURING_HOST} "tail -n 0 -f ${PODIUM_CHANGE_TURING_OUTPUT}/watch.txt" | while read -r LINE; do
-    POSITION=$(echo "${LINE}" | tr -d "\r" | rev | cut -d" " -f1 | rev)
-    echo "Podium position ${POSITION} changed" >> /tmp/podium-change-history
 done
 ```

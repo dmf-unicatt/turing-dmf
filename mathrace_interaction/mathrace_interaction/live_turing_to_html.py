@@ -84,10 +84,8 @@ def live_turing_to_html(
     live_turing_json_files_directory = output_directory / "live_turing_json_files"
     html_files_directory = [output_directory / "html_files", output_directory / "html_files_comparison"]
     table_files_directory = [output_directory / "table_files", output_directory / "table_files_comparison"]
-    podium_change_files_directory = output_directory / "podium_change_files"
     for directory in (
-        datetime_files_directory, live_turing_json_files_directory, *html_files_directory, *table_files_directory,
-        podium_change_files_directory
+        datetime_files_directory, live_turing_json_files_directory, *html_files_directory, *table_files_directory
     ):
         directory.mkdir(parents=True, exist_ok=True)
     for INSTANCE in (UNICA_LIVE, SQUADRE_LIVE, PROBLEMI_LIVE, STATO_LIVE):  # noqa: N806
@@ -213,16 +211,10 @@ Actual: {actual_time}""")
         print_fields: list[list[str]] = [None, None]  # type: ignore[list-item]
         print_fields[UNICA_LIVE] = ["Position", "Team ID", "Team name", "Score"]
         print_fields[UNICA_COMPARISON] = ["Position", "Team ID", "Team name", "Score"]  # do not assign the LIVE one!
-        podium_change: list[tuple[int, str, int, int]] = []
         if previous_positions is not None:
             position_update = [
                 previous_positions[r[TEAM_ID_COLUMN]] - positions[r[TEAM_ID_COLUMN]]
                 for r in table[UNICA_LIVE].rows[1:]]
-            for podium_position in (3, 2, 1):
-                if position_update[podium_position - 1] > 0:
-                    team_id = table[UNICA_LIVE].rows[podium_position][TEAM_ID_COLUMN]
-                    team_name = table[UNICA_LIVE].rows[podium_position][TEAM_NAME_COLUMN]
-                    podium_change.append((team_id, team_name, podium_position, previous_positions[team_id]))
             table[UNICA_LIVE].add_column("Position update", [""] + [u if u != 0 else "" for u in position_update])
             print_fields[UNICA_LIVE].append("Position update")
         if previous_scores is not None:
@@ -247,15 +239,6 @@ Actual: {actual_time}""")
             (table_files_directory[OUTPUT_INSTANCE] / "latest.html").write_text(
                 (table_files_directory[OUTPUT_INSTANCE] / f"{time_counter}.html").read_text().replace(
                     "</head>", '<script src="https://livejs.com/live.js"></script></head>'))
-        # Write out the podium change file
-        for (text_filename, mode) in ((f"{time_counter}.txt", "w"), ("watch.txt", "a")):
-            with open(podium_change_files_directory / text_filename, mode) as text_file:
-                for (team_id, team_name, current_position, previous_position) in podium_change:
-                    text_file.write(
-                        f"position change at time counter {time_counter} ({current_time}): "
-                        f'team with ID {team_id} and name "{team_name}" improves from '
-                        f"position {previous_position} to podium position {current_position}\n"
-                    )
         # Write out the time counter
         time_counter_file.write_text(str(time_counter))
         # Print out table
