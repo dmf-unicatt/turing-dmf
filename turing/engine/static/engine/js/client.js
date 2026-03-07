@@ -527,6 +527,8 @@ class ClassificaClient {
         var urlParams = new URLSearchParams(window.location.search);
         var blink = urlParams.get("blink");
         this.blink = (blink && !isNaN(blink) && Number.isInteger(parseFloat(blink))) ? parseInt(blink) : 0;
+        var podium_warn = urlParams.get("podium_warn");
+        this.podium_warn = (podium_warn && !isNaN(podium_warn) && this.blink > 0) ? 1 : 0;
         var prize = urlParams.get("prize");
         this.prize = (prize && !isNaN(prize)) ? 1 : 0;
     }
@@ -750,6 +752,11 @@ class ClassificaClient {
         }
         if (oldest_blink > 0) {
             var classifica_posizioni_oldest_blink = this.gara.passato_consegne_posizioni[passato_length - oldest_blink];
+            var podium_warn_position_map = {
+                1: "gold",
+                2: "silver",
+                3: "bronze"
+            };
             for (var i in classifica) {
                 var sq = classifica[i].squadra;
                 var riga = parseInt(i) + 1;
@@ -757,6 +764,16 @@ class ClassificaClient {
                 var freccia;
                 if (differenza_posizioni > 0) {
                     freccia = ClassificaClient.freccia_su;
+                    // Abilita l'animazione in podium_warn_overlay se la squadra è entrata sul podio
+                    if (this.podium_warn && classifica_posizioni[sq.id - 1] <= 3) {
+                        var podium_warn_position = podium_warn_position_map[classifica_posizioni[sq.id - 1]];
+                        var podium_warn_element = $("#podium_warn_" + podium_warn_position);
+                        if (podium_warn_element.attr("data-previous-occupant") !== sq.id.toString()) {
+                            podium_warn_element.attr("data-previous-occupant", sq.id.toString());
+                            podium_warn_element.removeClass("podium_warn_hide");
+                            podium_warn_element.addClass("podium_warn_show");
+                        }
+                    }
                 } else if (differenza_posizioni < 0) {
                     freccia = ClassificaClient.freccia_giu;
                 } else {

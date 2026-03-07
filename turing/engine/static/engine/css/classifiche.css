@@ -25,6 +25,10 @@
     padding: 2px 0px 2px 0.75rem !important;
 }
 
+.table-responsive {
+    position: relative;
+}
+
 th.squadra {
     padding: 0.1em;
     font-size: small;
@@ -141,6 +145,52 @@ tr:nth-child(even) .right-answer.blink {
 
 tr:nth-child(odd) .right-answer.blink {
     animation: blink-right-odd 1s infinite;
+}
+
+.podium_warn_overlay {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    left: 16%;
+    width: 84%;
+    background-color: transparent;
+    pointer-events: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.podium_warn_show {
+    height: 100%;
+    line-height: 1;
+    font-size: 70vh;
+    transform: scale(0);
+    animation: grow 3s ease forwards;
+}
+
+.podium_warn_hide {
+    display: none;
+}
+
+.podium_warn_gold {
+    color: gold;
+}
+
+.podium_warn_silver {
+    color: slategray;
+}
+
+.podium_warn_bronze {
+    color: peru;
+}
+
+@keyframes grow {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
 }
 
 td.prize {
