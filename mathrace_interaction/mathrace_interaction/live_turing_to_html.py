@@ -72,7 +72,6 @@ def live_turing_to_html(
     # Constants associated to the table we will create
     POSITION_COLUMN = 0  # noqa: N806
     TEAM_ID_COLUMN = 1  # noqa: N806
-    TEAM_NAME_COLUMN = 2  # noqa: N806
     SCORE_COLUMN = 3  # noqa: N806
 
     # Constants associated to the output directories
