@@ -100,7 +100,7 @@ class Gara {
     }
 
     set time(value) {
-        var nel_futuro = (value >= this.time);  // necessario memorizzare perchè this.update_events cambia internamente il valore a this.time
+        var nel_futuro = (value >= this.time); // necessario memorizzare perchè this.update_events cambia internamente il valore a this.time
         console.log("updating consegne");
         this.update_events(value, nel_futuro, this.futuro_consegne, this.passato_consegne, this.futuro_consegne_posizioni, this.passato_consegne_posizioni);
         console.log("updating bonus");
@@ -122,8 +122,7 @@ class Gara {
 
                 if (e instanceof Consegna) {
                     e.squadra.risposte[e.problema.id].consegna(e.giusta);
-                }
-                else if (e instanceof Bonus) {
+                } else if (e instanceof Bonus) {
                     e.squadra.aggiungi_bonus_manuale(e.punteggio)
                 }
 
@@ -134,26 +133,23 @@ class Gara {
                     var classifica_e;
                     if (futuro_posizioni.length > 0) {
                         classifica_e = futuro_posizioni.shift();
-                    }
-                    else {
+                    } else {
                         classifica_e = this.get_classifica_posizioni(this.classifica);
                     }
                     passato_posizioni.push(classifica_e);
                 }
             }
-        }
-        else {
+        } else {
             // Stiamo tornando indietro
             console.log(futuro.length, passato.length, "passato");
-            if (passato.length > 0) console.log(passato[passato.length-1].orario, new_time, "passato");
-            while (passato.length > 0 && passato[passato.length-1].orario > new_time) {
-                var e = passato[passato.length-1];
+            if (passato.length > 0) console.log(passato[passato.length - 1].orario, new_time, "passato");
+            while (passato.length > 0 && passato[passato.length - 1].orario > new_time) {
+                var e = passato[passato.length - 1];
                 this._time = e.orario // Porta la gara all'ora della consegna
 
                 if (e instanceof Consegna) {
                     e.squadra.risposte[e.problema.id].undo_consegna(e.giusta);
-                }
-                else if (e instanceof Bonus) {
+                } else if (e instanceof Bonus) {
                     e.squadra.rimuovi_bonus_manuale(e.punteggio)
                 }
 
@@ -163,8 +159,7 @@ class Gara {
                 if (passato_posizioni !== null && futuro_posizioni !== null) {
                     if (passato_posizioni.length > 0) {
                         classifica_e = passato_posizioni.pop();
-                    }
-                    else {
+                    } else {
                         classifica_e = this.get_classifica_posizioni(this.classifica);
                     }
                     futuro_posizioni.unshift(classifica_e);
@@ -175,13 +170,13 @@ class Gara {
 
     get progess() {
         if (this.inizio == null) return;
-        return (this.time - this.inizio)/(this.fine-this.inizio);
+        return (this.time - this.inizio) / (this.fine - this.inizio);
     }
 
     set progress(value) {
         if (this.inizio == null) return;
         // Si sposta al progress specificato, calcolando gli eventi in mezzo
-        if (value==null)
+        if (value == null)
             value = this.client.timer.now();
         this.time = new Date(value);
         console.log("progress at time", this.time);
@@ -263,15 +258,15 @@ class Gara {
     }
 
     get punti_problemi() {
-      var ret = [];
-      for (var i in this.problemi) {
-          ret.push({
-              id: this.problemi[i].id,
-              base: this.problemi[i].punti_base,
-              bonus: this.problemi[i].bonus
-          })
-      }
-      return ret
+        var ret = [];
+        for (var i in this.problemi) {
+            ret.push({
+                id: this.problemi[i].id,
+                base: this.problemi[i].punti_base,
+                bonus: this.problemi[i].bonus
+            })
+        }
+        return ret
     }
 
 }
@@ -296,8 +291,7 @@ class Problema {
             if (this._risposte_corrette == this.gara.n_blocco && this.gara.time <= this.gara.soglia_blocco) {
                 this.lock_time = this.gara.time
             }
-        }
-        else {
+        } else {
             if (this._risposte_corrette == 0 && this.gara.time <= this.gara.soglia_blocco) {
                 this._risposte_sbagliate += 1;
             }
@@ -311,8 +305,7 @@ class Problema {
             if (this._risposte_corrette == this.gara.n_blocco - 1 && this.gara.time <= this.gara.soglia_blocco) {
                 this.lock_time = null;
             }
-        }
-        else {
+        } else {
             if (this._risposte_corrette == 0 && this.gara.time <= this.gara.soglia_blocco) {
                 this._risposte_sbagliate -= 1;
             }
@@ -379,8 +372,7 @@ class Risposta {
                 if (!this.squadra.ospite)
                     this.problema.aggiungi_risposta(true);
             }
-        }
-        else {
+        } else {
             // if (this.risolto>=1) return;
             this.errori += 1;
             this.squadra.aggiungi_risposta(false);
@@ -400,8 +392,7 @@ class Risposta {
                 if (!this.squadra.ospite)
                     this.problema.rimuovi_risposta(true);
             }
-        }
-        else {
+        } else {
             // if (this.risolto>=1) return;
             this.errori -= 1;
             this.squadra.rimuovi_risposta(false);
@@ -436,14 +427,14 @@ class Risposta {
 }
 
 class Squadra {
-    constructor(gara, id, nome, ospite=false) {
+    constructor(gara, id, nome, ospite = false) {
         this.id = parseInt(id);
         this.nome = nome;
         this.gara = gara;
         this.ospite = ospite;
         this.jolly = null // Indica il problema jolly scelto dalla squadra
         this.risposte = {}
-        for(var i in this.gara.problemi) {
+        for (var i in this.gara.problemi) {
             this.risposte[i] = new Risposta(this, this.gara.problemi[i])
         }
         this.bonus_manuale = 0;
@@ -489,7 +480,7 @@ class Squadra {
         // Calcola il punteggio della squadra
         var pts = this.gara.calcola_punteggio_tempo_iniziale(this.gara.n_prob, this.gara.penalita_errore, this.gara.punteggio_iniziale_squadre);
         pts += this._en_plein_bonus;
-        for(var i in this.risposte) {
+        for (var i in this.risposte) {
             pts += this.risposte[i].punteggio
         }
         pts += this.bonus_manuale;
@@ -525,7 +516,7 @@ class Bonus {
 }
 
 class ClassificaClient {
-    constructor(url, view, timer, following=[]) {
+    constructor(url, view, timer, following = []) {
         this.url = url;
         this.view = view;
         this.timer = timer;
@@ -542,7 +533,7 @@ class ClassificaClient {
 
     init() {
         var self = this;
-        $.getJSON(this.url).done(function(data){
+        $.getJSON(this.url).done(function(data) {
             self.recalculating = true;
             self.gara = new Gara(data, self);
             self.timer.init(self.gara.inizio.getTime());
@@ -552,7 +543,7 @@ class ClassificaClient {
         });
     }
 
-    update(progress=null) {
+    update(progress = null) {
         var self = this;
         if (this.recalculating) return;
         if (this.gara.inizio == null) {
@@ -563,7 +554,11 @@ class ClassificaClient {
         var last_jolly_id_before = this.gara.last_jolly_id;
         var last_bonus_id_before = this.gara.last_bonus_id;
         console.log("Last consegna ID is", last_consegna_id_before, "- last jolly ID is", last_jolly_id_before, "- last bonus ID is", last_bonus_id_before);
-        $.getJSON(this.url, {last_consegna_id: last_consegna_id_before, last_jolly_id: last_jolly_id_before, last_bonus_id: last_bonus_id_before}).done(function(data){
+        $.getJSON(this.url, {
+            last_consegna_id: last_consegna_id_before,
+            last_jolly_id: last_jolly_id_before,
+            last_bonus_id: last_bonus_id_before
+        }).done(function(data) {
             var new_lu = new Date(data.last_update);
             if (new_lu > self.gara.last_update) {
                 // C'è stata una modifica grossa, serve un ricalcolo totale
@@ -600,17 +595,27 @@ class ClassificaClient {
     _aggiornaHTML() {
         this._stampaOrologio();
         switch (this.view) {
-            case 'squadre': this._mostraClassifica(); break;
-            case 'problemi': this._mostraPuntiProblemi(); break;
-            case 'stato': this._mostraStatoProblemi(); break;
-            case 'unica': this._mostraUnica(); break;
-            case 'scorrimento': this._mostraScorrimento(); break;
+            case 'squadre':
+                this._mostraClassifica();
+                break;
+            case 'problemi':
+                this._mostraPuntiProblemi();
+                break;
+            case 'stato':
+                this._mostraStatoProblemi();
+                break;
+            case 'unica':
+                this._mostraUnica();
+                break;
+            case 'scorrimento':
+                this._mostraScorrimento();
+                break;
         }
         document.dispatchEvent(new Event('updated'));
     }
 
     _stampaOrologio() {
-        if (this.gara.inizio!=null) {
+        if (this.gara.inizio != null) {
             var inizio = new Date(this.gara.inizio);
             var fine = new Date(this.gara.fine);
             var durata = fine - inizio;
@@ -624,22 +629,22 @@ class ClassificaClient {
         var classifica = this.gara.classifica;
         var classifica_posizioni = this.gara.get_classifica_posizioni(classifica);
         var max = classifica.length > 0 ? classifica[0].pts : 0;
-        max = Math.max(max,this.gara.n_prob*10*4);
+        max = Math.max(max, this.gara.n_prob * 10 * 4);
 
         var sq, pts;
         for (var i in classifica) {
             var sq = classifica[i].squadra;
             var pts = classifica[i].pts;
-            var pos = classifica_posizioni[sq.id-1];
-            var elapsed = (this.gara.time - this.gara.inizio)/1000;
-            $("#team-"+sq.id).css('width', Math.round(pts/max*1000)/10+'%');
-            $("#label-pos-"+sq.id).text(pos+"°");
-            $("#label-points-"+sq.id).text(pts);
-            $("#label-points-mobile-"+sq.id).text(pts);
+            var pos = classifica_posizioni[sq.id - 1];
+            var elapsed = (this.gara.time - this.gara.inizio) / 1000;
+            $("#team-" + sq.id).css('width', Math.round(pts / max * 1000) / 10 + '%');
+            $("#label-pos-" + sq.id).text(pos + "°");
+            $("#label-points-" + sq.id).text(pts);
+            $("#label-points-mobile-" + sq.id).text(pts);
         }
 
         for (const sq_id of this.following) {
-            $("#team-"+sq_id).addClass("following");
+            $("#team-" + sq_id).addClass("following");
         }
     }
 
@@ -648,20 +653,19 @@ class ClassificaClient {
         var max = Math.max(...punti_problemi.map((x) => x.base + x.bonus), 80) // Restituisce il max tra 80 e le somme tra base e bonus
         for (var k in punti_problemi) {
             var id = punti_problemi[k].id
-            $("#label-"+id).text((id)+" - "+this.gara.problemi[id].nome);
-            $("#punti-"+id).css('width', Math.round(punti_problemi[k].base*100./max)+'%');
-            $("#label-punti-"+id).text(punti_problemi[k].base);
+            $("#label-" + id).text((id) + " - " + this.gara.problemi[id].nome);
+            $("#punti-" + id).css('width', Math.round(punti_problemi[k].base * 100. / max) + '%');
+            $("#label-punti-" + id).text(punti_problemi[k].base);
             if (this.gara.problemi[id].bloccato) {
-                $("#punti-"+id).removeClass("progress-bar-light");
-                $("#punti-"+id).addClass("progress-bar-dark");
+                $("#punti-" + id).removeClass("progress-bar-light");
+                $("#punti-" + id).addClass("progress-bar-dark");
+            } else {
+                $("#punti-" + id).removeClass("progress-bar-dark");
+                $("#punti-" + id).addClass("progress-bar-light");
             }
-            else {
-                $("#punti-"+id).removeClass("progress-bar-dark");
-                $("#punti-"+id).addClass("progress-bar-light");
-            }
-            $("#bonus-"+id).css('width', Math.round(punti_problemi[k].bonus*100./max)+'%');
-            if (punti_problemi[k].bonus) $("#label-bonus-"+id).text(punti_problemi[k].bonus);
-            $("#label-punti-mobile-"+id).text(punti_problemi[k].base+" + "+punti_problemi[k].bonus);
+            $("#bonus-" + id).css('width', Math.round(punti_problemi[k].bonus * 100. / max) + '%');
+            if (punti_problemi[k].bonus) $("#label-bonus-" + id).text(punti_problemi[k].bonus);
+            $("#label-punti-mobile-" + id).text(punti_problemi[k].base + " + " + punti_problemi[k].bonus);
         }
     }
 
@@ -671,214 +675,207 @@ class ClassificaClient {
             for (var j in sq.risposte) {
                 var r = sq.risposte[j];
                 var text = "";
-                $("#cell-"+i+"-"+j).removeClass("wrong-answer right-answer")
+                $("#cell-" + i + "-" + j).removeClass("wrong-answer right-answer")
 
                 if (r.risolto) {
-                    $("#cell-"+i+"-"+j).addClass("right-answer");
+                    $("#cell-" + i + "-" + j).addClass("right-answer");
                     if (r.errori) {
-                        text += '<b>-'+r.errori+'</b>';
-                    }
-                    else {
+                        text += '<b>-' + r.errori + '</b>';
+                    } else {
                         text += '<b>0</b>';
                     }
-                }
-                else if (r.errori) {
-                    $("#cell-"+i+"-"+j).addClass("wrong-answer");
-                    text += '<b>-'+r.errori+'</b>';
+                } else if (r.errori) {
+                    $("#cell-" + i + "-" + j).addClass("wrong-answer");
+                    text += '<b>-' + r.errori + '</b>';
                 }
 
                 if (r.is_jolly) {
                     text += ClassificaClient.stella_jolly;
                 }
 
-                $("#cell-"+i+"-"+j).html(text);
+                $("#cell-" + i + "-" + j).html(text);
             }
         }
 
         for (const sq_id of this.following) {
-            $("#riga-"+sq_id).addClass("following");
+            $("#riga-" + sq_id).addClass("following");
         }
     }
 
     _mostraUnica() {
-      var punti_problemi = this.gara.punti_problemi
-      for (var i in punti_problemi){
-          var text = ""
-          var problema = (parseInt(i)+1)
-          text+="#"+("0"+problema).slice(-2)+"\n"+punti_problemi[i].base+"+"+punti_problemi[i].bonus
-          $("#pr-"+problema).html(text)
-          var id = punti_problemi[i].id;
-          $("#giuste-"+problema).html(this.gara.problemi[id]._risposte_corrette);
-          if (this.gara.problemi[id].bloccato) {
-              $("#giuste-"+problema).removeClass("progress-bar-light");
-              $("#giuste-"+problema).removeClass("progress-bar-zero");
-              $("#giuste-"+problema).addClass("progress-bar-dark");
-          }
-          else if (this.gara.problemi[id]._risposte_corrette === 0) {
-              $("#giuste-"+problema).removeClass("progress-bar-light");
-              $("#giuste-"+problema).removeClass("progress-bar-dark");
-              $("#giuste-"+problema).addClass("progress-bar-zero");
-          }
-          else {
-              // almeno una risposta corretta, ma non ancora bloccato
-              $("#giuste-"+problema).removeClass("progress-bar-dark");
-              $("#giuste-"+problema).removeClass("progress-bar-zero");
-              $("#giuste-"+problema).addClass("progress-bar-light");
-          }
-      }
-      // Chiama l'implementazione comune
-      var classifica = this.gara.classifica;
-      var classifica_posizioni = this.gara.get_classifica_posizioni(classifica);
-      this._mostraUnicaOScorrimento(classifica, classifica_posizioni, false, this.prize > 0);
-      // Aggiungi lampeggio alla risposta
-      var passato_length = this.gara.passato_consegne.length;
-      var oldest_blink = Math.min(this.blink, passato_length);
-      for (var i = passato_length - oldest_blink; i < passato_length; i++) {
-          var e = this.gara.passato_consegne[i];
-          var sq = e.squadra;
-          var r = e.problema;
-          $("#cell-" + classifica_posizioni[sq.id - 1] + "-" + r.id).addClass("blink");
-      }
-      // Aggiungi frecce per il cambiamento di posizione in classifica
-      if (this.blink > 0) {
-          $("#freccia-head").show();
-          for (var i in classifica) {
-              var riga = parseInt(i)+1;
-              $("#freccia-"+riga).show();
-          }
-          $("#freccia-foot").show();
-      }
-      if (oldest_blink > 0) {
-          var classifica_posizioni_oldest_blink = this.gara.passato_consegne_posizioni[passato_length - oldest_blink];
-          for (var i in classifica) {
-              var sq = classifica[i].squadra;
-              var riga = parseInt(i)+1;
-              var differenza_posizioni = classifica_posizioni_oldest_blink[sq.id-1] - classifica_posizioni[sq.id-1];
-              var freccia;
-              if (differenza_posizioni > 0) {
-                  freccia = ClassificaClient.freccia_su;
-              }
-              else if (differenza_posizioni < 0) {
-                  freccia = ClassificaClient.freccia_giu;
-              }
-              else {
-                  freccia = ClassificaClient.uguale;
-              }
-              $("#freccia-"+riga).html(freccia);
-          }
-      }
-      else {
-          $("#freccia-"+riga).html();
-      }
-      // Aggiungi bordo per la risposta che vincerebbe il premio
-      if (this.prize > 0) {
-          // Pulisci le precedenti classi CSS
-          for (var i in classifica) {
-              var sq = classifica[parseInt(i)].squadra;
-              var riga = parseInt(i) + 1;
-              for (var j in sq.risposte) {
-                  $("#cell-"+riga+"-"+j).removeClass("prize prize-dashed prize-solid prize-gold prize-silver prize-bronze");
-              }
-          }
+        var punti_problemi = this.gara.punti_problemi
+        for (var i in punti_problemi) {
+            var text = ""
+            var problema = (parseInt(i) + 1)
+            text += "#" + ("0" + problema).slice(-2) + "\n" + punti_problemi[i].base + "+" + punti_problemi[i].bonus
+            $("#pr-" + problema).html(text)
+            var id = punti_problemi[i].id;
+            $("#giuste-" + problema).html(this.gara.problemi[id]._risposte_corrette);
+            if (this.gara.problemi[id].bloccato) {
+                $("#giuste-" + problema).removeClass("progress-bar-light");
+                $("#giuste-" + problema).removeClass("progress-bar-zero");
+                $("#giuste-" + problema).addClass("progress-bar-dark");
+            } else if (this.gara.problemi[id]._risposte_corrette === 0) {
+                $("#giuste-" + problema).removeClass("progress-bar-light");
+                $("#giuste-" + problema).removeClass("progress-bar-dark");
+                $("#giuste-" + problema).addClass("progress-bar-zero");
+            } else {
+                // almeno una risposta corretta, ma non ancora bloccato
+                $("#giuste-" + problema).removeClass("progress-bar-dark");
+                $("#giuste-" + problema).removeClass("progress-bar-zero");
+                $("#giuste-" + problema).addClass("progress-bar-light");
+            }
+        }
+        // Chiama l'implementazione comune
+        var classifica = this.gara.classifica;
+        var classifica_posizioni = this.gara.get_classifica_posizioni(classifica);
+        this._mostraUnicaOScorrimento(classifica, classifica_posizioni, false, this.prize > 0);
+        // Aggiungi lampeggio alla risposta
+        var passato_length = this.gara.passato_consegne.length;
+        var oldest_blink = Math.min(this.blink, passato_length);
+        for (var i = passato_length - oldest_blink; i < passato_length; i++) {
+            var e = this.gara.passato_consegne[i];
+            var sq = e.squadra;
+            var r = e.problema;
+            $("#cell-" + classifica_posizioni[sq.id - 1] + "-" + r.id).addClass("blink");
+        }
+        // Aggiungi frecce per il cambiamento di posizione in classifica
+        if (this.blink > 0) {
+            $("#freccia-head").show();
+            for (var i in classifica) {
+                var riga = parseInt(i) + 1;
+                $("#freccia-" + riga).show();
+            }
+            $("#freccia-foot").show();
+        }
+        if (oldest_blink > 0) {
+            var classifica_posizioni_oldest_blink = this.gara.passato_consegne_posizioni[passato_length - oldest_blink];
+            for (var i in classifica) {
+                var sq = classifica[i].squadra;
+                var riga = parseInt(i) + 1;
+                var differenza_posizioni = classifica_posizioni_oldest_blink[sq.id - 1] - classifica_posizioni[sq.id - 1];
+                var freccia;
+                if (differenza_posizioni > 0) {
+                    freccia = ClassificaClient.freccia_su;
+                } else if (differenza_posizioni < 0) {
+                    freccia = ClassificaClient.freccia_giu;
+                } else {
+                    freccia = ClassificaClient.uguale;
+                }
+                $("#freccia-" + riga).html(freccia);
+            }
+        } else {
+            $("#freccia-" + riga).html();
+        }
+        // Aggiungi bordo per la risposta che vincerebbe il premio
+        if (this.prize > 0) {
+            // Pulisci le precedenti classi CSS
+            for (var i in classifica) {
+                var sq = classifica[parseInt(i)].squadra;
+                var riga = parseInt(i) + 1;
+                for (var j in sq.risposte) {
+                    $("#cell-" + riga + "-" + j).removeClass("prize prize-dashed prize-solid prize-gold prize-silver prize-bronze");
+                }
+            }
 
-          // Crea una mappa dai punteggi per premio alle celle che li hanno ottenuti
-          var scoreMap = new Map();
-          for (var i in classifica) {
-              var sq = classifica[parseInt(i)].squadra;
-              var riga = parseInt(i) + 1;
-              for (var j in sq.risposte) {
-                  var r = sq.risposte[j];
-                  if (!r.risolto) continue;
-                  var r_prize = r.punteggio_per_premio;
-                  if (!scoreMap.has(r_prize)) scoreMap.set(r_prize, []);
-                  scoreMap.get(r_prize).push({riga: riga, colonna: j});
-              }
-          }
+            // Crea una mappa dai punteggi per premio alle celle che li hanno ottenuti
+            var scoreMap = new Map();
+            for (var i in classifica) {
+                var sq = classifica[parseInt(i)].squadra;
+                var riga = parseInt(i) + 1;
+                for (var j in sq.risposte) {
+                    var r = sq.risposte[j];
+                    if (!r.risolto) continue;
+                    var r_prize = r.punteggio_per_premio;
+                    if (!scoreMap.has(r_prize)) scoreMap.set(r_prize, []);
+                    scoreMap.get(r_prize).push({
+                        riga: riga,
+                        colonna: j
+                    });
+                }
+            }
 
-          // Estrai i primi tre punteggi per premio, e aggiungi le classi CSS corrispondenti alle celle che li hanno ottenuti
-          var scores = Array.from(scoreMap.keys()).sort((a,b) => b - a);
-          var topScores = scores.slice(0, 3);
+            // Estrai i primi tre punteggi per premio, e aggiungi le classi CSS corrispondenti alle celle che li hanno ottenuti
+            var scores = Array.from(scoreMap.keys()).sort((a, b) => b - a);
+            var topScores = scores.slice(0, 3);
 
-          var medalClass = ["prize-gold", "prize-silver", "prize-bronze"];
-          for (var sidx = 0; sidx < topScores.length; sidx++) {
-              var s = topScores[sidx];
-              var group = scoreMap.get(s);
-              var medal = medalClass[sidx];
-              var modifier = group.length > 1 ? "prize-dashed" : "prize-solid";
-              var cls = "prize " + medal + " " + modifier;
-              for (var k = 0; k < group.length; k++) {
-                  var cell = group[k];
-                  $("#cell-"+cell.riga+"-"+cell.colonna).addClass(cls);
-              }
-          }
-      }
+            var medalClass = ["prize-gold", "prize-silver", "prize-bronze"];
+            for (var sidx = 0; sidx < topScores.length; sidx++) {
+                var s = topScores[sidx];
+                var group = scoreMap.get(s);
+                var medal = medalClass[sidx];
+                var modifier = group.length > 1 ? "prize-dashed" : "prize-solid";
+                var cls = "prize " + medal + " " + modifier;
+                for (var k = 0; k < group.length; k++) {
+                    var cell = group[k];
+                    $("#cell-" + cell.riga + "-" + cell.colonna).addClass(cls);
+                }
+            }
+        }
     }
 
     _mostraScorrimento() {
-      var classifica = this.gara.classifica;
-      var classifica_posizioni = this.gara.get_classifica_posizioni(classifica);
-      this._mostraUnicaOScorrimento(classifica, classifica_posizioni, true, false);
+        var classifica = this.gara.classifica;
+        var classifica_posizioni = this.gara.get_classifica_posizioni(classifica);
+        this._mostraUnicaOScorrimento(classifica, classifica_posizioni, true, false);
     }
 
     _mostraUnicaOScorrimento(classifica, classifica_posizioni, reverse, mostra_punteggio_per_premio) {
-      var length = classifica.length;
-      for (var i in classifica) {
-          var sq = classifica[reverse ? length - 1 - parseInt(i) : parseInt(i)].squadra;
-          var riga = parseInt(i) + 1;
-          if (sq.ospite) $("#riga-"+riga).addClass("text-muted");
-          else $("#riga-"+riga).removeClass("text-muted");
-          $("#pos-"+riga).html(classifica_posizioni[sq.id-1]+"° ");
-          $("#nome-"+riga).html(sq.nome);
-          $("#num-"+riga).html(sq.id);
-          if (!mostra_punteggio_per_premio) {
-              $("#punt-"+riga).html(""+sq.punteggio);
-          }
-          for (var j in sq.risposte) {
-              var r = sq.risposte[j];
-              var text = "";
-              $("#cell-"+riga+"-"+j).removeClass("wrong-answer right-answer blink")
+        var length = classifica.length;
+        for (var i in classifica) {
+            var sq = classifica[reverse ? length - 1 - parseInt(i) : parseInt(i)].squadra;
+            var riga = parseInt(i) + 1;
+            if (sq.ospite) $("#riga-" + riga).addClass("text-muted");
+            else $("#riga-" + riga).removeClass("text-muted");
+            $("#pos-" + riga).html(classifica_posizioni[sq.id - 1] + "° ");
+            $("#nome-" + riga).html(sq.nome);
+            $("#num-" + riga).html(sq.id);
+            if (!mostra_punteggio_per_premio) {
+                $("#punt-" + riga).html("" + sq.punteggio);
+            }
+            for (var j in sq.risposte) {
+                var r = sq.risposte[j];
+                var text = "";
+                $("#cell-" + riga + "-" + j).removeClass("wrong-answer right-answer blink")
 
-              if (r.risolto) {
-                  $("#cell-"+riga+"-"+j).addClass("right-answer");
-              }
-              else if (r.errori) {
-                  $("#cell-"+riga+"-"+j).addClass("wrong-answer");
-              }
-              if(r.risolto || r.errori) {
-                  text += '<span class="punteggio_unica"><b>';
-                  if (mostra_punteggio_per_premio) {
-                      text += r.punteggio_per_premio;
-                  }
-                  else {
-                      text += r.punteggio;
-                  }
-                  text += '</b></span>';
-              }
+                if (r.risolto) {
+                    $("#cell-" + riga + "-" + j).addClass("right-answer");
+                } else if (r.errori) {
+                    $("#cell-" + riga + "-" + j).addClass("wrong-answer");
+                }
+                if (r.risolto || r.errori) {
+                    text += '<span class="punteggio_unica"><b>';
+                    if (mostra_punteggio_per_premio) {
+                        text += r.punteggio_per_premio;
+                    } else {
+                        text += r.punteggio;
+                    }
+                    text += '</b></span>';
+                }
 
-              if (r.is_jolly) {
-                  text += ClassificaClient.stella_jolly;
-              }
+                if (r.is_jolly) {
+                    text += ClassificaClient.stella_jolly;
+                }
 
-              $("#cell-"+riga+"-"+j).html(text);
-          }
-          if (sq.bonus_manuale + sq._en_plein_bonus != 0) $("#cell-"+riga+"-bonus").html("<span><b>" + (sq.bonus_manuale + sq._en_plein_bonus ) + "</b></span>");
-          else $("#cell-"+riga+"-bonus").html("");
+                $("#cell-" + riga + "-" + j).html(text);
+            }
+            if (sq.bonus_manuale + sq._en_plein_bonus != 0) $("#cell-" + riga + "-bonus").html("<span><b>" + (sq.bonus_manuale + sq._en_plein_bonus) + "</b></span>");
+            else $("#cell-" + riga + "-bonus").html("");
 
-          if (this.following.includes(sq.id)) $("#riga-"+riga).addClass("following");
-          else $("#riga-"+riga).removeClass("following");
-      }
+            if (this.following.includes(sq.id)) $("#riga-" + riga).addClass("following");
+            else $("#riga-" + riga).removeClass("following");
+        }
     }
 
     toggleReplay(button, slider_id) {
         this.autoplay = 1 - this.autoplay;
         if (this.autoplay) {
             button.innerHTML = '<i class="fas fa-pause"></i>';
-            var slider = $("#"+slider_id);
+            var slider = $("#" + slider_id);
             if (slider[0].value == slider[0].max) slider[0].value = 0;
             increaseSlider(slider, 1);
             this.autoplayInterval = setInterval(increaseSlider, 100, slider, 1);
-        }
-        else {
+        } else {
             button.innerHTML = '<i class="fas fa-play"></i>';
             clearInterval(this.autoplayInterval);
         }
