@@ -204,25 +204,40 @@ class Gara {
     }
 
     custom_sort(a, b) {
-        // sort by points
+        // Confronto rispetto al punteggio totale
         if (a.pts < b.pts) return 1
         if (a.pts > b.pts) return -1;
 
-        // sort by jolly
-        if (a.squadra.jolly != null && b.squadra.jolly != null) {
-            var jolly_diff = b.squadra.jolly.punteggio - a.squadra.jolly.punteggio;
+        // In caso di parità tra due squadre prevale quella che ha totalizzato più punti (compresi bonus e penalizzazioni) nel suo problema jolly.
+        if (this.jolly_enabled) {
+            if (a.squadra.jolly != null) {
+                var jolly_a = a.squadra.jolly;
+            } else {
+                var jolly_a = a.squadra.risposte[1];
+            }
+            if (b.squadra.jolly != null) {
+                var jolly_b = b.squadra.jolly;
+            } else {
+                var jolly_b = b.squadra.risposte[1];
+            }
+            var jolly_diff = jolly_b.punteggio - jolly_a.punteggio;
             if (jolly_diff != 0) return jolly_diff;
         }
 
-        // sort by
+        // In caso di ulteriore parità, prevale la squadra che ha ottenuto il maggior punteggio per un singolo problema (compresi bonus e penalizzazioni).
+        // In caso di ulteriore parità, si guarda il secondo maggior punteggio, e così via.
         var pba = Object.entries(a.squadra.risposte).map(x => x[1].punteggio).sort().reverse();
         var pbb = Object.entries(b.squadra.risposte).map(x => x[1].punteggio).sort().reverse();
-        if (pba<pbb) return 1;
-        if (pba>pbb) return -1;
+        for (var i = 0; i < pba.length; i++) {
+            var va = pba[i];
+            var vb = pbb[i];
+            if (va < vb) return 1;
+            if (va > vb) return -1;
+        }
 
-        // TODO: sort by timestamp
-        return 0;
-
+        // Infine, in caso di parità in tutti i punteggi, si procederà ad un sorteggio.
+        // Il sorteggio qui è simulato con un ordinamento stabile rispetto all'ID della squadra, che è stato assegnato in un sorteggio precedente.
+        return a.squadra.id - b.squadra.id;
     }
 
     get classifica() {
@@ -234,7 +249,7 @@ class Gara {
             })
         }
         // Ordina secondo il regolamento
-        ret.sort(this.custom_sort)
+        ret.sort(this.custom_sort.bind(this));
         return ret
     }
 
