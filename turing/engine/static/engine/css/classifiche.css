@@ -132,19 +132,19 @@ tr:nth-child(odd) .right-answer {
 }
 
 tr:nth-child(even) .wrong-answer.blink {
-    animation: blink-wrong-even 1s infinite;
+    animation: blink-wrong-even 1s 20;
 }
 
 tr:nth-child(odd) .wrong-answer.blink {
-    animation: blink-wrong-odd 1s infinite;
+    animation: blink-wrong-odd 1s 20;
 }
 
 tr:nth-child(even) .right-answer.blink {
-    animation: blink-right-even 1s infinite;
+    animation: blink-right-even 1s 20;
 }
 
 tr:nth-child(odd) .right-answer.blink {
-    animation: blink-right-odd 1s infinite;
+    animation: blink-right-odd 1s 20;
 }
 
 .podium_warn_overlay {
