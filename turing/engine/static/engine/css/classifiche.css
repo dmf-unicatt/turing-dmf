@@ -144,7 +144,27 @@ tr:nth-child(odd) .right-answer.blink {
 }
 
 td.prize {
-    border: 3px solid gold;
+    border: 3px solid black;
+}
+
+td.prize-gold {
+    border-color: gold;
+}
+
+td.prize-silver {
+    border-color: slategray;
+}
+
+td.prize-bronze {
+    border-color: peru;
+}
+
+td.prize-dashed {
+    border-style: dashed;
+}
+
+td.prize-solid {
+    border-style: solid;
 }
 
 td.unica_giuste {

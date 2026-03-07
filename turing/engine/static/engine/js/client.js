@@ -772,31 +772,44 @@ class ClassificaClient {
       }
       // Aggiungi bordo per la risposta che vincerebbe il premio
       if (this.prize > 0) {
-          var riga_prize = [];
-          var j_prize = [];
-          var punteggio_prize = -1;
+          // Pulisci le precedenti classi CSS
           for (var i in classifica) {
               var sq = classifica[parseInt(i)].squadra;
               var riga = parseInt(i) + 1;
               for (var j in sq.risposte) {
-                  $("#cell-"+riga+"-"+j).removeClass("prize");
-                  var r = sq.risposte[j];
-                  var r_prize = r.punteggio_per_premio;
-                  if (r.risolto) {
-                      if (r_prize > punteggio_prize) {
-                          punteggio_prize = r_prize;
-                          riga_prize = [riga];
-                          j_prize = [j];
-                      }
-                      else if (r_prize == punteggio_prize) {
-                          riga_prize.push(riga);
-                          j_prize.push(j);
-                      }
-                  }
+                  $("#cell-"+riga+"-"+j).removeClass("prize prize-dashed prize-solid prize-gold prize-silver prize-bronze");
               }
           }
-          for (var l = 0; l < riga_prize.length; l++) {
-              $("#cell-"+riga_prize[l]+"-"+j_prize[l]).addClass("prize");
+
+          // Crea una mappa dai punteggi per premio alle celle che li hanno ottenuti
+          var scoreMap = new Map();
+          for (var i in classifica) {
+              var sq = classifica[parseInt(i)].squadra;
+              var riga = parseInt(i) + 1;
+              for (var j in sq.risposte) {
+                  var r = sq.risposte[j];
+                  if (!r.risolto) continue;
+                  var r_prize = r.punteggio_per_premio;
+                  if (!scoreMap.has(r_prize)) scoreMap.set(r_prize, []);
+                  scoreMap.get(r_prize).push({riga: riga, colonna: j});
+              }
+          }
+
+          // Estrai i primi tre punteggi per premio, e aggiungi le classi CSS corrispondenti alle celle che li hanno ottenuti
+          var scores = Array.from(scoreMap.keys()).sort((a,b) => b - a);
+          var topScores = scores.slice(0, 3);
+
+          var medalClass = ["prize-gold", "prize-silver", "prize-bronze"];
+          for (var sidx = 0; sidx < topScores.length; sidx++) {
+              var s = topScores[sidx];
+              var group = scoreMap.get(s);
+              var medal = medalClass[sidx];
+              var modifier = group.length > 1 ? "prize-dashed" : "prize-solid";
+              var cls = "prize " + medal + " " + modifier;
+              for (var k = 0; k < group.length; k++) {
+                  var cell = group[k];
+                  $("#cell-"+cell.riga+"-"+cell.colonna).addClass(cls);
+              }
           }
       }
     }
