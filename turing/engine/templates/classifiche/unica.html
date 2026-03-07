@@ -55,10 +55,10 @@
             </tr></thead>
         </table>
 
-        <div class="podium_warn_overlay">
-            <div id="podium_warn_gold" data-previous-occupant="0" class="podium_warn_hide podium_warn_gold">1</div>
-            <div id="podium_warn_silver" data-previous-occupant="0" class="podium_warn_hide podium_warn_silver">2</div>
-            <div id="podium_warn_bronze" data-previous-occupant="0" class="podium_warn_hide podium_warn_bronze">3</div>
+        <div class="position_warn_overlay">
+            {% for sq in object.get_squadre_order %}
+            <div id="position_warn_{{sq.num}}" data-previous-occupant="0" class="position_warn_hide position_warn_{{sq.num}}">{{sq.num}}</div>
+            {% endfor %}
         </div>
     </div>
 
@@ -66,10 +66,11 @@
 </div>
 
 <script>
-    $('#podium_warn_gold, #podium_warn_silver, #podium_warn_bronze')
-    .on("animationend", function () {
-        $(this).removeClass("podium_warn_show");
-        $(this).addClass("podium_warn_hide");
+    {% for sq in object.get_squadre_order %}
+    $(".position_warn_{{sq.num}}").on("animationend", function () {
+        $(this).removeClass("position_warn_show");
+        $(this).addClass("position_warn_hide");
     });
+    {% endfor %}
 </script>
 {% endblock %}

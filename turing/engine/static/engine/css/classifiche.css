@@ -147,7 +147,7 @@ tr:nth-child(odd) .right-answer.blink {
     animation: blink-right-odd 1s 20;
 }
 
-.podium_warn_overlay {
+.position_warn_overlay {
     position: absolute;
     top: 0;
     height: 100%;
@@ -160,27 +160,30 @@ tr:nth-child(odd) .right-answer.blink {
     align-items: center;
 }
 
-.podium_warn_show {
+.position_warn_show {
     height: 100%;
     line-height: 1;
     font-size: 70vh;
     transform: scale(0);
     animation: grow 3s ease forwards;
+    color: black;
+    margin-left: 5vw;
+    margin-right: 5vw;
 }
 
-.podium_warn_hide {
+.position_warn_hide {
     display: none;
 }
 
-.podium_warn_gold {
+.position_warn_1 {
     color: gold;
 }
 
-.podium_warn_silver {
+.position_warn_2 {
     color: slategray;
 }
 
-.podium_warn_bronze {
+.position_warn_3 {
     color: peru;
 }
 

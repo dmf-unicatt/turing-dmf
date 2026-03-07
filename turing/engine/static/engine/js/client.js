@@ -527,8 +527,8 @@ class ClassificaClient {
         var urlParams = new URLSearchParams(window.location.search);
         var blink = urlParams.get("blink");
         this.blink = (blink && !isNaN(blink) && Number.isInteger(parseFloat(blink))) ? parseInt(blink) : 0;
-        var podium_warn = urlParams.get("podium_warn");
-        this.podium_warn = (podium_warn && !isNaN(podium_warn) && this.blink > 0) ? 1 : 0;
+        var position_warn = urlParams.get("position_warn");
+        this.position_warn = (position_warn && !isNaN(position_warn) && Number.isInteger(parseFloat(position_warn))) ? parseInt(position_warn) : 0;
         var prize = urlParams.get("prize");
         this.prize = (prize && !isNaN(prize)) ? 1 : 0;
     }
@@ -751,12 +751,7 @@ class ClassificaClient {
             $("#freccia-foot").show();
         }
         if (oldest_blink > 0) {
-            var classifica_posizioni_oldest_blink = this.gara.passato_consegne_posizioni[passato_length - oldest_blink];
-            var podium_warn_position_map = {
-                1: "gold",
-                2: "silver",
-                3: "bronze"
-            };
+            var classifica_posizioni_oldest_blink = this.gara.passato_consegne_posizioni[passato_length - oldest_blink - 1];
             for (var i in classifica) {
                 var sq = classifica[i].squadra;
                 var riga = parseInt(i) + 1;
@@ -764,16 +759,6 @@ class ClassificaClient {
                 var freccia;
                 if (differenza_posizioni > 0) {
                     freccia = ClassificaClient.freccia_su;
-                    // Abilita l'animazione in podium_warn_overlay se la squadra è entrata sul podio
-                    if (this.podium_warn && classifica_posizioni[sq.id - 1] <= 3) {
-                        var podium_warn_position = podium_warn_position_map[classifica_posizioni[sq.id - 1]];
-                        var podium_warn_element = $("#podium_warn_" + podium_warn_position);
-                        if (podium_warn_element.attr("data-previous-occupant") !== sq.id.toString()) {
-                            podium_warn_element.attr("data-previous-occupant", sq.id.toString());
-                            podium_warn_element.removeClass("podium_warn_hide");
-                            podium_warn_element.addClass("podium_warn_show");
-                        }
-                    }
                 } else if (differenza_posizioni < 0) {
                     freccia = ClassificaClient.freccia_giu;
                 } else {
@@ -783,6 +768,23 @@ class ClassificaClient {
             }
         } else {
             $("#freccia-" + riga).html();
+        }
+        // Abilita l'animazione in position_warn_overlay se la squadra è entrata nelle prime posizioni
+        console.log("Position warn is", this.position_warn, "and passato length is", passato_length);
+        if (this.position_warn > 0 && passato_length > 1) {
+            var classifica_posizioni_consegna_precedente = this.gara.passato_consegne_posizioni[(passato_length - 1) - 1];
+            for (var i in classifica) {
+                var sq = classifica[i].squadra;
+                if (classifica_posizioni[sq.id - 1] <= this.position_warn) {
+                    var position_warn_element = $("#position_warn_" + classifica_posizioni[sq.id - 1]);
+                    var differenza_posizioni = classifica_posizioni_consegna_precedente[sq.id - 1] - classifica_posizioni[sq.id - 1];
+                    if (differenza_posizioni > 0 && position_warn_element.attr("data-previous-occupant") !== sq.id.toString()) {
+                        position_warn_element.attr("data-previous-occupant", sq.id.toString());
+                        position_warn_element.removeClass("position_warn_hide");
+                        position_warn_element.addClass("position_warn_show");
+                    }
+                }
+            }
         }
         // Aggiungi bordo per la risposta che vincerebbe il premio
         if (this.prize > 0) {
