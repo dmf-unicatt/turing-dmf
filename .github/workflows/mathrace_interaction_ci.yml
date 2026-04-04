@@ -57,7 +57,7 @@ jobs:
         run: |
           export DEBIAN_FRONTEND="noninteractive"
           apt update -y -q
-          apt install -y -qq git
+          apt install -y -qq ca-certificates git
         working-directory: .
       - uses: actions/checkout@v6
       - name: Setup container
