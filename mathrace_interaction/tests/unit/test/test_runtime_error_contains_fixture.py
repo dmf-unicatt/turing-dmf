@@ -46,4 +46,4 @@ def test_runtime_error_contains_without_error(
     with pytest.raises(_pytest.outcomes.Failed) as excinfo:
         runtime_error_contains(lambda: None, "test_runtime_error_contains_without_error raised")
     pytest_error_text = str(excinfo.value)
-    assert pytest_error_text == "DID NOT RAISE <class 'RuntimeError'>"
+    assert pytest_error_text == "DID NOT RAISE RuntimeError"
