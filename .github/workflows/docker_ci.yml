@@ -23,7 +23,7 @@ jobs:
             os: ubuntu-latest
             database-type: SQLite3
           - arch: arm64
-            os: ubuntu-24.04-arm
+            os: ubuntu-26.04-arm
             database-type: PostgreSQL
       fail-fast: false
     runs-on: ${{ matrix.os }}
