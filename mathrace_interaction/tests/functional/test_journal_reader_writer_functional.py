@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """Test mathrace_interaction.journal_reader and mathrace_interaction.journal_writer on journals in data."""
 
-import datetime
+import datetime as dt
 import io
 import os
 import typing
@@ -193,7 +193,7 @@ def same_version_comparison(journal: typing.TextIO, journal_name: str, exported_
 def test_journal_reader_runs_on_data(journal: typing.TextIO, journal_name: str) -> None:
     """Test that journal_reader runs successfully on all journals in the data directory."""
     journal_year, _ = journal_name.split(os.sep, maxsplit=1)
-    journal_date = datetime.datetime(int(journal_year), 1, 1, tzinfo=datetime.UTC)
+    journal_date = dt.datetime(int(journal_year), 1, 1, tzinfo=dt.UTC)
     with mathrace_interaction.journal_reader(journal) as journal_stream:
         journal_stream.read(journal_name, journal_date)
 
@@ -203,7 +203,7 @@ def test_journal_reader_writer_same_version_comparison(
 ) -> None:
     """Test that journal_reader and journal_writer (almost) returns the original journal file."""
     journal_year, _ = journal_name.split(os.sep, maxsplit=1)
-    journal_date = datetime.datetime(int(journal_year), 1, 1, tzinfo=datetime.UTC)
+    journal_date = dt.datetime(int(journal_year), 1, 1, tzinfo=dt.UTC)
     with (
         io.StringIO("") as exported_journal,
         mathrace_interaction.journal_reader(journal) as input_journal_stream,
@@ -279,7 +279,7 @@ def test_journal_version_converter_same_turing_dictionary(
         pytest.skip("This version hardcodes the initial score, while the original journal did not store it")
     else:
         journal_year, _ = journal_name.split(os.sep, maxsplit=1)
-        journal_date = datetime.datetime(int(journal_year), 1, 1, tzinfo=datetime.UTC)
+        journal_date = dt.datetime(int(journal_year), 1, 1, tzinfo=dt.UTC)
         journal_copy = io.StringIO(journal.read())
         journal.seek(0)
         with mathrace_interaction.journal_reader(journal_copy) as journal_stream:

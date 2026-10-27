@@ -6,7 +6,7 @@
 """Follow the mathrace journal of a live race, and register all events into a live session in turing."""
 
 import argparse
-import datetime
+import datetime as dt
 import json
 import pathlib
 import shutil
@@ -145,7 +145,7 @@ def live_journal_to_live_turing(
                 assert "subclass" in event_dict
                 event_dict_copy = dict(event_dict)
                 # Convert datetime string representation into date time object
-                event_dict_copy["orario"] = datetime.datetime.fromisoformat(event_dict["orario"])
+                event_dict_copy["orario"] = dt.datetime.fromisoformat(event_dict["orario"])
                 # The team ID is local to the race, and needs to be converted into the primary key
                 # in the database
                 event_dict_copy["squadra"] = Squadra.objects.get(gara=turing_race, num=event_dict["squadra_id"])
@@ -178,7 +178,7 @@ def live_journal_to_live_turing(
 
 
 def _convert_and_backup_input_file(
-    race_name: str, race_date: datetime.datetime, open_input_file: typing.Callable[[], typing.TextIO],
+    race_name: str, race_date: dt.datetime, open_input_file: typing.Callable[[], typing.TextIO],
     time_counter: int, live_journal_files_directory: pathlib.Path, live_turing_json_files_directory: pathlib.Path,
     clear_events: bool = False
 ) -> tuple[TuringDict, bool]:

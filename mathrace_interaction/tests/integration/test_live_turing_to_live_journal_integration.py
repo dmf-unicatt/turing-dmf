@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """Test mathrace_interaction.live_turing_to_live_journal on journals in data and turing models."""
 
-import datetime
+import datetime as dt
 import io
 import os
 
@@ -20,7 +20,7 @@ import mathrace_interaction.test
 def test_live_turing_to_live_journal_on_data(journal: io.StringIO, journal_name: str) -> None:
     """Test test_live_turing_to_live_journal with a fixed number of reads."""
     journal_year, _ = journal_name.split(os.sep, maxsplit=1)
-    journal_date = datetime.datetime(int(journal_year), 1, 1, tzinfo=datetime.UTC)
+    journal_date = dt.datetime(int(journal_year), 1, 1, tzinfo=dt.UTC)
     journal_copy = io.StringIO(journal.read())
     journal.seek(0)
     num_reads = 6  # split the journal into very large chucks, otherwise testing time increases too much

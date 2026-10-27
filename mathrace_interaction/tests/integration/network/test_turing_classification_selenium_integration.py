@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """Test mathrace_interaction.network.TuringClassificationSelenium on a live turing instace."""
 
-import datetime
+import datetime as dt
 
 import engine.models
 import pytest
@@ -209,7 +209,7 @@ def test_classification_browser_get_teams_score_integration_over_time(  # type: 
         browser3.find_element(selenium.webdriver.common.by.By.ID, "orologio").text) < timer_to_int("00:05:30")
 
     # Freeze time for the third browser (but not for the second)
-    browser3.freeze_time(datetime.datetime.now(), force_classification_update=False)
+    browser3.freeze_time(dt.datetime.now(), force_classification_update=False)
 
     # Lock page content at the time of the first answer submission.
     # Only the first browser will see the difference in the scores.

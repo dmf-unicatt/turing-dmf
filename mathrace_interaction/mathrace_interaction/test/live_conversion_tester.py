@@ -6,7 +6,7 @@
 """Tester for mathrace_interaction.live_journal_to_live_turing.LiveJournal."""
 
 import abc
-import datetime
+import datetime as dt
 import json
 import pathlib
 import tempfile
@@ -60,7 +60,7 @@ class LiveConversionTester(abc.ABC):
     """
 
     def __init__(
-        self, journal_stream: typing.TextIO, race_name: str, race_date: datetime.datetime,
+        self, journal_stream: typing.TextIO, race_name: str, race_date: dt.datetime,
         num_reads: int, turing_models: types.ModuleType
     ) -> None:
         # Assign input arguments
@@ -177,7 +177,7 @@ class LiveTuringToLiveJournalTester(LiveConversionTester):
     """Tester for mathrace_interaction.live_turing_to_live_journal."""
 
     def __init__(
-        self, journal_stream: typing.TextIO, race_name: str, race_date: datetime.datetime,
+        self, journal_stream: typing.TextIO, race_name: str, race_date: dt.datetime,
         num_reads: int, turing_models: types.ModuleType
     ) -> None:
         super().__init__(journal_stream, race_name, race_date, num_reads, turing_models)
@@ -227,7 +227,7 @@ class LiveTuringToLiveJournalTester(LiveConversionTester):
                 assert "subclass" in event_dict
                 event_dict_copy = dict(event_dict)
                 # Convert datetime string representation into date time object
-                event_dict_copy["orario"] = datetime.datetime.fromisoformat(event_dict["orario"])
+                event_dict_copy["orario"] = dt.datetime.fromisoformat(event_dict["orario"])
                 # The team ID is local to the race, and needs to be converted into the primary key
                 # in the database
                 event_dict_copy["squadra"] = Squadra.objects.get(gara=turing_race, num=event_dict["squadra_id"])

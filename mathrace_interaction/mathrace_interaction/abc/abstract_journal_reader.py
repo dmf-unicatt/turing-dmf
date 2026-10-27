@@ -6,7 +6,7 @@
 """Abstract journal reader class."""
 
 import abc
-import datetime
+import datetime as dt
 import types
 import typing
 
@@ -48,7 +48,7 @@ class AbstractJournalReader(abc.ABC):
 
     def __init__(self, journal_stream: typing.TextIO) -> None:
         self._journal_stream = journal_stream
-        self._last_event_datetime: datetime.datetime | None = None
+        self._last_event_datetime: dt.datetime | None = None
 
     def __enter__(self) -> typing.Self:
         """Enter the journal I/O stream context."""
@@ -62,7 +62,7 @@ class AbstractJournalReader(abc.ABC):
         """Exit the journal I/O stream context."""
         self._journal_stream.__exit__(exception_type, exception_value, traceback)
 
-    def read(self, race_name: str, race_date: datetime.datetime | None) -> TuringDict:
+    def read(self, race_name: str, race_date: dt.datetime | None) -> TuringDict:
         """
         Read the mathrace journal, and convert it into a dictionary compatible with turing.
 

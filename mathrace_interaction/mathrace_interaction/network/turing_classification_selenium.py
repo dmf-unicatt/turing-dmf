@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """A selenium browser that connects to a classification page on the current live turing instance."""
 
-import datetime
+import datetime as dt
 import typing
 import urllib.parse
 
@@ -388,7 +388,7 @@ class TuringClassificationSelenium:
         # Return postprocessed page
         return str(soup)
 
-    def freeze_time(self, current_time: datetime.datetime, force_classification_update: bool = True) -> None:
+    def freeze_time(self, current_time: dt.datetime, force_classification_update: bool = True) -> None:
         """Freeze the race time at the specified time."""
         javascript_timestamp = int(current_time.timestamp() * 1000)
         # Overwrite the javascript timer

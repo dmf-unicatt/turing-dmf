@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """Test mathrace_interaction.journal_reader."""
 
-import datetime
+import datetime as dt
 import io
 import json
 import tempfile
@@ -19,7 +19,7 @@ import mathrace_interaction.typing
 
 
 def test_journal_reader(
-    journal: io.StringIO, race_name: str, race_date: datetime.datetime,
+    journal: io.StringIO, race_name: str, race_date: dt.datetime,
     turing_dict: mathrace_interaction.typing.TuringDict
 ) -> None:
     """Test that journal_reader correctly imports sample journals."""
@@ -37,7 +37,7 @@ def test_journal_reader(
 )
 def test_journal_reader_entrypoint(
     journal: io.StringIO, run_entrypoint: mathrace_interaction.typing.RunEntrypointFixtureType,
-    race_name: str, race_date: datetime.datetime, turing_dict: mathrace_interaction.typing.TuringDict,
+    race_name: str, race_date: dt.datetime, turing_dict: mathrace_interaction.typing.TuringDict,
     input_file_option: str, race_name_option: str, race_date_option: str, output_file_option: str
 ) -> None:
     """Test running journal_reader as entrypoint."""
@@ -61,7 +61,7 @@ def test_journal_reader_entrypoint(
 
 
 def test_journal_reader_wrong_first_line(
-    race_date: datetime.datetime, runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
+    race_date: dt.datetime, runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
 ) -> None:
     """Test that journal_reader raises an error when the file initalization line is missing."""
     wrong_journal = io.StringIO("""\
@@ -73,7 +73,7 @@ def test_journal_reader_wrong_first_line(
 
 
 def test_journal_reader_missing_race_definition(
-    race_date: datetime.datetime, runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
+    race_date: dt.datetime, runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
 ) -> None:
     """Test that journal_reader raises an error when the race definition is missing."""
     wrong_journal = io.StringIO("""\
@@ -86,7 +86,7 @@ def test_journal_reader_missing_race_definition(
 
 
 @pytest.mark.parametrize("separator", ["", "-- "])
-def test_journal_reader_different_separator_in_race_definition(separator: str, race_date: datetime.datetime) -> None:
+def test_journal_reader_different_separator_in_race_definition(separator: str, race_date: dt.datetime) -> None:
     """Test that journal_reader accept either the empty string or -- as separator in the race definition line."""
     journal_with_separator = io.StringIO(f"""\
 --- 001 inizializzazione simulatore
@@ -102,7 +102,7 @@ def test_journal_reader_different_separator_in_race_definition(separator: str, r
 
 
 def test_journal_reader_wrong_race_definition_code(
-    race_date: datetime.datetime, runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
+    race_date: dt.datetime, runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
 ) -> None:
     """Test that journal_reader raises an error when the race definition is containing a wrong code."""
     wrong_journal = io.StringIO("""\
@@ -116,7 +116,7 @@ def test_journal_reader_wrong_race_definition_code(
 
 
 def test_journal_reader_wrong_race_definition_parts(
-    race_date: datetime.datetime, runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
+    race_date: dt.datetime, runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
 ) -> None:
     """Test that journal_reader raises an error when the race definition contains a wrong number of parts."""
     wrong_journal = io.StringIO("""\
@@ -131,7 +131,7 @@ def test_journal_reader_wrong_race_definition_parts(
 
 
 def test_journal_reader_wrong_race_definition_bonus_cardinality(
-    race_date: datetime.datetime, runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
+    race_date: dt.datetime, runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
 ) -> None:
     """Test that journal_reader raises an error when the race definition contains a wrong bonus cardinality."""
     wrong_journal = io.StringIO("""\
@@ -146,7 +146,7 @@ def test_journal_reader_wrong_race_definition_bonus_cardinality(
 
 
 def test_journal_reader_wrong_race_definition_supbonus_cardinality(
-    race_date: datetime.datetime, runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
+    race_date: dt.datetime, runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
 ) -> None:
     """Test that journal_reader raises an error when the race definition contains a wrong superbonus cardinality."""
     wrong_journal = io.StringIO("""\
@@ -161,7 +161,7 @@ def test_journal_reader_wrong_race_definition_supbonus_cardinality(
 
 
 def test_journal_reader_wrong_race_definition_alternative_k_blocco(
-    race_date: datetime.datetime, runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
+    race_date: dt.datetime, runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
 ) -> None:
     """Test that journal_reader raises an error when the race definition contains a wrong alternative k parameter."""
     wrong_journal = io.StringIO("""\
@@ -176,7 +176,7 @@ def test_journal_reader_wrong_race_definition_alternative_k_blocco(
 
 
 def test_journal_reader_wrong_race_definition_race_type(
-    race_date: datetime.datetime, runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
+    race_date: dt.datetime, runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
 ) -> None:
     """Test that journal_reader raises an error when the race definition contains a wrong race type."""
     wrong_journal = io.StringIO("""\
@@ -190,7 +190,7 @@ def test_journal_reader_wrong_race_definition_race_type(
         "but the race definition contains 9991.")
 
 
-def test_journal_reader_race_event_with_inconsistent_deadline_score_increase(race_date: datetime.datetime) -> None:
+def test_journal_reader_race_event_with_inconsistent_deadline_score_increase(race_date: dt.datetime) -> None:
     """Test that journal_reader sets the deadline for score increase as zero when the last int is wrong."""
     journal_with_wrong_deadline_score_increase = io.StringIO("""\
 --- 001 inizializzazione simulatore
@@ -211,7 +211,7 @@ def test_journal_reader_race_event_with_inconsistent_deadline_score_increase(rac
     [("0 002 inizio gara", ""), ("00:00:00.000 200 inizio gara", " 0000")]
 )
 def test_journal_reader_wrong_question_definition(
-    race_start_event: str, extra_text: str, race_date: datetime.datetime,
+    race_start_event: str, extra_text: str, race_date: dt.datetime,
     runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
 ) -> None:
     """
@@ -238,7 +238,7 @@ def test_journal_reader_wrong_question_definition(
 )
 def test_journal_reader_race_suspension_ignored(
     RACE_START: str, RACE_SUSPENDED: str, RACE_RESUMED: str, RACE_END: str,  # noqa: N803
-    generate_timestamp: typing.Callable[[int], str], race_date: datetime.datetime
+    generate_timestamp: typing.Callable[[int], str], race_date: dt.datetime
 ) -> None:
     """Test that race suspension events are ignored by journal_reader."""
     journal_without_suspension = io.StringIO(f"""\
@@ -274,7 +274,7 @@ def test_journal_reader_race_suspension_ignored(
 )
 def test_journal_reader_race_event_manual_bonus(
     RACE_START: str, TIMER_UPDATE: str, MANUAL_BONUS: str, RACE_END: str,  # noqa: N803
-    generate_timestamp: typing.Callable[[int], str], race_date: datetime.datetime
+    generate_timestamp: typing.Callable[[int], str], race_date: dt.datetime
 ) -> None:
     """Test that manual bonus race events are logged by journal_reader."""
     journal_with_manual_bonus = io.StringIO(f"""\
@@ -289,7 +289,7 @@ def test_journal_reader_race_event_manual_bonus(
     with mathrace_interaction.journal_reader(journal_with_manual_bonus) as journal_stream:
         dict_with_manual_bonus = journal_stream.read("journal_with_manual_bonus", race_date)
     assert len(dict_with_manual_bonus["eventi"]) == 1
-    assert dict_with_manual_bonus["eventi"][0]["orario"] == (race_date + datetime.timedelta(minutes=5)).isoformat()
+    assert dict_with_manual_bonus["eventi"][0]["orario"] == (race_date + dt.timedelta(minutes=5)).isoformat()
 
 
 @pytest.mark.parametrize(
@@ -299,7 +299,7 @@ def test_journal_reader_race_event_manual_bonus(
     ]
 )
 def test_journal_reader_race_other_timer_ignored(
-    generate_timestamp: typing.Callable[[int], str], race_date: datetime.datetime
+    generate_timestamp: typing.Callable[[int], str], race_date: dt.datetime
 ) -> None:
     """Test that race events associated to the second timer are ignored by journal_reader."""
     journal_without_other_timer = io.StringIO(f"""\
@@ -329,7 +329,7 @@ def test_journal_reader_race_other_timer_ignored(
 
 
 def test_journal_reader_wrong_race_event_code(
-    race_date: datetime.datetime, runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
+    race_date: dt.datetime, runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
 ) -> None:
     """Test that journal_reader raises an error when an unhandled event code is encountered."""
     wrong_journal = io.StringIO("""\
@@ -346,7 +346,7 @@ def test_journal_reader_wrong_race_event_code(
 
 
 def test_journal_reader_wrong_race_start_text(
-    race_date: datetime.datetime, runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
+    race_date: dt.datetime, runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
 ) -> None:
     """Test that journal_reader raises an error when the race start event contains extra text."""
     wrong_journal = io.StringIO("""\
@@ -360,7 +360,7 @@ def test_journal_reader_wrong_race_start_text(
 
 
 def test_journal_reader_wrong_timer_update_text(
-    race_date: datetime.datetime, runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
+    race_date: dt.datetime, runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
 ) -> None:
     """Test that journal_reader raises an error when the timer update event contains invalid text."""
     wrong_journal = io.StringIO("""\
@@ -374,7 +374,7 @@ def test_journal_reader_wrong_timer_update_text(
         "Invalid event content NON aggiorna punteggio esercizi, orologio: 1 in timer update event")
 
 
-def test_journal_reader_race_event_with_timer_offset(race_date: datetime.datetime) -> None:
+def test_journal_reader_race_event_with_timer_offset(race_date: dt.datetime) -> None:
     """Test that race events timestamps are offset by timer event."""
     journal_with_timer_offset = io.StringIO("""\
 --- 001 inizializzazione simulatore
@@ -389,10 +389,10 @@ def test_journal_reader_race_event_with_timer_offset(race_date: datetime.datetim
         dict_with_timer_offset = journal_stream.read("journal_with_timer_offset", race_date)
     assert dict_with_timer_offset["mathrace_only"]["timestamp_offset"] == "15"
     assert len(dict_with_timer_offset["eventi"]) == 1
-    assert dict_with_timer_offset["eventi"][0]["orario"] == (race_date + datetime.timedelta(seconds=95)).isoformat()
+    assert dict_with_timer_offset["eventi"][0]["orario"] == (race_date + dt.timedelta(seconds=95)).isoformat()
 
 
-def test_journal_reader_jolly_selection_before_timer_offset(race_date: datetime.datetime) -> None:
+def test_journal_reader_jolly_selection_before_timer_offset(race_date: dt.datetime) -> None:
     """
     Test that it is possible to select the jolly before timer offset is computed.
 
@@ -412,12 +412,12 @@ def test_journal_reader_jolly_selection_before_timer_offset(race_date: datetime.
         dict_with_timer_offset = journal_stream.read("journal_with_timer_offset", race_date)
     assert dict_with_timer_offset["mathrace_only"]["timestamp_offset"] == "15"
     assert len(dict_with_timer_offset["eventi"]) == 2
-    assert dict_with_timer_offset["eventi"][0]["orario"] == (race_date + datetime.timedelta(seconds=30)).isoformat()
-    assert dict_with_timer_offset["eventi"][1]["orario"] == (race_date + datetime.timedelta(seconds=95)).isoformat()
+    assert dict_with_timer_offset["eventi"][0]["orario"] == (race_date + dt.timedelta(seconds=30)).isoformat()
+    assert dict_with_timer_offset["eventi"][1]["orario"] == (race_date + dt.timedelta(seconds=95)).isoformat()
 
 
 def test_journal_reader_answer_submission_before_timer_offset(
-    race_date: datetime.datetime, runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
+    race_date: dt.datetime, runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
 ) -> None:
     """Test that it is not allowed to submit an answer before timer offset is computed."""
     journal_with_timer_offset = io.StringIO("""\
@@ -435,7 +435,7 @@ def test_journal_reader_answer_submission_before_timer_offset(
         "Cannot convert 30 to date and time because of empty timestamp offset")
 
 
-def test_journal_reader_live_race(race_date: datetime.datetime) -> None:
+def test_journal_reader_live_race(race_date: dt.datetime) -> None:
     """Test journal reader on a live race, i.e. a journal in which the race end event is missing."""
     live_journal = io.StringIO("""\
 --- 001 inizializzazione simulatore
@@ -450,12 +450,12 @@ def test_journal_reader_live_race(race_date: datetime.datetime) -> None:
     with mathrace_interaction.journal_reader(live_journal) as journal_stream:
         dict_with_timer_offset = journal_stream.read("live_journal", race_date)
     assert len(dict_with_timer_offset["eventi"]) == 3
-    assert dict_with_timer_offset["eventi"][0]["orario"] == (race_date + datetime.timedelta(seconds=80)).isoformat()
-    assert dict_with_timer_offset["eventi"][1]["orario"] == (race_date + datetime.timedelta(seconds=90)).isoformat()
-    assert dict_with_timer_offset["eventi"][2]["orario"] == (race_date + datetime.timedelta(seconds=100)).isoformat()
+    assert dict_with_timer_offset["eventi"][0]["orario"] == (race_date + dt.timedelta(seconds=80)).isoformat()
+    assert dict_with_timer_offset["eventi"][1]["orario"] == (race_date + dt.timedelta(seconds=90)).isoformat()
+    assert dict_with_timer_offset["eventi"][2]["orario"] == (race_date + dt.timedelta(seconds=100)).isoformat()
 
 
-def test_journal_reader_multiple_race_events_at_same_time(race_date: datetime.datetime) -> None:
+def test_journal_reader_multiple_race_events_at_same_time(race_date: dt.datetime) -> None:
     """Test that the order of race events happening at the same time is preserved by shifting of a few milliseconds."""
     journal_with_events_at_same_time = io.StringIO("""\
 --- 001 inizializzazione simulatore
@@ -472,18 +472,18 @@ def test_journal_reader_multiple_race_events_at_same_time(race_date: datetime.da
         dict_with_events_at_same_time = journal_stream.read("journal_with_events_at_same_time", race_date)
     assert len(dict_with_events_at_same_time["eventi"]) == 3
     assert dict_with_events_at_same_time["eventi"][0]["orario"] == (
-        race_date + datetime.timedelta(seconds=80)).isoformat()
+        race_date + dt.timedelta(seconds=80)).isoformat()
     assert dict_with_events_at_same_time["eventi"][0]["squadra_id"] == 2
     assert dict_with_events_at_same_time["eventi"][1]["orario"] == (
-        race_date + datetime.timedelta(seconds=80, milliseconds=1)).isoformat()
+        race_date + dt.timedelta(seconds=80, milliseconds=1)).isoformat()
     assert dict_with_events_at_same_time["eventi"][1]["squadra_id"] == 4
     assert dict_with_events_at_same_time["eventi"][2]["orario"] == (
-        race_date + datetime.timedelta(seconds=80, milliseconds=2)).isoformat()
+        race_date + dt.timedelta(seconds=80, milliseconds=2)).isoformat()
     assert dict_with_events_at_same_time["eventi"][2]["squadra_id"] == 6
 
 
 def test_journal_reader_wrong_race_events_order(
-    race_date: datetime.datetime, runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
+    race_date: dt.datetime, runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
 ) -> None:
     """Test that journal_reader raises an error when race events are incorrectly sorted."""
     journal_with_incorrectly_sorted_events = io.StringIO("""\
@@ -503,7 +503,7 @@ def test_journal_reader_wrong_race_events_order(
         "happens before event at time 2000-01-01 00:01:21+00:00 (timestamp 81)")
 
 
-def test_journal_reader_wrong_race_events_order_not_strict(race_date: datetime.datetime) -> None:
+def test_journal_reader_wrong_race_events_order_not_strict(race_date: dt.datetime) -> None:
     """Test that journal_reader without strict mode allows to import incorrectly sorted events."""
     journal_with_incorrectly_sorted_events = io.StringIO("""\
 --- 001 inizializzazione simulatore
@@ -520,15 +520,15 @@ def test_journal_reader_wrong_race_events_order_not_strict(race_date: datetime.d
         dict_with_incorrectly_sorted_events = journal_stream.read("journal_with_incorrectly_sorted_events", race_date)
     assert len(dict_with_incorrectly_sorted_events["eventi"]) == 2
     assert dict_with_incorrectly_sorted_events["eventi"][0]["orario"] == (
-        race_date + datetime.timedelta(seconds=82)).isoformat()
+        race_date + dt.timedelta(seconds=82)).isoformat()
     assert dict_with_incorrectly_sorted_events["eventi"][0]["squadra_id"] == 4
     assert dict_with_incorrectly_sorted_events["eventi"][1]["orario"] == (
-        race_date + datetime.timedelta(seconds=81)).isoformat()
+        race_date + dt.timedelta(seconds=81)).isoformat()
     assert dict_with_incorrectly_sorted_events["eventi"][1]["squadra_id"] == 2
 
 
 def test_journal_reader_missing_protocol_numbers(
-    race_date: datetime.datetime, runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
+    race_date: dt.datetime, runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
 ) -> None:
     """Test that journal_reader raises an error when the version is r11184+ but a line is missing the protocol."""
     wrong_journal = io.StringIO("""\
@@ -544,7 +544,7 @@ def test_journal_reader_missing_protocol_numbers(
         "Cannot determine protocol number from 2 3 PROT_AND_ANOTHER_STRING:2 squadra 2 sceglie 3 come jolly")
 
 
-def test_journal_reader_race_definition_before_r17497_timestamps_after_20644(race_date: datetime.datetime) -> None:
+def test_journal_reader_race_definition_before_r17497_timestamps_after_20644(race_date: dt.datetime) -> None:
     """Test the interplay between a race definition before r17497 with timestamps defined in r17505."""
     journal_with_timestamps = io.StringIO("""\
 --- 001 inizializzazione simulatore
@@ -560,11 +560,11 @@ def test_journal_reader_race_definition_before_r17497_timestamps_after_20644(rac
     assert len(imported_dict["squadre"]) == 10
     assert len(imported_dict["soluzioni"]) == 7
     assert len(imported_dict["eventi"]) == 1
-    assert imported_dict["eventi"][0]["orario"] == (race_date + datetime.timedelta(seconds=63)).isoformat()
+    assert imported_dict["eventi"][0]["orario"] == (race_date + dt.timedelta(seconds=63)).isoformat()
 
 
 def test_journal_reader_wrong_alternative_race_definition_code(
-    race_date: datetime.datetime, runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
+    race_date: dt.datetime, runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
 ) -> None:
     """Test that journal_reader raises an error when the alternative race definition is containing a wrong code."""
     wrong_journal = io.StringIO("""\
@@ -579,7 +579,7 @@ def test_journal_reader_wrong_alternative_race_definition_code(
 
 
 def test_journal_reader_wrong_alternative_race_definition_parts(
-    race_date: datetime.datetime, runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
+    race_date: dt.datetime, runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
 ) -> None:
     """Test that journal_reader raises an error when the alt. race definition contains a wrong number of parts."""
     wrong_journal = io.StringIO("""\
@@ -594,7 +594,7 @@ def test_journal_reader_wrong_alternative_race_definition_parts(
 
 
 def test_journal_reader_alternative_race_definition_num_teams_entry_without_optional_arguments(
-    race_date: datetime.datetime
+    race_date: dt.datetime
 ) -> None:
     """Test a num_teams entry in the alternative race definition without any optional argument."""
     journal_with_num_teams = io.StringIO("""\
@@ -615,7 +615,7 @@ def test_journal_reader_alternative_race_definition_num_teams_entry_without_opti
 
 
 def test_journal_reader_alternative_race_definition_num_teams_entry_with_guests_optional_argument(
-    race_date: datetime.datetime
+    race_date: dt.datetime
 ) -> None:
     """Test a num_teams entry in the alternative race definition with the first optional argument."""
     journal_with_num_teams = io.StringIO("""\
@@ -636,7 +636,7 @@ def test_journal_reader_alternative_race_definition_num_teams_entry_with_guests_
 
 
 def test_journal_reader_alternative_race_definition_num_teams_entry_with_initial_score_optional_argument(
-    race_date: datetime.datetime
+    race_date: dt.datetime
 ) -> None:
     """Test a num_teams entry in the alternative race definition with the second optional argument."""
     journal_with_num_teams = io.StringIO("""\
@@ -657,7 +657,7 @@ def test_journal_reader_alternative_race_definition_num_teams_entry_with_initial
 
 
 def test_journal_reader_alternative_race_definition_num_teams_entry_with_both_optional_arguments(
-    race_date: datetime.datetime
+    race_date: dt.datetime
 ) -> None:
     """Test a num_teams entry in the alternative race definition with both optional arguments."""
     journal_with_num_teams = io.StringIO("""\
@@ -678,7 +678,7 @@ def test_journal_reader_alternative_race_definition_num_teams_entry_with_both_op
 
 
 def test_journal_reader_alternative_race_definition_num_questions_entry_without_optional_argument(
-    race_date: datetime.datetime
+    race_date: dt.datetime
 ) -> None:
     """Test a num_questions entry in the alternative race definition without optional argument."""
     journal_with_num_teams = io.StringIO("""\
@@ -701,7 +701,7 @@ def test_journal_reader_alternative_race_definition_num_questions_entry_without_
 
 
 def test_journal_reader_alternative_race_definition_num_questions_entry_with_optional_argument(
-    race_date: datetime.datetime
+    race_date: dt.datetime
 ) -> None:
     """Test a num_questions entry in the alternative race definition with optional argument."""
     journal_with_num_teams = io.StringIO("""\
@@ -724,7 +724,7 @@ def test_journal_reader_alternative_race_definition_num_questions_entry_with_opt
 
 
 def test_journal_reader_alternative_race_definition_n_k_altk_blocco_entry_without_optional_arguments(
-    race_date: datetime.datetime
+    race_date: dt.datetime
 ) -> None:
     """Test a n_k_altk_blocco entry in the alternative race definition without any optional argument."""
     journal_with_n_k_altk_blocco = io.StringIO("""\
@@ -742,7 +742,7 @@ def test_journal_reader_alternative_race_definition_n_k_altk_blocco_entry_withou
 
 
 def test_journal_reader_alternative_race_definition_n_k_altk_blocco_entry_with_guests_optional_argument(
-    race_date: datetime.datetime
+    race_date: dt.datetime
 ) -> None:
     """Test a n_k_altk_blocco entry in the alternative race definition with the first optional argument."""
     journal_with_n_k_altk_blocco = io.StringIO("""\
@@ -760,7 +760,7 @@ def test_journal_reader_alternative_race_definition_n_k_altk_blocco_entry_with_g
 
 
 def test_journal_reader_alternative_race_definition_n_k_altk_blocco_entry_with_initial_score_optional_argument(
-    race_date: datetime.datetime
+    race_date: dt.datetime
 ) -> None:
     """Test a n_k_altk_blocco entry in the alternative race definition with the second optional argument."""
     journal_with_n_k_altk_blocco = io.StringIO("""\
@@ -778,7 +778,7 @@ def test_journal_reader_alternative_race_definition_n_k_altk_blocco_entry_with_i
 
 
 def test_journal_reader_alternative_race_definition_with_wrong_alternative_k_blocco_optional_argument(
-    race_date: datetime.datetime, runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
+    race_date: dt.datetime, runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
 ) -> None:
     """Test that journal_reader raises an error when the race definition contains a wrong alternative k parameter."""
     wrong_journal = io.StringIO("""\
@@ -793,7 +793,7 @@ def test_journal_reader_alternative_race_definition_with_wrong_alternative_k_blo
 
 
 def test_journal_reader_alternative_race_definition_n_k_altk_blocco_entry_with_both_optional_arguments(
-    race_date: datetime.datetime
+    race_date: dt.datetime
 ) -> None:
     """Test a n_k_altk_blocco entry in the alternative race definition with both optional arguments."""
     journal_with_n_k_altk_blocco = io.StringIO("""\
@@ -811,7 +811,7 @@ def test_journal_reader_alternative_race_definition_n_k_altk_blocco_entry_with_b
 
 
 def test_journal_reader_alternative_race_definition_missing_deadline_score_increase(
-    race_date: datetime.datetime, runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
+    race_date: dt.datetime, runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
 ) -> None:
     """Test that journal_reader raises an error when the race definition is missing the score increase deadline."""
     wrong_journal = io.StringIO("""\
@@ -831,7 +831,7 @@ def test_journal_reader_alternative_race_definition_missing_deadline_score_incre
     ]
 )
 def test_journal_reader_bonus_superbonus_lines_with_different_race_definitions(
-    race_definition_line: str, race_date: datetime.datetime
+    race_definition_line: str, race_date: dt.datetime
 ) -> None:
     """Test lines defining bonus and superbonus when used in combination with the different race definition."""
     journal_bonus_superbonus = io.StringIO(f"""\
@@ -850,7 +850,7 @@ def test_journal_reader_bonus_superbonus_lines_with_different_race_definitions(
 
 
 def test_journal_reader_bonus_superbonus_lines_with_standard_race_definition_smaller_cardinality(
-    race_date: datetime.datetime
+    race_date: dt.datetime
 ) -> None:
     """
     Test lines defining bonus and superbonus when used in combination with the standard race definition.
@@ -874,7 +874,7 @@ def test_journal_reader_bonus_superbonus_lines_with_standard_race_definition_sma
 
 
 def test_journal_reader_bonus_superbonus_lines_with_standard_race_definition_larger_cardinality(
-    race_date: datetime.datetime, runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
+    race_date: dt.datetime, runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
 ) -> None:
     """
     Test lines defining bonus and superbonus when used in combination with the standard race definition.
@@ -896,7 +896,7 @@ def test_journal_reader_bonus_superbonus_lines_with_standard_race_definition_lar
         "Invalid line 10 120 115 110 18 16 15 14 13 12 11 in race definition: not enough values to read")
 
 
-def test_journal_reader_bonus_superbonus_lines_with_comments(race_date: datetime.datetime) -> None:
+def test_journal_reader_bonus_superbonus_lines_with_comments(race_date: dt.datetime) -> None:
     """Test lines defining bonus and superbonus with comments at the end of the line."""
     journal_bonus_superbonus = io.StringIO("""\
 --- 001 inizializzazione simulatore
@@ -920,7 +920,7 @@ def test_journal_reader_bonus_superbonus_lines_with_comments(race_date: datetime
     ]
 )
 def test_journal_reader_interplay_race_definition_with_team_definition(
-    race_definition_line: str, race_date: datetime.datetime
+    race_definition_line: str, race_date: dt.datetime
 ) -> None:
     """Test the interplay between a race definition and team definition."""
     journal_with_guests = io.StringIO(f"""\
@@ -958,7 +958,7 @@ def test_journal_reader_interplay_race_definition_with_team_definition(
     ]
 )
 def test_journal_reader_interplay_race_definition_and_guests_without_team_definition(
-    race_definition_line: str, num_nonguests: int, num_guests: int, race_date: datetime.datetime
+    race_definition_line: str, num_nonguests: int, num_guests: int, race_date: dt.datetime
 ) -> None:
     """
     Test the interplay between a race definition and guests without team definition.
@@ -992,7 +992,7 @@ def test_journal_reader_interplay_race_definition_and_guests_without_team_defini
     ]
 )
 def test_journal_reader_wrong_interplay_race_definition_with_team_definition(
-    race_definition_line: str, race_date: datetime.datetime,
+    race_definition_line: str, race_date: dt.datetime,
     runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
 ) -> None:
     """Test the interplay between a race definition and team definition when not all teams are listed."""
@@ -1012,7 +1012,7 @@ def test_journal_reader_wrong_interplay_race_definition_with_team_definition(
 
 
 def test_journal_reader_wrong_question_definition_placeholder(
-    race_date: datetime.datetime, runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
+    race_date: dt.datetime, runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
 ) -> None:
     """Test that journal_reader raises an error when a question definition does not contain the r25013 placeholder."""
     wrong_journal = io.StringIO("""\
@@ -1028,7 +1028,7 @@ def test_journal_reader_wrong_question_definition_placeholder(
         "the expected placeholder")
 
 def test_journal_reader_wrong_final_line(
-    race_date: datetime.datetime, runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
+    race_date: dt.datetime, runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
 ) -> None:
     """Test that journal_reader raises an error when the file finalization line is missing."""
     wrong_journal = io.StringIO("""\
@@ -1044,7 +1044,7 @@ def test_journal_reader_wrong_final_line(
 
 
 def test_journal_reader_wrong_extra_line_after_final(
-    race_date: datetime.datetime, runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
+    race_date: dt.datetime, runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
 ) -> None:
     """Test that journal_reader raises an error with an extra line after the file finalization one."""
     wrong_journal = io.StringIO("""\
@@ -1130,7 +1130,7 @@ def test_journal_reader_without_date_entrypoint(
     ]
 )
 def test_journal_reader_invalid_team_id_or_question_id(
-    race_event: str, expected_error: str, race_date: datetime.datetime,
+    race_event: str, expected_error: str, race_date: dt.datetime,
     runtime_error_contains: mathrace_interaction.typing.RuntimeErrorContainsFixtureType
 ) -> None:
     """Test that journal_reader raises an error when the team ID or question ID is not a positive number."""

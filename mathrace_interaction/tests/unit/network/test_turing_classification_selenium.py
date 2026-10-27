@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """Test mathrace_interaction.network.TuringClassificationSelenium on mock web pages."""
 
-import datetime
+import datetime as dt
 
 import prettytable
 import pytest
@@ -642,7 +642,7 @@ function incrementTime() {
     assert "Current time is 1" in browser.page_source
 
     # Now freeze the time, click the button, and check that the time has not increased
-    browser.freeze_time(datetime.datetime.now())
+    browser.freeze_time(dt.datetime.now())
     increment_button.click()  # causes time to increment to 2
     assert "Current time is 0" not in browser.page_source
     assert "Current time is 1" in browser.page_source

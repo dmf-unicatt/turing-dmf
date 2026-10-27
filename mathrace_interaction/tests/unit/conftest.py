@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """pytest configuration file for unit tests."""
 
-import datetime
+import datetime as dt
 import io
 
 import pytest
@@ -459,13 +459,13 @@ def race_name() -> str:
 
 
 @pytest.fixture
-def race_date() -> datetime.datetime:
+def race_date() -> dt.datetime:
     """Return the date of the race represented by any journal in the journal fixture."""
-    return datetime.datetime(2000, 1, 1, tzinfo=datetime.UTC)
+    return dt.datetime(2000, 1, 1, tzinfo=dt.UTC)
 
 
 @pytest.fixture
-def turing_dict(race_name: str, race_date: datetime.datetime) -> mathrace_interaction.typing.TuringDict:
+def turing_dict(race_name: str, race_date: dt.datetime) -> mathrace_interaction.typing.TuringDict:
     """Return the turing dict associated with the race represented by any journal in the journal fixture."""
     return {
         "nome": race_name,
@@ -485,66 +485,66 @@ def turing_dict(race_name: str, race_date: datetime.datetime) -> mathrace_intera
         "eventi": [
             {
                 "subclass": "Jolly",
-                "orario": (race_date + datetime.timedelta(minutes=4, seconds=3)).isoformat(),
+                "orario": (race_date + dt.timedelta(minutes=4, seconds=3)).isoformat(),
                 "squadra_id": 1,
                 "problema": 2
             },
             {
                 "subclass": "Jolly",
-                "orario": (race_date + datetime.timedelta(minutes=4, seconds=11)).isoformat(),
+                "orario": (race_date + dt.timedelta(minutes=4, seconds=11)).isoformat(),
                 "squadra_id": 2,
                 "problema": 3
             },
             {
                 "subclass": "Jolly",
-                "orario": (race_date + datetime.timedelta(minutes=4, seconds=19)).isoformat(),
+                "orario": (race_date + dt.timedelta(minutes=4, seconds=19)).isoformat(),
                 "squadra_id": 3,
                 "problema": 4
             },
             {
                 "subclass": "Consegna",
-                "orario": (race_date + datetime.timedelta(minutes=5, seconds=30)).isoformat(),
+                "orario": (race_date + dt.timedelta(minutes=5, seconds=30)).isoformat(),
                 "squadra_id": 5,
                 "problema": 5,
                 "risposta": 1
             },
             {
                 "subclass": "Consegna",
-                "orario": (race_date + datetime.timedelta(minutes=5, seconds=41)).isoformat(),
+                "orario": (race_date + dt.timedelta(minutes=5, seconds=41)).isoformat(),
                 "squadra_id": 6,
                 "problema": 6,
                 "risposta": 0
             },
             {
                 "subclass": "Consegna",
-                "orario": (race_date + datetime.timedelta(minutes=7, seconds=15)).isoformat(),
+                "orario": (race_date + dt.timedelta(minutes=7, seconds=15)).isoformat(),
                 "squadra_id": 2,
                 "problema": 3,
                 "risposta": 1
             },
             {
                 "subclass": "Consegna",
-                "orario": (race_date + datetime.timedelta(minutes=7, seconds=30)).isoformat(),
+                "orario": (race_date + dt.timedelta(minutes=7, seconds=30)).isoformat(),
                 "squadra_id": 3,
                 "problema": 4,
                 "risposta": 0
             },
             {
                 "subclass": "Consegna",
-                "orario": (race_date + datetime.timedelta(minutes=8, seconds=30)).isoformat(),
+                "orario": (race_date + dt.timedelta(minutes=8, seconds=30)).isoformat(),
                 "squadra_id": 8,
                 "problema": 2,
                 "risposta": 0
             },
             {
                 "subclass": "Bonus",
-                "orario": (race_date + datetime.timedelta(minutes=8, seconds=40)).isoformat(),
+                "orario": (race_date + dt.timedelta(minutes=8, seconds=40)).isoformat(),
                 "squadra_id": 7,
                 "punteggio": 43
             },
             {
                 "subclass": "Consegna",
-                "orario": (race_date + datetime.timedelta(minutes=9, seconds=30)).isoformat(),
+                "orario": (race_date + dt.timedelta(minutes=9, seconds=30)).isoformat(),
                 "squadra_id": 9,
                 "problema": 3,
                 "risposta": 1

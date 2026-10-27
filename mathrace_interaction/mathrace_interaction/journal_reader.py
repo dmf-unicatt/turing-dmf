@@ -6,7 +6,7 @@
 """Read a mathrace journal."""
 
 import argparse
-import datetime
+import datetime as dt
 import json
 import sys
 import typing
@@ -412,7 +412,7 @@ class JournalReaderR5539(AbstractJournalReader):
 
     def _convert_timestamp_to_datetime(
         self, timestamp_str: str, strict: bool, check_same_datetime_occurences: bool, turing_dict: TuringDict
-    ) -> datetime.datetime:
+    ) -> dt.datetime:
         """
         Convert a timestamp into a date and time.
 
@@ -429,8 +429,8 @@ class JournalReaderR5539(AbstractJournalReader):
                     f"Cannot convert {timestamp_str} to date and time because of empty timestamp offset")
             else:
                 timestamp = int(timestamp_str)
-        race_date = datetime.datetime.fromisoformat(turing_dict["inizio"])
-        event_datetime = race_date + datetime.timedelta(seconds=timestamp)
+        race_date = dt.datetime.fromisoformat(turing_dict["inizio"])
+        event_datetime = race_date + dt.timedelta(seconds=timestamp)
         assert self._last_event_datetime is not None
         if strict and event_datetime < self._last_event_datetime:
             raise RuntimeError(
@@ -440,7 +440,7 @@ class JournalReaderR5539(AbstractJournalReader):
             if event_datetime == self._last_event_datetime:
                 # Add a millisecond to the previous time to disambiguate between the two events
                 self._last_event_same_datetime_occurences += 1
-                return self._last_event_datetime + datetime.timedelta(
+                return self._last_event_datetime + dt.timedelta(
                     milliseconds=self._last_event_same_datetime_occurences)
             else:
                 self._last_event_datetime = event_datetime
@@ -952,7 +952,7 @@ if __name__ == "__main__":
     if args.race_setup_only:
         race_date = None
     else:
-        race_date = datetime.datetime.fromisoformat(args.race_date)
+        race_date = dt.datetime.fromisoformat(args.race_date)
     with journal_reader(open(args.input_file)) as journal_stream:
         turing_dict = journal_stream.read(args.race_name, race_date)
     strip_mathrace_only_attributes_from_imported_turing(turing_dict)

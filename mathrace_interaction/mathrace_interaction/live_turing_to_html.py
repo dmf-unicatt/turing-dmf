@@ -6,7 +6,7 @@
 """Follow a live session in turing and convert it into a sequence of html files."""
 
 import argparse
-import datetime
+import datetime as dt
 import json
 import pathlib
 import shutil
@@ -22,7 +22,7 @@ from mathrace_interaction.network import TuringClassificationSelenium
 
 def live_turing_to_html(
     turing_url: str, turing_models: types.ModuleType, turing_race_id: int, turing_race_admin_password: str,
-    sleep: float, output_directory: pathlib.Path, compute_current_time: typing.Callable[[int], datetime.datetime],
+    sleep: float, output_directory: pathlib.Path, compute_current_time: typing.Callable[[int], dt.datetime],
     termination_condition: typing.Callable[[int], bool]
 ) -> None:  # pragma: no cover
     """
@@ -136,13 +136,13 @@ def live_turing_to_html(
         print(f"{time_counter=}")
         # Compute the current time, up to the microsecond
         current_time = compute_current_time(time_counter)
-        actual_time = datetime.datetime.now(current_time.tzinfo)
+        actual_time = dt.datetime.now(current_time.tzinfo)
         inizio = turing_race.inizio.astimezone(current_time.tzinfo)
         timestamp = (current_time - inizio).total_seconds()
         # Precision to the second is more then enough for our goals: strip the microseconds,
         # and recompute the dates
         timestamp = int(timestamp)
-        current_time = inizio + datetime.timedelta(seconds=timestamp)
+        current_time = inizio + dt.timedelta(seconds=timestamp)
         # Write out current time
         (datetime_files_directory / f"{time_counter}.datetime").write_text("""Computed: {current_time}
 Actual: {actual_time}""")
@@ -265,7 +265,7 @@ Actual: {actual_time}""")
         previous_positions = positions
         previous_scores = scores
         # Wait before reading again the updated version of the turing state
-        actual_time_end = datetime.datetime.now(current_time.tzinfo)
+        actual_time_end = dt.datetime.now(current_time.tzinfo)
         wait_time = sleep - (actual_time_end - actual_time).total_seconds()
         if wait_time > 0:
             print(f"\twaiting {wait_time} seconds for next time iteration")
@@ -301,5 +301,5 @@ if __name__ == "__main__":  # pragma: no cover
 
     live_turing_to_html(
         args.turing_url, engine.models, args.turing_race_id, args.turing_race_admin_password,
-        args.sleep, pathlib.Path(args.output_directory), lambda time_counter: datetime.datetime.now(TIME_ZONE_SETTING),
+        args.sleep, pathlib.Path(args.output_directory), lambda time_counter: dt.datetime.now(TIME_ZONE_SETTING),
         lambda time_counter: False)

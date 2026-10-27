@@ -6,7 +6,7 @@
 """Abstract journal writer class."""
 
 import abc
-import datetime
+import datetime as dt
 import types
 import typing
 
@@ -43,7 +43,7 @@ class AbstractJournalWriter(abc.ABC):
 
     def __init__(self, journal_stream: typing.TextIO) -> None:
         self._journal_stream = journal_stream
-        self._last_event_datetime: datetime.datetime | None = None
+        self._last_event_datetime: dt.datetime | None = None
 
     def __enter__(self) -> typing.Self:
         """Enter the journal I/O stream context."""
@@ -80,7 +80,7 @@ class AbstractJournalWriter(abc.ABC):
 
         # The fifth section contains all race events
         if turing_dict["inizio"] is not None:
-            self._last_event_datetime = datetime.datetime.fromisoformat(turing_dict["inizio"])
+            self._last_event_datetime = dt.datetime.fromisoformat(turing_dict["inizio"])
             self._write_race_events_section(turing_dict)
         else:
             # If the race start date is missing, it means that the race has not started yet.

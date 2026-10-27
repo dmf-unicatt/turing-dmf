@@ -6,7 +6,7 @@
 """Write a turing dictionary into a mathrace journal."""
 
 import argparse
-import datetime
+import datetime as dt
 import json
 import sys
 import typing
@@ -267,8 +267,8 @@ class JournalWriterR5539(AbstractJournalWriter):
     def _store_race_end_event(self, line: str, turing_dict: TuringDict) -> str:
         """Store the race end event."""
         assert line == ""
-        race_start = datetime.datetime.fromisoformat(turing_dict["inizio"])
-        total_time = datetime.timedelta(minutes=turing_dict["durata"])
+        race_start = dt.datetime.fromisoformat(turing_dict["inizio"])
+        total_time = dt.timedelta(minutes=turing_dict["durata"])
         race_end = race_start + total_time
         if self._last_event_datetime is not None:
             race_end = max(race_end, self._last_event_datetime)
@@ -282,13 +282,13 @@ class JournalWriterR5539(AbstractJournalWriter):
 
         This version defines the timestamp as the number of elapsed seconds from the start of the race.
         """
-        race_start = datetime.datetime.fromisoformat(turing_dict["inizio"])
-        event = datetime.datetime.fromisoformat(datetime_str)
+        race_start = dt.datetime.fromisoformat(turing_dict["inizio"])
+        event = dt.datetime.fromisoformat(datetime_str)
         self._update_last_event_datetime_and_check_events_correctly_sorted(event, strict)
         return str((event - race_start).seconds)
 
     def _update_last_event_datetime_and_check_events_correctly_sorted(
-        self, event_datetime: datetime.datetime, strict: bool
+        self, event_datetime: dt.datetime, strict: bool
     ) -> None:
         """Update the attribute storing the last event time and, if strict mode is on, ensure correct order."""
         assert self._last_event_datetime is not None
@@ -556,8 +556,8 @@ class JournalWriterR20644(JournalWriterR20642):
 
         This version uses human readable timestamps.
         """
-        race_start = datetime.datetime.fromisoformat(turing_dict["inizio"])
-        event = datetime.datetime.fromisoformat(datetime_str)
+        race_start = dt.datetime.fromisoformat(turing_dict["inizio"])
+        event = dt.datetime.fromisoformat(datetime_str)
         self._update_last_event_datetime_and_check_events_correctly_sorted(event, strict)
         timedelta = event - race_start
         s = timedelta.seconds

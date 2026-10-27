@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """Test interaction between turing and journal_writer."""
 
-import datetime
+import datetime as dt
 import io
 import os
 import tempfile
@@ -25,7 +25,7 @@ def test_journal_writer_integration(journal: typing.TextIO, journal_name: str, j
     """Test interaction between turing and journal_writer."""
     # First, import the journal into turing via journal_reader
     journal_year, _ = journal_name.split(os.sep, maxsplit=1)
-    journal_date = datetime.datetime(int(journal_year), 1, 1, tzinfo=datetime.UTC)
+    journal_date = dt.datetime(int(journal_year), 1, 1, tzinfo=dt.UTC)
     with mathrace_interaction.journal_reader(journal) as journal_stream:
         turing_dict = journal_stream.read(journal_name, journal_date)
     mathrace_interaction.filter.strip_mathrace_only_attributes_from_imported_turing(turing_dict)
@@ -70,7 +70,7 @@ def test_journal_writer_entrypoint_integration(
     with tempfile.NamedTemporaryFile() as input_journal_file, tempfile.NamedTemporaryFile() as output_journal_file:
         # First, import the journal into turng via journal_reader
         journal_year, _ = journal_name.split(os.sep, maxsplit=1)
-        journal_date = datetime.datetime(int(journal_year), 1, 1, tzinfo=datetime.UTC)
+        journal_date = dt.datetime(int(journal_year), 1, 1, tzinfo=dt.UTC)
         with open(input_journal_file.name, "w") as input_journal_stream:
             input_journal_stream.write(journal.read())
         journal.seek(0)

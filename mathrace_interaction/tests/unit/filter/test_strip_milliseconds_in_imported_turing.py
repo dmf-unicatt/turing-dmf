@@ -6,7 +6,7 @@
 """Test mathrace_interaction.filter.strip_milliseconds_in_imported_turing."""
 
 import copy
-import datetime
+import datetime as dt
 import json
 import random
 import tempfile
@@ -22,7 +22,7 @@ def random_dict(turing_dict: mathrace_interaction.typing.TuringDict) -> mathrace
     """Randomly add change the milliseconds field of all events in the provided dictionary."""
     turing_dict_copy = copy.deepcopy(turing_dict)
     for e in turing_dict_copy["eventi"]:
-        e["orario"] = datetime.datetime.fromisoformat(e["orario"]).replace(
+        e["orario"] = dt.datetime.fromisoformat(e["orario"]).replace(
             microsecond=random.randrange(1, 1000) * 1000).isoformat()
     return turing_dict_copy
 

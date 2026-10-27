@@ -6,7 +6,7 @@
 """Mock turing models to be used when turing itself is not available."""
 
 import abc
-import datetime
+import datetime as dt
 import typing
 
 from mathrace_interaction.typing import TuringDict
@@ -86,7 +86,7 @@ class Evento(abc.ABC):
 
     def __init__(self, **kwargs: typing.Any) -> None:  # noqa: ANN401
         self.gara: Gara | None = None
-        self.orario: datetime.datetime | None = None
+        self.orario: dt.datetime | None = None
         self.squadra: Squadra | None = None
         for key in ("gara", "squadra"):
             if key in kwargs:
@@ -99,8 +99,8 @@ class Evento(abc.ABC):
         if "orario" in kwargs:
             orario = kwargs["orario"]
             if isinstance(orario, str):
-                self.orario = datetime.datetime.fromisoformat(orario)
-            elif isinstance(orario, datetime.datetime):
+                self.orario = dt.datetime.fromisoformat(orario)
+            elif isinstance(orario, dt.datetime):
                 self.orario = orario
             else:  # pragma: no cover
                 raise RuntimeError("Invalid datetime value")
@@ -199,11 +199,11 @@ class Gara:
     def __init__(self) -> None:
         self._pk: int | None = None
         self.nome: str | None = None
-        self.inizio: datetime.datetime | None = None
-        self.durata: datetime.timedelta | None = None
+        self.inizio: dt.datetime | None = None
+        self.durata: dt.timedelta | None = None
         self.n_blocco: int | None = None
         self.k_blocco: int | None = None
-        self.durata_blocco: datetime.timedelta | None = None
+        self.durata_blocco: dt.timedelta | None = None
         self.num_problemi: int | None = None
         self.punteggio_iniziale_squadre: int | None = None
         self.fixed_bonus: str | None = None
@@ -266,15 +266,15 @@ class Gara:
 
         inizio = data["inizio"]
         if isinstance(inizio, str):
-            this.inizio = datetime.datetime.fromisoformat(inizio)
-        elif isinstance(inizio, datetime.datetime):  # pragma: no cover
+            this.inizio = dt.datetime.fromisoformat(inizio)
+        elif isinstance(inizio, dt.datetime):  # pragma: no cover
             this.inizio = inizio
         elif inizio is None:
             this.inizio = None
         else:  # pragma: no cover
             raise RuntimeError("Invalid datetime value")
-        this.durata = datetime.timedelta(minutes=data["durata"])
-        this.durata_blocco = datetime.timedelta(minutes=data["durata_blocco"])
+        this.durata = dt.timedelta(minutes=data["durata"])
+        this.durata_blocco = dt.timedelta(minutes=data["durata_blocco"])
 
         for sq_data in data["squadre"]:
             sq_obj = Squadra(gara=this, **sq_data)

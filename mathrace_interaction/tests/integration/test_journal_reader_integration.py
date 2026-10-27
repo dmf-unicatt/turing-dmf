@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """Test that the files produced by journal_reader can be imported into turing."""
 
-import datetime
+import datetime as dt
 import io
 import os
 import tempfile
@@ -24,7 +24,7 @@ import mathrace_interaction.typing
 def test_journal_reader_integration(journal: typing.TextIO, journal_name: str) -> None:
     """Test that journal_reader can import journals in the data directory."""
     journal_year, _ = journal_name.split(os.sep, maxsplit=1)
-    journal_date = datetime.datetime(int(journal_year), 1, 1, tzinfo=datetime.UTC)
+    journal_date = dt.datetime(int(journal_year), 1, 1, tzinfo=dt.UTC)
     with mathrace_interaction.journal_reader(journal) as journal_stream:
         turing_dict = journal_stream.read(journal_name, journal_date)
     mathrace_interaction.filter.strip_mathrace_only_attributes_from_imported_turing(turing_dict)
@@ -68,7 +68,7 @@ def test_journal_reader_entrypoint_integration(
         journal.seek(0)
         if race_date_option != "":
             journal_year, _ = journal_name.split(os.sep, maxsplit=1)
-            journal_date = datetime.datetime(int(journal_year), 1, 1, tzinfo=datetime.UTC)
+            journal_date = dt.datetime(int(journal_year), 1, 1, tzinfo=dt.UTC)
             race_date_or_setup_only_options = [race_date_option, journal_date.isoformat()]
         else:
             journal_date = None

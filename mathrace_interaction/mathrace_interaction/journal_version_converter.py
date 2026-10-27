@@ -6,7 +6,7 @@
 """Convert a mathrace journal file from a version to another."""
 
 import argparse
-import datetime
+import datetime as dt
 import io
 import typing
 
@@ -34,7 +34,7 @@ def journal_version_converter(input_journal_stream: typing.TextIO, output_journa
     """
     # Prepare a mock race name and race date, since they are actually not relevant
     race_name = "journal_version_converter"
-    race_date = datetime.datetime.now()
+    race_date = dt.datetime.now()
     # Convert the input journal into a turing dictionary
     # We avoid using "with journal_reader(input_journal_stream) as journal_reader_stream" because
     # otherwise this function would close the input journal stream

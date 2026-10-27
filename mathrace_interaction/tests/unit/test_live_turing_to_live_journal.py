@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """Test mathrace_interaction.live_turing_to_live_journal."""
 
-import datetime
+import datetime as dt
 import io
 import pathlib
 import tempfile
@@ -20,7 +20,7 @@ import mathrace_interaction.typing
 
 @pytest.mark.parametrize("num_reads", [2, 4, 6])
 def test_live_turing_to_live_journal(
-    journal: io.StringIO, race_name: str, race_date: datetime.datetime, num_reads: int,
+    journal: io.StringIO, race_name: str, race_date: dt.datetime, num_reads: int,
     turing_dict: mathrace_interaction.typing.TuringDict
 ) -> None:
     """Test test_live_turing_to_live_journal with a fixed number of reads."""

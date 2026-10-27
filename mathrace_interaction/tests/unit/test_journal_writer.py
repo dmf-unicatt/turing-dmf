@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """Test mathrace_interaction.journal_writer."""
 
-import datetime
+import datetime as dt
 import io
 import json
 import tempfile
@@ -39,7 +39,7 @@ def test_journal_writer(
 def test_journal_writer_entrypoint(
     turing_dict: mathrace_interaction.typing.TuringDict,
     run_entrypoint: mathrace_interaction.typing.RunEntrypointFixtureType,
-    race_name: str, race_date: datetime.datetime, journal: io.StringIO, journal_version: str,
+    race_name: str, race_date: dt.datetime, journal: io.StringIO, journal_version: str,
     input_file_option: str, journal_version_option: str, output_file_option: str
 ) -> None:
     """Test running journal_writer as entrypoint."""

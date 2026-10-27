@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """Test that the final race scores are equal to the expected ones."""
 
-import datetime
+import datetime as dt
 import json
 import os
 import pathlib
@@ -30,7 +30,7 @@ def test_journal_scores(
     """Test that the final race scores are equal to the expected ones (journal files)."""
     # Import the journal into turing via journal_reader
     journal_year, _ = journal_name.split(os.sep, maxsplit=1)
-    journal_date = datetime.datetime(int(journal_year), 1, 1, tzinfo=datetime.UTC)
+    journal_date = dt.datetime(int(journal_year), 1, 1, tzinfo=dt.UTC)
     with mathrace_interaction.journal_reader(journal) as journal_stream:
         turing_dict = journal_stream.read(journal_name, journal_date)
     mathrace_interaction.filter.strip_mathrace_only_attributes_from_imported_turing(turing_dict)

@@ -6,7 +6,7 @@
 """Strip fictitious milliseconds that have been added to a turing dictionary in case of events at the same time."""
 
 import argparse
-import datetime
+import datetime as dt
 import json
 
 from mathrace_interaction.typing import TuringDict
@@ -28,10 +28,10 @@ def strip_milliseconds_in_imported_turing(imported_dict: TuringDict) -> None:
     imported_dict
         The turing dictionary representing the race, imported from a mathrace journal.
     """
-    imported_dict["inizio"] = datetime.datetime.fromisoformat(
+    imported_dict["inizio"] = dt.datetime.fromisoformat(
         imported_dict["inizio"]).replace(microsecond=0).isoformat()
     for e in imported_dict["eventi"]:
-        e["orario"] = datetime.datetime.fromisoformat(e["orario"]).replace(microsecond=0).isoformat()
+        e["orario"] = dt.datetime.fromisoformat(e["orario"]).replace(microsecond=0).isoformat()
 
 
 if __name__ == "__main__":

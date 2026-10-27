@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """pytest configuration file for integration tests."""
 
-import datetime
+import datetime as dt
 import os
 import pathlib
 import typing
@@ -24,7 +24,7 @@ runtime_error_contains = mathrace_interaction.test.runtime_error_contains_fixtur
 @pytest.fixture
 def simple_turing_race() -> engine.models.Gara:  # type: ignore[no-any-unimported]
     """Create a new turing race with the same content as the one used in the unit tests."""
-    race_date = datetime.datetime(2000, 1, 1, tzinfo=datetime.UTC)
+    race_date = dt.datetime(2000, 1, 1, tzinfo=dt.UTC)
     turing_dict = {
         "nome": "test race",
         "inizio": race_date.isoformat(),
@@ -42,66 +42,66 @@ def simple_turing_race() -> engine.models.Gara:  # type: ignore[no-any-unimporte
         "eventi": [
             {
                 "subclass": "Jolly",
-                "orario": (race_date + datetime.timedelta(minutes=4, seconds=3)).isoformat(),
+                "orario": (race_date + dt.timedelta(minutes=4, seconds=3)).isoformat(),
                 "squadra_id": 1,
                 "problema": 2
             },
             {
                 "subclass": "Jolly",
-                "orario": (race_date + datetime.timedelta(minutes=4, seconds=11)).isoformat(),
+                "orario": (race_date + dt.timedelta(minutes=4, seconds=11)).isoformat(),
                 "squadra_id": 2,
                 "problema": 3
             },
             {
                 "subclass": "Jolly",
-                "orario": (race_date + datetime.timedelta(minutes=4, seconds=19)).isoformat(),
+                "orario": (race_date + dt.timedelta(minutes=4, seconds=19)).isoformat(),
                 "squadra_id": 3,
                 "problema": 4
             },
             {
                 "subclass": "Consegna",
-                "orario": (race_date + datetime.timedelta(minutes=5, seconds=30)).isoformat(),
+                "orario": (race_date + dt.timedelta(minutes=5, seconds=30)).isoformat(),
                 "squadra_id": 5,
                 "problema": 5,
                 "risposta": 1
             },
             {
                 "subclass": "Consegna",
-                "orario": (race_date + datetime.timedelta(minutes=5, seconds=41)).isoformat(),
+                "orario": (race_date + dt.timedelta(minutes=5, seconds=41)).isoformat(),
                 "squadra_id": 6,
                 "problema": 6,
                 "risposta": 0
             },
             {
                 "subclass": "Consegna",
-                "orario": (race_date + datetime.timedelta(minutes=7, seconds=15)).isoformat(),
+                "orario": (race_date + dt.timedelta(minutes=7, seconds=15)).isoformat(),
                 "squadra_id": 2,
                 "problema": 3,
                 "risposta": 1
             },
             {
                 "subclass": "Consegna",
-                "orario": (race_date + datetime.timedelta(minutes=7, seconds=30)).isoformat(),
+                "orario": (race_date + dt.timedelta(minutes=7, seconds=30)).isoformat(),
                 "squadra_id": 3,
                 "problema": 4,
                 "risposta": 0
             },
             {
                 "subclass": "Consegna",
-                "orario": (race_date + datetime.timedelta(minutes=8, seconds=30)).isoformat(),
+                "orario": (race_date + dt.timedelta(minutes=8, seconds=30)).isoformat(),
                 "squadra_id": 8,
                 "problema": 2,
                 "risposta": 0
             },
             {
                 "subclass": "Bonus",
-                "orario": (race_date + datetime.timedelta(minutes=8, seconds=40)).isoformat(),
+                "orario": (race_date + dt.timedelta(minutes=8, seconds=40)).isoformat(),
                 "squadra_id": 7,
                 "punteggio": 43
             },
             {
                 "subclass": "Consegna",
-                "orario": (race_date + datetime.timedelta(minutes=9, seconds=30)).isoformat(),
+                "orario": (race_date + dt.timedelta(minutes=9, seconds=30)).isoformat(),
                 "squadra_id": 9,
                 "problema": 3,
                 "risposta": 1
