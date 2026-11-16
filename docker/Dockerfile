@@ -32,9 +32,7 @@ RUN apt update -y -q && \
 RUN chmod go+rx /root
 
 # Part 2: mathrace-interaction
-RUN apt update -y -q && \
-    apt install -y -qq python3-jsondiff python3-paramiko python3-pycryptodome && \
-    sed -i '1s/^/import warnings\nwarnings.filterwarnings("ignore", module="invoke.loader")\n/' /usr/lib/python3/dist-packages/invoke/loader.py
+# No apt installed dependency
 
 ## Group B. Copy and installation of turing and mathrace-interaction
 
